@@ -5,3 +5,9 @@ venv/
 # Ignorer les fichiers de cache Python
 __pycache__/
 *.py[cod]
+
+# Egg ???
+projet_annee_3.egg-info
+
+# uv lock file
+uv.lock
