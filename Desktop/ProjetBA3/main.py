@@ -4,12 +4,12 @@ from chess_board import ChessBoard
 
 # Initialisation de Pygame
 pygame.init()
-taille_fenetre = 800
-fenetre = pygame.display.set_mode((taille_fenetre, taille_fenetre))
+window_size = 800
+fenetre = pygame.display.set_mode((window_size, window_size))
 
 # Initialisation des objets ChessGame et ChessBoard
-jeu_echecs = ChessGame()
-plateau_graphique = ChessBoard(fenetre, taille_fenetre, jeu_echecs)
+chess_game = ChessGame()
+chess_board = ChessBoard(fenetre, window_size, chess_game)
 
 # Boucle principale
 running = True
@@ -19,9 +19,10 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
-            plateau_graphique.handle_click(x, y)  # Gère le clic de souris
+            chess_board.handle_click(x, y)  # Gère le clic de souris
 
-    plateau_graphique.dessiner_plateau()  # Dessine le plateau
+    chess_board.draw_board()  # Dessine le plateau
     pygame.display.flip()
 
 pygame.quit()
+

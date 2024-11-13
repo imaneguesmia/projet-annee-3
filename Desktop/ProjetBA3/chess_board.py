@@ -3,24 +3,24 @@ import chess
 from chess_game import ChessGame
 
 class ChessBoard:
-    couleur_claire = (232, 235, 239)
-    couleur_foncee = (125, 135, 150)
-    couleur_selection = (144, 238, 144)
-    couleur_deplacement = (255, 255, 153)
-    transparence = 128  # Niveau de transparence
+    light_color = (232, 235, 239)
+    dark_color = (125, 135, 150)
+    selection_color = (144, 238, 144)
+    move_color = (255, 255, 153)
+    transparency = 128 
 
-    def __init__(self, fenetre, taille_fenetre, jeu_echecs):
-        self.fenetre = fenetre
-        self.taille_case = taille_fenetre // 8
-        self.jeu_echecs = jeu_echecs
-        self.surface_deplacement = pygame.Surface((self.taille_case, self.taille_case))
-        self.surface_deplacement.set_alpha(self.transparence)
-        self.surface_deplacement.fill(self.couleur_deplacement)
+    def __init__(self, window, board_size, chess_game):
+        self.window = window
+        self.square_size = board_size // 8
+        self.chess_game = chess_game
+        self.move_surface = pygame.Surface((self.square_size, self.square_size))
+        self.move_surface.set_alpha(self.transparency)
+        self.move_surface.fill(self.move_color)
         
-        # Chargement des images des pièces
-        self.pieces = self.charger_images_pieces()
+        # Load piece images
+        self.pieces = self.load_piece_images()
 
-    def charger_images_pieces(self):
+    def load_piece_images(self):
         pieces = {
             "P": pygame.image.load("images/white_pawn.png"),
             "p": pygame.image.load("images/black_pawn.png"),
@@ -36,42 +36,42 @@ class ChessBoard:
             "k": pygame.image.load("images/black_king.png"),
         }
         for key in pieces:
-            pieces[key] = pygame.transform.scale(pieces[key], (self.taille_case, self.taille_case))
+            pieces[key] = pygame.transform.scale(pieces[key], (self.square_size, self.square_size))
         return pieces
 
-    def dessiner_plateau(self):
-        for ligne in range(8):
-            for colonne in range(8):
-                # Conversion de la case pour python-chess
-                case = chess.square(colonne, 7 - ligne)
+    def draw_board(self):
+        for row in range(8):
+            for col in range(8):
+                # Convert square for python-chess
+                square = chess.square(col, 7 - row)
                 
-                # Déterminer la couleur de la case
-                if self.jeu_echecs.piece_selectionnee == case:
-                    couleur = self.couleur_selection
+                # Determine square color
+                if self.chess_game.selected_piece == square:
+                    color = self.selection_color
                 else:
-                    couleur = self.couleur_claire if (ligne + colonne) % 2 == 0 else self.couleur_foncee
+                    color = self.light_color if (row + col) % 2 == 0 else self.dark_color
                 
-                pygame.draw.rect(self.fenetre, couleur, pygame.Rect(colonne * self.taille_case, ligne * self.taille_case, self.taille_case, self.taille_case))
+                pygame.draw.rect(self.window, color, pygame.Rect(col * self.square_size, row * self.square_size, self.square_size, self.square_size))
                 
-                # Dessiner la surface translucide pour les coups possibles
-                if case in self.jeu_echecs.coups_possibles:
-                    self.fenetre.blit(self.surface_deplacement, (colonne * self.taille_case, ligne * self.taille_case))
+                # Draw translucent surface for possible moves
+                if square in self.chess_game.possible_moves:
+                    self.window.blit(self.move_surface, (col * self.square_size, row * self.square_size))
                 
-                # Dessiner la pièce si elle existe
-                piece = self.jeu_echecs.plateau.piece_at(case)
+                # Draw piece if it exists
+                piece = self.chess_game.board.piece_at(square)
                 if piece:
-                    self.fenetre.blit(self.pieces[piece.symbol()], (colonne * self.taille_case, ligne * self.taille_case))
+                    self.window.blit(self.pieces[piece.symbol()], (col * self.square_size, row * self.square_size))
 
     def handle_click(self, x, y):
-        case = self.coordonnees_vers_case(x, y)
-        if self.jeu_echecs.piece_selectionnee:
-            # Jouer le coup si une pièce est sélectionnée
-            self.jeu_echecs.jouer_coup(case)
+        square = self.coordinates_to_square(x, y)
+        if self.chess_game.selected_piece:
+            # Make the move if a piece is selected
+            self.chess_game.make_move(square)
         else:
-            # Sélectionner la pièce
-            self.jeu_echecs.selectionner_piece(case)
+            # Select the piece
+            self.chess_game.select_piece(square)
 
-    def coordonnees_vers_case(self, x, y):
-        ligne = 7 - (y // self.taille_case)
-        colonne = x // self.taille_case
-        return chess.square(colonne, ligne)
+    def coordinates_to_square(self, x, y):
+        row = 7 - (y // self.square_size)
+        col = x // self.square_size
+        return chess.square(col, row)
