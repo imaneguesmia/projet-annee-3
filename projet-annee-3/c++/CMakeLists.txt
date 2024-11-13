@@ -16,7 +16,12 @@ set(LOGIC "logic")
 #        It's much more reliable and less error-prone when working with bigger codebases
 #        with multiple people.
 
-add_library(logic STATIC "src/${LOGIC}/bitboard.cpp" "src/${LOGIC}/bitboard.hpp")
+add_library(
+    logic STATIC 
+    "src/${LOGIC}/bitboard.cpp" "src/${LOGIC}/bitboard.hpp"
+    "src/${LOGIC}/board.cpp" "src/${LOGIC}/board.hpp"
+)
+target_compile_features(logic PUBLIC cxx_std_23)
 
 # Comment out the next lines if you don't want to build the testing executable
 

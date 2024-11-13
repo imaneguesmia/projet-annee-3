@@ -11,3 +11,6 @@ projet_annee_3.egg-info
 
 # uv lock file
 uv.lock
+
+# VSCode workspace files
+.vscode
