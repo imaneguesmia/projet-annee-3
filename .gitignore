@@ -1,0 +1,13 @@
+# Fichiers et dossiers système
+.DS_Store
+.Trash
+.localized
+
+# Environnement virtuel
+venv/
+.venv/
+
+# Fichiers Python
+__pycache__/
+*.pyc
+*.pyo
