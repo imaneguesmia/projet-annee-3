@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ostream>
 
 /* ---- DECLARE namespace BB ---- */

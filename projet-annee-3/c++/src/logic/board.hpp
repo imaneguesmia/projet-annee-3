@@ -1,3 +1,5 @@
+#pragma once
+
 #include "bitboard.hpp"
 
 #include "position.hpp"
