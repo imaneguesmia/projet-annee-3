@@ -15,8 +15,8 @@ void Position::setPositionIndex(int index) {
     int row = index / 8;
     int col = index % 8;
 
-    position_string[0] = 'a' + row;
-    position_string[1] = '1' + col;
+    position_string[0] = 'a' + col;
+    position_string[1] = '8' - row;
 }
 
 void Position::setPositionString(const char string[3]) {
@@ -31,8 +31,8 @@ void Position::setPositionString(const char string[3]) {
     position_string[0] = string[0];
     position_string[1] = string[1];
 
-    int row = string[0] - 'a';
-    int col = string[1] - '1';
+    int row = '8' - string[1];
+    int col = string[0] - 'a';
 
     position_index = row*8 + col;
 }
