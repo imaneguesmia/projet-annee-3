@@ -19,6 +19,7 @@ set(LOGIC "logic")
 add_library(
     logic STATIC 
     "src/${LOGIC}/bitboard.cpp" "src/${LOGIC}/bitboard.hpp"
+    "src/${LOGIC}/position.cpp" "src/${LOGIC}/position.hpp"
     "src/${LOGIC}/board.cpp" "src/${LOGIC}/board.hpp"
 )
 target_compile_features(logic PUBLIC cxx_std_23)

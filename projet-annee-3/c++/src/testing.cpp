@@ -8,10 +8,11 @@ C++ library and will not have any entry point.
 #include <iostream>
 
 int main(int argc, char ** argv) {
-    std::cout << "Hello world !" << std::endl;
+    std::cout << "Hello worlderferf !" << std::endl;
 
-    Board b = Board::initialState();
+    // Board b = Board::initialState();
     // Board b {"w"};
+    Board b;
 
     std::cout << b << std::endl;
 
