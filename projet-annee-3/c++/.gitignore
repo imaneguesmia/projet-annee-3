@@ -1,2 +1,5 @@
 # Ignore C++ build files
 build/*
+
+# Ignore annoying MacOS stuff
+.DS_Store
