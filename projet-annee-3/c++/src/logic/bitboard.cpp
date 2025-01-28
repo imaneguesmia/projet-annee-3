@@ -7,7 +7,7 @@ void BB::out(std::ostream& stream, const BitBoard& bits) {
         for (int j = 0; j < 8; j++) {
             int position {i*8 + j};
 
-            stream << (get_bit(bits, position) ? '1' : '0')  << ' ';
+            stream << (get_bit(bits, position) ? '1' : '.')  << ' ';
         }
 
         stream << std::endl;
