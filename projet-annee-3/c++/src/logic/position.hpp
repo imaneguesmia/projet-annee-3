@@ -19,16 +19,26 @@ public:
     };
 
 private:
-    int position_index;
-    char position_string[2];
+    int position_index;         // The index of the position, from 0 to 63. -1 if invalid.
+    char position_string[2];    // The string representation of the position, e.g. "e4". "--" if invalid.
 
 public:
+    Position(int row, int col) { setPosition(row, col); };
     Position(int index) { setPositionIndex(index); };
     Position(const char string[3]) { setPositionString(string); };
 
     ~Position() {};
 
+    // Sets this position as an "invalid" (out-of-bounds or non-existent) position.
+    void setPositionInvalid();
+    bool isValid() const { return position_index != -1; };
+
     /* -- Getters and setters -- */
+
+    int getRow() const { return position_index / 8; };
+    int getColumn() const { return position_index % 8; };
+    void setPosition(int row, int col);
+    void addPosition(int dx, int dy) { setPosition(getRow() + dy, getColumn() + dx); };
 
     int getPositionIndex() const { return position_index; };
     void setPositionIndex(int index);

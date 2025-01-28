@@ -84,7 +84,7 @@ Board::Board(const std::string& fen) {
 
     /* Current player */
 
-    char player;
+    int player;
     ss >> player;
 
     setCurrentPlayer((Player) player);
@@ -98,11 +98,7 @@ Board::Board(const std::string& fen) {
     char position_string[3] {0};
     ss >> position_string[0] >> position_string[1];
 
-    if (strcmp(position_string, "--") == 0) {
-        setEnPassantPosition(std::nullopt);
-    } else {
-        setEnPassantPosition(Position(position_string));
-    }
+    setEnPassantPosition(Position(position_string));
 
     /* Halfmoves and fullmoves */
 
@@ -163,7 +159,7 @@ const std::string Board::fen() const {
         if (row != 7) out << '/';
     }
 
-    out << ' ' << (char) current_player;
+    out << ' ' << current_player;
 
     /* Castling rights */
 
@@ -171,8 +167,7 @@ const std::string Board::fen() const {
 
     /* En passant */
 
-    if (en_passant.has_value()) out << ' ' << en_passant.value();
-    else out << " --";
+    out << ' ' << en_passant;
 
     /* Halfmoves and fullmoves */
 

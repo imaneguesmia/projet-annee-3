@@ -30,8 +30,8 @@ public:
     // than I do.
 
     enum Player {
-        White = 'w',
-        Black = 'b'
+        White = 0,
+        Black = 1
     };
 
     enum Piece {
@@ -52,7 +52,7 @@ private:
 
     Player current_player {White};
     uint8_t castling_rights;
-    std::optional<Position> en_passant;
+    Position en_passant {-1};
 
     size_t halfmoves, fullmoves;
 
@@ -68,7 +68,7 @@ public:
         Format modified slightly : castling rights indicated by a 4-bit integer, and
         no en-passant indicated by two dashes instead of one.
     */
-    Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 -- 0 0") {};
+    Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR 0 0 -- 0 0") {};
 
     ~Board() {};
 
@@ -77,8 +77,8 @@ public:
     Player getCurrentPlayer() const { return current_player; };
     void setCurrentPlayer(Player player) { current_player = player; };  // Feels wrong to not have the argument be const, but c'mon it's a char we don't need that
 
-    const std::optional<Position>& getEnPassantPosition() const { return en_passant; };
-    void setEnPassantPosition(const std::optional<Position>& position) { en_passant = position; };
+    const Position& getEnPassantPosition() const { return en_passant; };
+    void setEnPassantPosition(const Position& position) { en_passant = position; };
     
     /* -- Board operations -- */
 
