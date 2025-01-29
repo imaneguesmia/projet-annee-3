@@ -4,6 +4,7 @@
 
 #include "position.hpp"
 #include "player.hpp"
+#include "piece.hpp"
 
 #include <iostream>
 #include <bitset>
@@ -30,21 +31,23 @@ public:
     // Not enum classes, because the C++ standards committee makes more bad decisions
     // than I do.
 
-    enum Piece {
-        W_Pawn = 'P', W_Knight = 'N', W_Bishop = 'B',
-        W_Rook = 'R', W_Queen = 'Q', W_King = 'K',
+    // enum Piece {
+    //     W_Pawn = 'P', W_Knight = 'N', W_Bishop = 'B',
+    //     W_Rook = 'R', W_Queen = 'Q', W_King = 'K',
 
-        B_Pawn = 'p', B_Knight = 'n', B_Bishop = 'b',
-        B_Rook = 'r', B_Queen = 'q', B_King = 'k',
+    //     B_Pawn = 'p', B_Knight = 'n', B_Bishop = 'b',
+    //     B_Rook = 'r', B_Queen = 'q', B_King = 'k',
 
-        None = '.'
-    };
+    //     None = '.'
+    // };
 
 private:
     BB::BitBoard w_pawn {0ULL}, w_knight {0ULL}, w_bishop {0ULL},
                  w_rook {0ULL}, w_queen {0ULL}, w_king {0ULL};
     BB::BitBoard b_pawn {0ULL}, b_knight {0ULL}, b_bishop {0ULL}, 
                  b_rook {0ULL}, b_queen {0ULL}, b_king {0ULL};
+
+    BB::BitBoard piece_bb[12] {0ULL};
 
     Player current_player {Player::White};
     uint8_t castling_rights;
@@ -107,9 +110,10 @@ public:
 
     /* -- State exporting -- */
 
+    Piece pieceAt(const Position& position) const;
     // Returns the FEN of the piece at the given position. Used for printing out
     // the board, as well as aiding in the translation to Python.
-    char pieceAt(const Position& position) const;
+    char pieceFenAt(const Position& position) const { return pieceAt(position).fen(); };
     // Returns the FEN sequence representing the board state.
     const std::string fen() const;
 };

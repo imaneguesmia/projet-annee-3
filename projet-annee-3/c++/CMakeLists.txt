@@ -20,6 +20,8 @@ add_library(
     logic STATIC 
     "src/${LOGIC}/bitboard.cpp" "src/${LOGIC}/bitboard.hpp"
     "src/${LOGIC}/position.cpp" "src/${LOGIC}/position.hpp"
+    "src/${LOGIC}/player.hpp"
+    "src/${LOGIC}/piece.cpp" "src/${LOGIC}/piece.hpp"
     "src/${LOGIC}/board.cpp" "src/${LOGIC}/board.hpp"
     "src/${LOGIC}/attack_tables.cpp" "src/${LOGIC}/attack_tables.hpp" "src/${LOGIC}/magic_numbers.hpp"
 )

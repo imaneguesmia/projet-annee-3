@@ -11,57 +11,24 @@ void Board::setPiecePositions(const std::string& piece_positions) {
     int row = 0;  // Mostly just to check that the given FEN is valid.
 
     for (const auto& c : piece_positions) {
-        switch (c) {
-            case W_Pawn:
-                BB::set_bit(w_pawn, position_index);
-                break;
-            case W_Knight:
-                BB::set_bit(w_knight, position_index);
-                break;
-            case W_Bishop:
-                BB::set_bit(w_bishop, position_index);
-                break;
-            case W_Rook:
-                BB::set_bit(w_rook, position_index);
-                break;
-            case W_Queen:
-                BB::set_bit(w_queen, position_index);
-                break;
-            case W_King:
-                BB::set_bit(w_king, position_index);
-                break;
-            case B_Pawn:
-                BB::set_bit(b_pawn, position_index);
-                break;
-            case B_Knight:
-                BB::set_bit(b_knight, position_index);
-                break;
-            case B_Bishop:
-                BB::set_bit(b_bishop, position_index);
-                break;
-            case B_Rook:
-                BB::set_bit(b_rook, position_index);
-                break;
-            case B_Queen:
-                BB::set_bit(b_queen, position_index);
-                break;
-            case B_King:
-                BB::set_bit(b_king, position_index);
-                break;
-            
-            case '1': case '2': case '3':
-            case '4': case '5': case '6':
-            case '7': case '8':
-                // ASCII hack; we subtract 1 extra to compensate for the increment
-                position_index += c - '1';
-                break;
-            
-            case '/':
-                row++;
-                continue;
-            
-            default:
-                throw std::invalid_argument(std::format("Invalid FEN sequence: unknown character '{}'", c));
+        Piece piece = Piece::fromFen(c);
+
+        if (piece.id() == Piece::None) {
+            // Not a piece
+            switch (c) {
+                case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8':
+                    position_index += c - '1';  // ASCII hack
+                    break;
+                case '/':
+                    row++;
+                    continue;
+                default:
+                    throw std::invalid_argument(std::format(
+                        "Invalid FEN sequence: unknown character '{}'"
+                    , c));
+            }
+        } else {
+            BB::set_bit(piece_bb[piece.id()], position_index);
         }
 
         if (position_index / 8 != row) {
@@ -108,22 +75,14 @@ Board::Board(const std::string& fen) {
 // The difference between lower and upper case ASCII characters
 #define TO_LOWER_CASE 32
 
-char Board::pieceAt(const Position& position) const {
-    char out;
+Piece Board::pieceAt(const Position& position) const {
+    for (int piece = 0; piece < 12; piece++) {
+        BB::BitBoard bb = piece_bb[piece];
 
-    if (isOccupied(position)) {
-        if (isBlack(position)) out += TO_LOWER_CASE;  // More ASCII hack
-
-        if (isPawn(position)) out += W_Pawn;
-        else if (isKnight(position)) out += W_Knight;
-        else if (isBishop(position)) out += W_Bishop;
-        else if (isRook(position)) out += W_Rook;
-        else if (isQueen(position)) out += W_Queen;
-        else if (isKing(position)) out += W_King;
+        if (BB::get_bit(bb, position)) return Piece::fromId(piece);
     }
-    else out = None;
 
-    return out;
+    return Piece::None;
 }
 
 const std::string Board::fen() const {
@@ -136,7 +95,7 @@ const std::string Board::fen() const {
 
     for (int row = 0; row < 8; row++) {
         for (int column = 0; column < 8; column++) {
-            char piece {pieceAt(position++)};
+            char piece {pieceAt(position++).fen()};
 
             if (piece != '.') {
                 if (blanks) {
@@ -181,7 +140,7 @@ std::ostream& operator<<(std::ostream& out, const Board& board) {
 
     for (int row = 0; row < 8; row++) {
         for (int column = 0; column < 8; column++) {
-            out << board.pieceAt(position++) << ' ';
+            out << board.pieceFenAt(position++) << ' ';
         }
 
         out << std::endl;
