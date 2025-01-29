@@ -3,6 +3,7 @@
 #include "bitboard.hpp"
 
 #include "position.hpp"
+#include "player.hpp"
 
 #include <iostream>
 #include <bitset>
@@ -29,11 +30,6 @@ public:
     // Not enum classes, because the C++ standards committee makes more bad decisions
     // than I do.
 
-    enum Player {
-        White = 0,
-        Black = 1
-    };
-
     enum Piece {
         W_Pawn = 'P', W_Knight = 'N', W_Bishop = 'B',
         W_Rook = 'R', W_Queen = 'Q', W_King = 'K',
@@ -50,7 +46,7 @@ private:
     BB::BitBoard b_pawn {0ULL}, b_knight {0ULL}, b_bishop {0ULL}, 
                  b_rook {0ULL}, b_queen {0ULL}, b_king {0ULL};
 
-    Player current_player {White};
+    Player current_player {Player::White};
     uint8_t castling_rights;
     Position en_passant {-1};
 
@@ -65,10 +61,11 @@ public:
     /* 
         FEN : https://www.chess.com/terms/fen-chess 
         
-        Format modified slightly : castling rights indicated by a 4-bit integer, and
-        no en-passant indicated by two dashes instead of one.
+        Format modified slightly : castling rights indicated by a 4-bit integer,
+        no en-passant indicated by two dashes instead of one, and current player
+        indicated by 0 or 1.
     */
-    Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR 0 0 -- 0 0") {};
+    Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 -- 0 0") {};
 
     ~Board() {};
 

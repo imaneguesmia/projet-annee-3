@@ -3,6 +3,7 @@
 #include "bitboard.hpp"
 #include "board.hpp"
 #include "position.hpp"
+#include "player.hpp"
 
 #include <vector>
 #include <memory>
@@ -26,7 +27,7 @@ class AttackTables {
     BB::BitBoard knight_attacks[64];    // [position]
     BB::BitBoard king_attacks[64];      // [position]
 
-    BB::BitBoard generatePawnAttacks(Board::Player player, const Position& position);
+    BB::BitBoard generatePawnAttacks(Player player, const Position& position);
     BB::BitBoard generateKnightAttacks(const Position& position);
     BB::BitBoard generateKingAttacks(const Position& position);
 
@@ -120,9 +121,9 @@ public:
     ~AttackTables() {};
 
     constexpr BB::BitBoard getPawnAttackBitboard(
-        Board::Player player, const Position& position
+        Player player, const Position& position
     ) const {
-        return pawn_attacks[player][position];
+        return pawn_attacks[player == Player::Black][position];
     }
     constexpr BB::BitBoard getKnightAttackBitboard(const Position& position) const {
         return knight_attacks[position];

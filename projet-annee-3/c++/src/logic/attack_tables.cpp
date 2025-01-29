@@ -52,13 +52,13 @@ AttackTables::AttackTables() {
 // it is enough to just set the bits that they can target (while taking into account
 // the board edge).
 
-BB::BitBoard AttackTables::generatePawnAttacks(Board::Player player, const Position& position) {
+BB::BitBoard AttackTables::generatePawnAttacks(Player player, const Position& position) {
     BB::BitBoard piece = 0ULL;
     BB::BitBoard result = 0ULL;
 
     BB::set_bit(piece, position);
 
-    if (player == Board::White) {
+    if (player == Player::White) {
         result |= (piece & not_col_H) >> 7;
         result |= (piece & not_col_A) >> 9;
     } else {
@@ -112,7 +112,7 @@ BB::BitBoard AttackTables::generateKingAttacks(const Position& position) {
 void AttackTables::generateLeapingAttacks() {
     for (int position = 0; position < 64; position++) {
         for (int player = 0; player < 2; player++) {
-            pawn_attacks[player][position] = generatePawnAttacks((Board::Player) player, position);
+            pawn_attacks[player][position] = generatePawnAttacks(Player(player), position);
         }
 
         knight_attacks[position] = generateKnightAttacks(position);

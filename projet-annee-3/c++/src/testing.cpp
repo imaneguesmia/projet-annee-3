@@ -6,6 +6,7 @@ C++ library and will not have any entry point.
 #include "logic/board.hpp"
 #include "logic/attack_tables.hpp"
 #include "logic/position.hpp"
+#include "logic/player.hpp"
 
 #include <iostream>
 #include <vector>
@@ -31,10 +32,10 @@ int main(int argc, char ** argv) {
 
     // Pawn tests
     for (const auto& p : white_pawn_tests) {
-        BB::out(std::cout << "** White Pawn at " << p << " **\n", a.getPawnAttackBitboard(Board::White, p));
+        BB::out(std::cout << "** White Pawn at " << p << " **\n", a.getPawnAttackBitboard(Player::White, p));
     }
     for (const auto& p : black_pawn_tests) {
-        BB::out(std::cout << "** Black Pawn at " << p << " **\n", a.getPawnAttackBitboard(Board::Black, p));
+        BB::out(std::cout << "** Black Pawn at " << p << " **\n", a.getPawnAttackBitboard(Player::Black, p));
     }
     // Knight tests
     for (const auto& p : knight_tests) {

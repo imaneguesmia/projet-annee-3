@@ -159,7 +159,7 @@ const std::string Board::fen() const {
         if (row != 7) out << '/';
     }
 
-    out << ' ' << current_player;
+    out << ' ' << char(current_player);
 
     /* Castling rights */
 
