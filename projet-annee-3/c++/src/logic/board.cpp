@@ -84,10 +84,10 @@ Board::Board(const std::string& fen) {
 
     /* Current player */
 
-    int player;
+    char player;
     ss >> player;
 
-    setCurrentPlayer((Player) player);
+    setCurrentPlayer(Player(player));
 
     /* Castling rights */
 
