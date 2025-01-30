@@ -42,33 +42,31 @@ public:
     // };
 
 private:
-    BB::BitBoard w_pawn {0ULL}, w_knight {0ULL}, w_bishop {0ULL},
-                 w_rook {0ULL}, w_queen {0ULL}, w_king {0ULL};
-    BB::BitBoard b_pawn {0ULL}, b_knight {0ULL}, b_bishop {0ULL}, 
-                 b_rook {0ULL}, b_queen {0ULL}, b_king {0ULL};
+    // BB::BitBoard w_pawn {0ULL}, w_knight {0ULL}, w_bishop {0ULL},
+    //              w_rook {0ULL}, w_queen {0ULL}, w_king {0ULL};
+    // BB::BitBoard b_pawn {0ULL}, b_knight {0ULL}, b_bishop {0ULL}, 
+    //              b_rook {0ULL}, b_queen {0ULL}, b_king {0ULL};
 
     BB::BitBoard piece_bb[12] {0ULL};
+    BB::BitBoard occupancy_bb[3] {0ULL};
 
     Player current_player {Player::White};
-    uint8_t castling_rights;
-    Position en_passant {-1};
+    uint8_t castling_rights {0};
+    Position en_passant;
 
     size_t halfmoves, fullmoves;
 
+    void setPieceAt(const Position& position, const Piece& piece);
     void setPiecePositions(const std::string& piece_positions);
 
-    
+    void setCastlingRights(const std::string& castling_indicators);
 
 public:
     Board(const std::string& fen);
     /* 
         FEN : https://www.chess.com/terms/fen-chess 
-        
-        Format modified slightly : castling rights indicated by a 4-bit integer,
-        no en-passant indicated by two dashes instead of one, and current player
-        indicated by 0 or 1.
     */
-    Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 -- 0 0") {};
+    Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0") {};
 
     ~Board() {};
 
@@ -82,31 +80,38 @@ public:
     
     /* -- Board operations -- */
 
-    // Returns true if the given position is occupied by any piece.
-    bool isOccupied(const Position& position) const {
-        return BB::get_bit(
-            w_pawn | w_knight | w_bishop | w_rook | w_queen | w_king |
-            b_pawn | b_knight | b_bishop | b_rook | b_queen | b_king,
-            position
-        ); 
-    };
+    BB::BitBoard bitboard(Piece piece) const { return piece_bb[piece.getId()]; };
 
-    // Returns true if the given position is occupied by a white piece.
-    bool isWhite(const Position& position) const { 
-        return BB::get_bit(w_pawn | w_knight | w_bishop | w_rook | w_queen | w_king, position); 
-    };
-    // Returns true if the given position is occupied by a black piece.
-    bool isBlack(const Position& position) const { 
-        return BB::get_bit(b_pawn | b_knight | b_bishop | b_rook | b_queen | b_king, position); 
-    };
+    BB::BitBoard occupancy(Player player) const { return occupancy_bb[int(player)]; };
+    BB::BitBoard occupancy() const { return occupancy_bb[2]; };
 
-    // The following return true if the given position is occupied by the specific piece type.
-    bool isPawn(const Position& position) const { return BB::get_bit(w_pawn | b_pawn, position); };
-    bool isKnight(const Position& position) const { return BB::get_bit(w_knight | b_knight, position); };
-    bool isBishop(const Position& position) const { return BB::get_bit(w_bishop | b_bishop, position); };
-    bool isRook(const Position& position) const { return BB::get_bit(w_rook | b_rook, position); };
-    bool isQueen(const Position& position) const { return BB::get_bit(w_queen | b_queen, position); };
-    bool isKing(const Position& position) const { return BB::get_bit(w_king | b_king, position); };
+    uint8_t getCastlingRights() const { return castling_rights; };
+
+    // // Returns true if the given position is occupied by any piece.
+    // bool isOccupied(const Position& position) const {
+    //     return BB::get_bit(
+    //         w_pawn | w_knight | w_bishop | w_rook | w_queen | w_king |
+    //         b_pawn | b_knight | b_bishop | b_rook | b_queen | b_king,
+    //         position
+    //     ); 
+    // };
+
+    // // Returns true if the given position is occupied by a white piece.
+    // bool isWhite(const Position& position) const { 
+    //     return BB::get_bit(w_pawn | w_knight | w_bishop | w_rook | w_queen | w_king, position); 
+    // };
+    // // Returns true if the given position is occupied by a black piece.
+    // bool isBlack(const Position& position) const { 
+    //     return BB::get_bit(b_pawn | b_knight | b_bishop | b_rook | b_queen | b_king, position); 
+    // };
+
+    // // The following return true if the given position is occupied by the specific piece type.
+    // bool isPawn(const Position& position) const { return BB::get_bit(w_pawn | b_pawn, position); };
+    // bool isKnight(const Position& position) const { return BB::get_bit(w_knight | b_knight, position); };
+    // bool isBishop(const Position& position) const { return BB::get_bit(w_bishop | b_bishop, position); };
+    // bool isRook(const Position& position) const { return BB::get_bit(w_rook | b_rook, position); };
+    // bool isQueen(const Position& position) const { return BB::get_bit(w_queen | b_queen, position); };
+    // bool isKing(const Position& position) const { return BB::get_bit(w_king | b_king, position); };
 
     /* -- State exporting -- */
 

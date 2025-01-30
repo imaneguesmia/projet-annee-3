@@ -12,14 +12,14 @@
 
 class AttackTables {
     // Constant bitboards used in leaping attack table generation
-    const BB::BitBoard not_col_A {18374403900871474942ULL};
-    const BB::BitBoard not_col_H {9187201950435737471ULL};
-    const BB::BitBoard not_col_AB {18229723555195321596ULL};
-    const BB::BitBoard not_col_GH {4557430888798830399ULL};
-    const BB::BitBoard not_row_1 {72057594037927935ULL};
-    const BB::BitBoard not_row_8 {18446744073709551360ULL};
-    const BB::BitBoard not_row_12 {281474976710655ULL};
-    const BB::BitBoard not_row_78 {18446744073709486080ULL};
+    static constexpr BB::BitBoard not_col_A {18374403900871474942ULL};
+    static constexpr BB::BitBoard not_col_H {9187201950435737471ULL};
+    static constexpr BB::BitBoard not_col_AB {18229723555195321596ULL};
+    static constexpr BB::BitBoard not_col_GH {4557430888798830399ULL};
+    static constexpr BB::BitBoard not_row_1 {72057594037927935ULL};
+    static constexpr BB::BitBoard not_row_8 {18446744073709551360ULL};
+    static constexpr BB::BitBoard not_row_12 {281474976710655ULL};
+    static constexpr BB::BitBoard not_row_78 {18446744073709486080ULL};
 
     /* -- Leaping attacks -- */
 
@@ -64,7 +64,7 @@ class AttackTables {
             try {
                 return Position(new_y, new_x);
             } catch (const std::invalid_argument&) {
-                return Position(-1);
+                return Position();
             }
         }
     };
@@ -123,7 +123,7 @@ public:
     constexpr BB::BitBoard getPawnAttackBitboard(
         Player player, const Position& position
     ) const {
-        return pawn_attacks[player == Player::Black][position];
+        return pawn_attacks[int(player)][position];
     }
     constexpr BB::BitBoard getKnightAttackBitboard(const Position& position) const {
         return knight_attacks[position];

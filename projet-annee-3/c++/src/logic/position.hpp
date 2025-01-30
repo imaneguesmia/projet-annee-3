@@ -19,35 +19,37 @@ public:
     };
 
 private:
-    int position_index;         // The index of the position, from 0 to 63. -1 if invalid.
-    char position_string[2];    // The string representation of the position, e.g. "e4". "--" if invalid.
+    int position_index;         // The index of the position, from 0 to 63. 64 if invalid.
 
 public:
     Position(int row, int col) { setPosition(row, col); };
     Position(int index) { setPositionIndex(index); };
     Position(const char string[3]) { setPositionString(string); };
 
+    Position() : Position(64) {};
+
     ~Position() {};
+    
+    static Position INVALID;
 
     // Sets this position as an "invalid" (out-of-bounds or non-existent) position.
-    void setPositionInvalid();
-    bool isValid() const { return position_index != -1; };
+    void setPositionInvalid() { position_index = 64; };
+    bool isValid() const { return position_index != 64; };
 
     /* -- Getters and setters -- */
 
+    // Returns meaningless value if position is invalid.
     int getRow() const { return position_index / 8; };
+    // Returns meaningless value if position is invalid.
     int getColumn() const { return position_index % 8; };
+
     void setPosition(int row, int col);
     void addPosition(int dx, int dy) { setPosition(getRow() + dy, getColumn() + dx); };
 
     int getPositionIndex() const { return position_index; };
     void setPositionIndex(int index);
 
-    void getPositionString(char out[3]) const {
-        out[0] = position_string[0];
-        out[1] = position_string[1];
-        out[2] = '\0';
-    };
+    void getPositionString(char out[3]) const;
     void setPositionString(const char string[3]);
 
     /* -- Increment/decrement operators -- */

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "player.hpp"
+
 // enum class Piece {
 //     W_Pawn = 0b0000, W_Knight, W_Bishop,
 //     W_Rook, W_Queen, W_King,
@@ -13,34 +15,65 @@
 class Piece {
 
 public:
-    enum P {
+    enum Id {
         W_Pawn, W_Knight, W_Bishop,
         W_Rook, W_Queen, W_King,
 
         B_Pawn, B_Knight, B_Bishop,
         B_Rook, B_Queen, B_King,
 
-        None = -1
+        NoneId = -1
+    };
+
+    enum Type {
+        Pawn, Knight, Bishop,
+        Rook, Queen, King,
+
+        NoneType = -1
     };
 
 private:
-    const P type;
+    const Id id;
 
-    Piece(char fen) : type(toP(fen)) {};
+    const Type type;
+    const Player player;
 
-    static P toP(char fen);
-    static char toChar(P piece);
+    static Type idType(Id id) {
+        return id == Id::NoneId ? Type::NoneType : Type(id % 6);
+    };
+    static Player idPlayer(Id id) { return id >= 6 ? Player::Black : Player::White; };
+
+    static Id idFromDetails(Type type, Player player) {
+        return type == Type::NoneType ? Id::NoneId : Id(type + (6 * int(player))); 
+    }
+
+    static Id fenToId(char fen);
 
 public:
+    Piece(char fen)
+        : id(fenToId(fen))
+        , type(idType(id))
+        , player(idPlayer(id))
+    {};
+    Piece(Id id)
+        : id(id)
+        , type(idType(id))
+        , player(idPlayer(id))
+    {};
+    Piece(Type type, Player player)
+        : id(idFromDetails(type, player))
+        , type(type)
+        , player(player)
+    {};
+    Piece() : Piece(Id(-1)) {};
     ~Piece() {};
 
-    Piece(P type) : type(type) {};
+    Id getId() const { return id; };
+    Type getType() const { return type; };
 
-    static Piece fromId(int id) { return Piece(P(id)); };
-    static Piece fromFen(char fen) { return Piece(fen); };
+    bool isNone() const { return id == Id::NoneId; };
 
-    P id() const { return type; };
-    char fen() const { return toChar(type); };
+    char fen() const;
 
-    bool isBlack() const { return type & 0b1000; };
+    Player getPlayer() const { return player; };
 };

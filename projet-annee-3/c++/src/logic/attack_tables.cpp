@@ -111,8 +111,10 @@ BB::BitBoard AttackTables::generateKingAttacks(const Position& position) {
 
 void AttackTables::generateLeapingAttacks() {
     for (int position = 0; position < 64; position++) {
+        const Player map[2] {Player::White, Player::Black};
+
         for (int player = 0; player < 2; player++) {
-            pawn_attacks[player][position] = generatePawnAttacks(Player(player), position);
+            pawn_attacks[player][position] = generatePawnAttacks(map[player], position);
         }
 
         knight_attacks[position] = generateKnightAttacks(position);
@@ -129,8 +131,8 @@ BB::BitBoard AttackTables::generateRelevanceMask(const Position& position, uint8
     BB::BitBoard result = 0ULL;
 
     for (int d_index = 0; d_index < 8; d_index++) {
-        if (directions & ((uint8_t) 1 << d_index)) {
-            Direction direction {(Direction::D) d_index};
+        if (directions & (uint8_t(1) << d_index)) {
+            Direction direction {Direction::D(d_index)};
             Position current = position;
 
             while (

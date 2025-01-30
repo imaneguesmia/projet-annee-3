@@ -6,14 +6,21 @@
 
 /* ---- DEFINE class Board ---- */
 
+void Board::setPieceAt(const Position& position, const Piece& piece) {
+    BB::set_bit(piece_bb[piece.getId()], position);
+
+    BB::set_bit(occupancy_bb[int(piece.getPlayer())], position);
+    BB::set_bit(occupancy_bb[2], position);
+}
+
 void Board::setPiecePositions(const std::string& piece_positions) {
     int position_index = 0;
     int row = 0;  // Mostly just to check that the given FEN is valid.
 
     for (const auto& c : piece_positions) {
-        Piece piece = Piece::fromFen(c);
+        Piece piece = Piece(c);
 
-        if (piece.id() == Piece::None) {
+        if (piece.isNone()) {
             // Not a piece
             switch (c) {
                 case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8':
@@ -24,11 +31,11 @@ void Board::setPiecePositions(const std::string& piece_positions) {
                     continue;
                 default:
                     throw std::invalid_argument(std::format(
-                        "Invalid FEN sequence: unknown character '{}'"
+                        "Invalid FEN sequence: unknown character '{}' in board definition"
                     , c));
             }
         } else {
-            BB::set_bit(piece_bb[piece.id()], position_index);
+            setPieceAt(position_index, piece);
         }
 
         if (position_index / 8 != row) {
@@ -36,6 +43,31 @@ void Board::setPiecePositions(const std::string& piece_positions) {
         }
 
         position_index++;
+    }
+}
+
+void Board::setCastlingRights(const std::string& castling_indicators) {
+    if (castling_indicators[0] == '-') return;
+
+    for (const auto& c : castling_indicators) {
+        switch (c) {
+            case 'K':
+                castling_rights |= 0b0001;
+            break;
+            case 'Q':
+                castling_rights |= 0b0010;
+            break;
+            case 'k':
+                castling_rights |= 0b0100;
+            break;
+            case 'q':
+                castling_rights |= 0b1000;
+            break;
+            default:
+                throw std::invalid_argument(std::format(
+                    "Invalid FEN sequence: unknown character '{}' in castling indicators"
+                , c));
+        }
     }
 }
 
@@ -54,18 +86,27 @@ Board::Board(const std::string& fen) {
     char player;
     ss >> player;
 
-    setCurrentPlayer(Player(player));
+    setCurrentPlayer(player == 'w' ? Player::White : Player::Black);
+
+    ss.ignore();  // Skip next whitespace
 
     /* Castling rights */
 
-    ss >> castling_rights;
+    std::string castling_indicators;
+    std::getline(ss, castling_indicators, ' ');
+
+    setCastlingRights(castling_indicators);
 
     /* En passant */
 
-    char position_string[3] {0};
-    ss >> position_string[0] >> position_string[1];
+    if (ss.peek() != '-') {
+        char position_string[3] {0};
+        ss >> position_string[0] >> position_string[1];
 
-    setEnPassantPosition(Position(position_string));
+        setEnPassantPosition(Position(position_string));
+    } else {
+        ss.ignore(2);
+    }
 
     /* Halfmoves and fullmoves */
 
@@ -79,10 +120,10 @@ Piece Board::pieceAt(const Position& position) const {
     for (int piece = 0; piece < 12; piece++) {
         BB::BitBoard bb = piece_bb[piece];
 
-        if (BB::get_bit(bb, position)) return Piece::fromId(piece);
+        if (BB::get_bit(bb, position)) return Piece::Id(piece);
     }
 
-    return Piece::None;
+    return Piece::NoneId;
 }
 
 const std::string Board::fen() const {
@@ -118,11 +159,19 @@ const std::string Board::fen() const {
         if (row != 7) out << '/';
     }
 
-    out << ' ' << char(current_player);
+    out << ' ' << (current_player == Player::White ? 'w' : 'b');
 
     /* Castling rights */
 
-    out << ' ' << castling_rights;
+    out << ' ';
+
+    for (int i = 0; i < 4; i++) {
+        const char castling_indicator_chars[4] {'K', 'Q', 'k', 'q'};
+
+        if (castling_rights & (1 << i)) {
+            out << castling_indicator_chars[i];
+        }
+    }
 
     /* En passant */
 
