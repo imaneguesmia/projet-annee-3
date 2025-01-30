@@ -4,12 +4,15 @@
 #include "position.hpp"
 #include "player.hpp"
 #include "board.hpp"
+#include "move.hpp"
 
 /* ---- DECLARE class MoveGenerator ---- */
 
 class MoveGenerator {
     static constexpr BB::BitBoard row_4 {4278190080ULL};
     static constexpr BB::BitBoard row_5 {1095216660480ULL};
+    static constexpr BB::BitBoard row_1 {18374686479671623680ULL};
+    static constexpr BB::BitBoard row_8 {255ULL};
 
     // Truly the most space- vs time-complexity ever made. Lookup tables, lookup tables everywhere.
     static constexpr int relevant_castling_squares[4][2] {
@@ -17,6 +20,10 @@ class MoveGenerator {
         {Position::e1, Position::d1},   // Queen-side white
         {Position::f8, Position::g8},   // King-side black
         {Position::e8, Position::d8}    // Queen-side black
+    };
+
+    static constexpr Piece::Type valid_promotions[4] {
+        Piece::Knight, Piece::Bishop, Piece::Rook, Piece::Queen
     };
 
     AttackTables at;
@@ -27,7 +34,7 @@ class MoveGenerator {
         const Position& position, Player player, const Board& board, 
         BB::BitBoard& pseudo_legals
     ) const;
-    void generateMoves(const Board& board) const;
+    std::vector<Move> generatePseudoLegals(const Board& board) const;
 
 public:
     MoveGenerator() {};
@@ -35,10 +42,14 @@ public:
 
     void _test() {
         std::cout << "hello world" << std::endl;
-        Board b("8/8/8/8/3pP3/5q2/8/4K3 w K e3 0 0");
+        Board b("8/8/8/8/3pP3/8/8/8 w K e3 0 0");
         std::cout << b << std::endl;
 
-        generateMoves(b);
+        auto moves = generatePseudoLegals(b);
+
+        for (const auto& m : moves) {
+            std::cout << m << '\n';
+        }
 
         // std::cout << "Squares attacked by White" << std::endl;
 

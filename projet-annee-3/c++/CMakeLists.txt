@@ -24,6 +24,7 @@ add_library(
     "src/${LOGIC}/piece.cpp" "src/${LOGIC}/piece.hpp"
     "src/${LOGIC}/board.cpp" "src/${LOGIC}/board.hpp"
     "src/${LOGIC}/attack_tables.cpp" "src/${LOGIC}/attack_tables.hpp" "src/${LOGIC}/magic_numbers.hpp"
+    "src/${LOGIC}/move.cpp" "src/${LOGIC}/move.hpp"
     "src/${LOGIC}/move_generator.cpp" "src/${LOGIC}/move_generator.hpp"
 )
 target_compile_features(logic PUBLIC cxx_std_23)

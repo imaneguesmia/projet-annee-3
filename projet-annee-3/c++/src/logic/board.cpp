@@ -187,7 +187,11 @@ const std::string Board::fen() const {
 std::ostream& operator<<(std::ostream& out, const Board& board) {
     Position position {0};
 
+    out << "\n  a b c d e f g h\n";
+
     for (int row = 0; row < 8; row++) {
+        out << (8 - row) << ' ';
+
         for (int column = 0; column < 8; column++) {
             out << board.pieceFenAt(position++) << ' ';
         }

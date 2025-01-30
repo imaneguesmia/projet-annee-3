@@ -22,14 +22,14 @@ public:
         B_Pawn, B_Knight, B_Bishop,
         B_Rook, B_Queen, B_King,
 
-        NoneId = -1
+        NoneId
     };
 
     enum Type {
         Pawn, Knight, Bishop,
         Rook, Queen, King,
 
-        NoneType = -1
+        NoneType
     };
 
 private:
@@ -65,7 +65,7 @@ public:
         , type(type)
         , player(player)
     {};
-    Piece() : Piece(Id(-1)) {};
+    Piece() : Piece(Id::NoneId) {};
     ~Piece() {};
 
     Id getId() const { return id; };

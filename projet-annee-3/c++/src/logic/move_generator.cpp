@@ -51,15 +51,18 @@ bool MoveGenerator::isSquareAttacked(
     );
 }
 
-void MoveGenerator::generateMoves(const Board& board) const {
-
+std::vector<Move> MoveGenerator::generatePseudoLegals(const Board& board) const {
+    std::vector<Move> moves;
 
     Position from, to;
     // bitboard is the bitboard of the given piece
     // pseudo_legals is the bitboard of pseudo-legal moves
     // legals is the bitboard of legal moves (verified check)
-    // specials is the bitboard of moves with a special flag (castling/double pawn push)
-    BB::BitBoard bitboard, pseudo_legals, legals, specials;
+    // The next 5 bitboards are flags for the corresponding special moves
+    BB::BitBoard bitboard, pseudo_legals,
+                 capture, double_push, en_passant, castle, promotion;
+    
+    Move move;
 
     for (int id = 0; id < 12; id++) {
         Piece piece {Piece::Id(id)};
@@ -72,50 +75,55 @@ void MoveGenerator::generateMoves(const Board& board) const {
         while (bitboard) {
             from = leastSignificantBitIndex(bitboard);
 
+            // Reset flags
+            capture = double_push = en_passant = castle = promotion = 0ULL;
+
+            // Generate pseudo-legals
+
             switch (piece.getType()) {
                 case Piece::Pawn: {
                     // Generate pushes on the fly because I can't be bothered T-T
 
-                    BB::BitBoard single_push, double_push;
+                    BB::BitBoard single_push;
 
                     switch (piece.getId()) {
                         case Piece::W_Pawn:
                             single_push = (BB::new_at(from) >> 8) & ~board.occupancy();
                             double_push = ((single_push >> 8)) & ~board.occupancy() & row_4;
+                            promotion = single_push & row_8;
                         break;
                         case Piece::B_Pawn:
                             single_push = (BB::new_at(from)<< 8) & ~board.occupancy();
                             double_push = ((single_push << 8)) & ~board.occupancy() & row_5;
+                            promotion = single_push & row_1;
                         break;
                     }
 
                     // Special attack validation: can only do this move if attacking something, en passant included.
-                    BB::BitBoard targets = board.occupancy(other) | (BB::new_at(board.getEnPassantPosition()));
-                    BB::BitBoard attacks = at.getPawnAttackBitboard(player, from) & targets;
+                    BB::BitBoard attacks = at.getPawnAttackBitboard(player, from) & board.occupancy(other);
+                    en_passant = at.getPawnAttackBitboard(player, from) & BB::new_at(board.getEnPassantPosition());
 
-                    pseudo_legals = single_push | double_push | attacks;
-                    specials = double_push;
-
-                    std::cout << piece.fen() << " from " << from << '\n';
-                    BB::out(std::cout << "Occupancy\n", board.occupancy());
-                    // BB::out(std::cout << "Cast occupancy\n", cast_blocked);
-                    BB::out(std::cout << "Targets\n", pseudo_legals);
+                    capture = attacks | en_passant;
+                    pseudo_legals = single_push | double_push | capture;
                 } break;
                 case Piece::Knight:
                     pseudo_legals = at.getKnightAttackBitboard(from) & ~board.occupancy(player);
+                    capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::Bishop:
                     pseudo_legals = at.getBishopAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::Rook:
                     pseudo_legals = at.getRookAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::Queen:
                     pseudo_legals = at.getQueenAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::King: {
                     uint8_t castling_rights = board.getCastlingRights();
-                    specials = 0ULL;
 
                     // This is not the most efficient way to do this, but by god am I tired it's 4 in the morning for crying out loud
                     for (int i = 0; castling_rights; i++, castling_rights >>= 1) {
@@ -126,24 +134,50 @@ void MoveGenerator::generateMoves(const Board& board) const {
                             !isSquareAttacked(from, other, board) && !isSquareAttacked(between, other, board) &&
                             !BB::get_bit(board.occupancy(), between) && !BB::get_bit(board.occupancy(), target)
                         ) {
-                            BB::set_bit(specials, target);
+                            BB::set_bit(castle, target);
                         }
                     }
 
-                    pseudo_legals = (at.getKingAttackBitboard(from) & ~board.occupancy(player)) | specials;
+                    BB::BitBoard attacks = at.getKingAttackBitboard(from) & ~board.occupancy(player);
 
-                    std::cout << piece.fen() << " from " << from << '\n';
-                    BB::out(std::cout << "Occupancy\n", board.occupancy());
-                    // BB::out(std::cout << "Cast occupancy\n", cast_blocked);
-                    BB::out(std::cout << "Targets\n", pseudo_legals);
+                    pseudo_legals = attacks | castle;
+                    capture = attacks & board.occupancy(other);
                 } break;
             }
 
-            // Filter pseudo-legals
+            // Extract moves from pseudo-legal bitboard
 
-            // Calculate move integer
+            while (pseudo_legals) {
+                to = leastSignificantBitIndex(pseudo_legals);
+                BB::BitBoard target = BB::new_at(to);
+
+                move.source      = from;
+                move.target      = to;
+                move.piece       = piece.getId();
+                move.capture     = target & capture;
+                move.double_push = target & double_push;
+                move.en_passant  = target & en_passant;
+                move.castle      = target & castle;
+
+                if (target & promotion) {
+                    for (int i = 0; i < 4; i++) {
+                        uint8_t promoted_piece = (int(player)*6) + (i+1);
+
+                        move.promotion = promoted_piece;
+                        moves.push_back(move);
+                    }
+                } else {
+                    move.promotion = Piece::NoneId;
+                    moves.push_back(move);
+                }
+
+                pseudo_legals &= ~target;
+            }
 
             BB::reset_bit(bitboard, from);
         }
     }
+
+    return std::move(moves);
 }
+

@@ -11,7 +11,7 @@ void Position::setPosition(int row, int col) {
         throw std::invalid_argument(std::format("Invalid position: ({}, {})", row, col));
     }
 
-    position_index = (row * 8) + col;
+    position_index = Square((row * 8) + col);
 }
 
 void Position::setPositionIndex(int index) {
@@ -54,7 +54,7 @@ void Position::setPositionString(const char string[3]) {
         int row = '8' - string[1];
         int col = string[0] - 'a';
 
-        position_index = row*8 + col;
+        position_index = Square(row*8 + col);
     }
 }
 
