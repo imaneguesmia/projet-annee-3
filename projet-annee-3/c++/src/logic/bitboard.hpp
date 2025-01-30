@@ -21,6 +21,9 @@ namespace BB {
     inline void set_bit(BitBoard& bits, int position) { bits |= (1ULL << position); };
     inline void reset_bit(BitBoard& bits, int position) { bits &= ~(1ULL << position); };
 
+    // Returns a new bitboard that is empty except for the given position.
+    inline BitBoard new_at(int position) { return 1ULL << position; };
+
     // Write bits to the stream in a readable format.
     void out(std::ostream& stream, const BitBoard& bits);
 }
