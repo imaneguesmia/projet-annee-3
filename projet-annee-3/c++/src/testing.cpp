@@ -14,10 +14,53 @@ C++ library and will not have any entry point.
 #include <utility>
 
 int main(int argc, char ** argv) {
-    // std::cout << "Hello worlderferf !" << std::endl;
+    std::cout << "Hello worlderferf !" << std::endl;
 
-    // Board b;
+    Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
+    std::cout << b << std::endl;
+
+    // b.makeMove({
+    //     Position::e1, Position::g1,
+    //     Piece::W_King,
+    //     Piece::NoneId,
+    //     false, false, false, true
+    // });
+
+    // b.makeMove({
+    //     Position::c7, Position::c8,
+    //     Piece::W_Pawn,
+    //     Piece::W_Queen,
+    //     false, false, false, false
+    // });
+
     // std::cout << b << std::endl;
+
+    // b.makeMove({
+    //     Position::e2, Position::e4,
+    //     Piece::W_Pawn,
+    //     Piece::NoneId,
+    //     false, true, false, false
+    // });
+
+    // std::cout << b << std::endl;
+
+    // b.makeMove({
+    //     Position::d7, Position::d5,
+    //     Piece::B_Pawn,
+    //     Piece::NoneId,
+    //     false, true, false, false
+    // });
+
+    // std::cout << b << std::endl;
+
+    // uint8_t source      : 6;
+    // uint8_t target      : 6;
+    // uint8_t piece       : 4;
+    // uint8_t promotion   : 4;
+    // bool capture        : 1;
+    // bool double_push    : 1;
+    // bool en_passant     : 1;
+    // bool castle         : 1;
 
     // AttackTables a;
 
@@ -62,8 +105,13 @@ int main(int argc, char ** argv) {
     //     BB::out(std::cout << "Result\n", a.getQueenAttackBitboard(p, occ));
     // }
 
-    MoveGenerator m;
-    m._test();
+    MoveGenerator mg;
+    
+    auto moves = mg.generateMoves(Player::White, b);
+
+    for (const auto& m : moves) {
+        std::cout << m << '\n';
+    }
 
     return 0;
 }

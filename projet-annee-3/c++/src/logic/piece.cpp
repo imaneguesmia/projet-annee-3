@@ -28,27 +28,6 @@ Piece::Id Piece::fenToId(char fen) {
     return Id(out);
 }
 
-// char Piece::idToFen(Id id) {
-//     char out;
-
-//     bool is_black = piece >= 6;
-//     int type = piece - (6 * is_black);
-
-//     switch (type) {
-        // case P::W_Pawn: out = 'P'; break;
-        // case P::W_Knight: out = 'N'; break;
-        // case P::W_Bishop: out = 'B'; break;
-        // case P::W_Rook: out = 'R'; break;
-        // case P::W_Queen: out = 'Q'; break;
-        // case P::W_King: out = 'K'; break;
-
-        // case P::None: return '.';
-//     }
-
-//     out += TO_LOWER_CASE * is_black;
-//     return out;
-// }
-
 char Piece::fen() const {
     char out;
 

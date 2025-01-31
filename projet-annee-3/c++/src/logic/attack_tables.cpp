@@ -23,22 +23,6 @@ inline uint64_t random64() {
     );
 }
 
-// Return the number of set bits in the given uint64_t.
-inline uint8_t popcount(uint64_t n) {
-    uint8_t result = 0;
-
-    // Brian Kernighan’s algorithm.
-    // (n &= n-1) sets the rightmost 1 to 0. If we do this until n == 0,
-    // the loop executes the same number of times as the number of set bits in
-    // the original n.
-    while (n) {
-        n &= n - 1; 
-        result++;
-    }
-
-    return result;
-}
-
 /* ---- DEFINE class AttackTables ---- */
 
 AttackTables::AttackTables() {
@@ -110,11 +94,9 @@ BB::BitBoard AttackTables::generateKingAttacks(const Position& position) {
 }
 
 void AttackTables::generateLeapingAttacks() {
-    for (int position = 0; position < 64; position++) {
-        const Player map[2] {Player::White, Player::Black};
-
+    for (int position = Position::a8; position < Position::Invalid; position++) {
         for (int player = 0; player < 2; player++) {
-            pawn_attacks[player][position] = generatePawnAttacks(map[player], position);
+            pawn_attacks[player][position] = generatePawnAttacks(Player(player), position);
         }
 
         knight_attacks[position] = generateKnightAttacks(position);
@@ -202,7 +184,7 @@ std::unique_ptr<AttackTables::Magic> AttackTables::generateMagicTableForPosition
     magic->relevance_mask = relevance_mask;
     // The number of bits of the table index is equal to the number of relevant blocker squares
     // since we store attack bitboards for each possible combination of blockers.
-    magic->index_bits = popcount(relevance_mask);
+    magic->index_bits = BB::popcount(relevance_mask);
 
     bool succeeded = false;
     const BB::BitBoard dummy = ~0ULL;
@@ -251,9 +233,9 @@ std::unique_ptr<AttackTables::Magic> AttackTables::generateMagicTableForPosition
         }
 
         if (!collision) {
+            // No collision, hash table successfully generated.
             magic->table = std::move(magic_table);
             magic->magic_number = possible_magic_number;
-            // std::cout << magic->magic_number << std::endl;
             succeeded = true;
         }
     }
@@ -264,7 +246,7 @@ std::unique_ptr<AttackTables::Magic> AttackTables::generateMagicTableForPosition
 void AttackTables::generateMagicTables() {
     std::srand(std::time(0));
 
-    for (int position = 0; position < 64; position++) {
+    for (int position = Position::a8; position < Position::Invalid; position++) {
         auto bishop_magic = generateMagicTableForPosition(position, 0b01010101);
         auto rook_magic = generateMagicTableForPosition(position, 0b10101010);
 
@@ -288,4 +270,3 @@ BB::BitBoard AttackTables::getSlidingAttackTable(
 }
 
 /* ---- END DEFINE ---- */
-

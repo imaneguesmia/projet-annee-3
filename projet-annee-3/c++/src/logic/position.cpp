@@ -15,15 +15,11 @@ void Position::setPosition(int row, int col) {
 }
 
 void Position::setPositionIndex(int index) {
-    if (index < 0 || index > 64) {
+    if (index < Position::a8 || index > Position::Invalid) {
         throw std::invalid_argument(std::format("Invalid position index: {}", index));
     }
 
-    if (index == 64) {
-        setPositionInvalid();
-    } else {
-        position_index = index;
-    }
+    position_index = index;
 }
 
 void Position::getPositionString(char out[3]) const {

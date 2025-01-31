@@ -5,6 +5,7 @@
 #include "position.hpp"
 #include "player.hpp"
 #include "piece.hpp"
+#include "move.hpp"
 
 #include <iostream>
 #include <bitset>
@@ -12,117 +13,129 @@
 
 /* ---- DECLARE class Board ---- */
 
-/*
-A class representing the current state of a board. It uses a total of 12 bitboards,
-and possesses helper methods that operate on these bitboards to quickly obtain the
-desired positions.
-
-This class does not contain any info on legal moves, and only contains position info.
-
-This class also contains a lot of repetitive code that could be easily avoided. This
-is for the sake of efficiency, since these operations are going to be done often.
-*/
-
+/**
+ * @brief A class representing the current state of a board.
+ * 
+ * It uses a total of 12 bitboards, and possesses helper methods that operate on these bitboards to
+ * quickly obtain the desired positions.
+ * 
+ * This class does not contain any info on legal moves, and only contains position info. It *will not*
+ * check if a move is legal before playing it. It is essentially a simple chessboard.
+ * 
+ * See also: FEN Notation (https://www.chess.com/terms/fen-chess)
+ */
 class Board {
+    // Lookup table to handle castling rights changes.
+    static constexpr uint8_t castling_table[64] = {
+         7, 15, 15, 15,  3, 15, 15, 11,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        15, 15, 15, 15, 15, 15, 15, 15,
+        13, 15, 15, 15, 12, 15, 15, 14
+    };
 
-public:
-    /* -- Enum definitions -- */
-
-    // Not enum classes, because the C++ standards committee makes more bad decisions
-    // than I do.
-
-    // enum Piece {
-    //     W_Pawn = 'P', W_Knight = 'N', W_Bishop = 'B',
-    //     W_Rook = 'R', W_Queen = 'Q', W_King = 'K',
-
-    //     B_Pawn = 'p', B_Knight = 'n', B_Bishop = 'b',
-    //     B_Rook = 'r', B_Queen = 'q', B_King = 'k',
-
-    //     None = '.'
-    // };
-
-private:
-    // BB::BitBoard w_pawn {0ULL}, w_knight {0ULL}, w_bishop {0ULL},
-    //              w_rook {0ULL}, w_queen {0ULL}, w_king {0ULL};
-    // BB::BitBoard b_pawn {0ULL}, b_knight {0ULL}, b_bishop {0ULL}, 
-    //              b_rook {0ULL}, b_queen {0ULL}, b_king {0ULL};
-
-    BB::BitBoard piece_bb[12] {0ULL};
-    BB::BitBoard occupancy_bb[3] {0ULL};
+    // Each bitboard represents the occupancy of a certain piece type or player.
+    // For example, if the bit 32 is set on the bitboard for white bishops,
+    // that means that there is a white bishop on position 32 of the board.
+    BB::BitBoard piece_bb[2][6] {0ULL};     // [Player][Piece::Type]
+    BB::BitBoard occupancy_bb[3] {0ULL};    // [Player | 2 (Both)]
 
     Player current_player {Player::White};
-    uint8_t castling_rights {0};
+    uint8_t castling_rights {0};            // Castling rights bits: `0b[qkQK]`
     Position en_passant;
 
+    // Halfmoves are incremented at the start of each turn, and reset after each capture or pawn move.
+    // Fullmoves are incremented after black's turn.
     size_t halfmoves, fullmoves;
 
-    void setPieceAt(const Position& position, const Piece& piece);
+    // Sets pieces in the bitboards according to the given FEN string.
     void setPiecePositions(const std::string& piece_positions);
-
+    // Sets the current valid en passant target.
+    void setEnPassantPosition(const Position& position) { en_passant = position; };
+    
+    /**
+     * @brief Sets castling rights bits according to the given string.
+     * 
+     * @param castling_indicators   The string indicating castling rights, i.e. "KQq" => `0b1011`.
+     */
     void setCastlingRights(const std::string& castling_indicators);
 
+    /**
+     * @brief Determines the source and target positions of the rook when castling.
+     * 
+     * @param king_target           The target position of the king when castling.
+     * @return A bitboard indicating the source and target positions of the rook.
+     */
+    BB::BitBoard rookMovementWhenCastling(const Position& king_target) const;
+
 public:
+    // Constructs a new Board object from the given FEN string.
     Board(const std::string& fen);
-    /* 
-        FEN : https://www.chess.com/terms/fen-chess 
-    */
-    Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0") {};
+    // Construct a new Board object with the default starting position.
+    Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {};
 
     ~Board() {};
 
     /* -- Getters and setters -- */
 
     Player getCurrentPlayer() const { return current_player; };
-    void setCurrentPlayer(Player player) { current_player = player; };  // Feels wrong to not have the argument be const, but c'mon it's a char we don't need that
+    void setCurrentPlayer(const Player player) { current_player = player; };
 
+    // Gets the current valid en passant target.
     const Position& getEnPassantPosition() const { return en_passant; };
-    void setEnPassantPosition(const Position& position) { en_passant = position; };
+
+    // Places a piece at a given position.
+    void setPieceAt(const Position& position, const Piece& piece);
+
+    // Makes the given move. Note that this modifies the board state.
+    void makeMove(const Move move);
     
     /* -- Board operations -- */
 
-    BB::BitBoard bitboard(Piece piece) const { return piece_bb[piece.getId()]; };
+    /**
+     * @brief Gets the bitboard of the given piece.
+     * 
+     * @param piece     The piece to get the bitboard of.
+     * @return A bitboard indicating the squares occupied by this piece.
+     */
+    BB::BitBoard bitboard(Piece piece) const { return piece_bb[int(piece.getPlayer())][piece.getType()]; };
 
+    /**
+     * @brief Gets the occupancy bitboard of all the given player's pieces.
+     * 
+     * @param player    The player to get the occupancy of.
+     * @return A bitboard indicating the squares occupied by this player.
+     */
     BB::BitBoard occupancy(Player player) const { return occupancy_bb[int(player)]; };
+    /**
+     * @brief Gets the global occupancy of all pieces.
+     * 
+     * @return A bitboard indicating all occupied squares on the board.
+     */
     BB::BitBoard occupancy() const { return occupancy_bb[2]; };
 
+    /**
+     * @brief Gets the castling rights bits.
+     * 
+     * @return Bitflags indicating castling rights: `0b[qkQK]`.
+     */
     uint8_t getCastlingRights() const { return castling_rights; };
-
-    // // Returns true if the given position is occupied by any piece.
-    // bool isOccupied(const Position& position) const {
-    //     return BB::get_bit(
-    //         w_pawn | w_knight | w_bishop | w_rook | w_queen | w_king |
-    //         b_pawn | b_knight | b_bishop | b_rook | b_queen | b_king,
-    //         position
-    //     ); 
-    // };
-
-    // // Returns true if the given position is occupied by a white piece.
-    // bool isWhite(const Position& position) const { 
-    //     return BB::get_bit(w_pawn | w_knight | w_bishop | w_rook | w_queen | w_king, position); 
-    // };
-    // // Returns true if the given position is occupied by a black piece.
-    // bool isBlack(const Position& position) const { 
-    //     return BB::get_bit(b_pawn | b_knight | b_bishop | b_rook | b_queen | b_king, position); 
-    // };
-
-    // // The following return true if the given position is occupied by the specific piece type.
-    // bool isPawn(const Position& position) const { return BB::get_bit(w_pawn | b_pawn, position); };
-    // bool isKnight(const Position& position) const { return BB::get_bit(w_knight | b_knight, position); };
-    // bool isBishop(const Position& position) const { return BB::get_bit(w_bishop | b_bishop, position); };
-    // bool isRook(const Position& position) const { return BB::get_bit(w_rook | b_rook, position); };
-    // bool isQueen(const Position& position) const { return BB::get_bit(w_queen | b_queen, position); };
-    // bool isKing(const Position& position) const { return BB::get_bit(w_king | b_king, position); };
 
     /* -- State exporting -- */
 
+    // Gets the piece at the given position on the board.
     Piece pieceAt(const Position& position) const;
-    // Returns the FEN of the piece at the given position. Used for printing out
-    // the board, as well as aiding in the translation to Python.
+
+    // Gets the FEN symbol of the piece at the given position on the board.
     char pieceFenAt(const Position& position) const { return pieceAt(position).fen(); };
-    // Returns the FEN sequence representing the board state.
+    // Translates the current board state into FEN notation.
     const std::string fen() const;
 };
 
+// Prints a board to the stream in a readable format.
 std::ostream& operator<<(std::ostream& out, const Board& board);
 
 /* ---- END DECLARE ---- */

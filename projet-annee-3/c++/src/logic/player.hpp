@@ -5,6 +5,7 @@ enum class Player {
     Black
 };
 
+// Returns the opposing player.
 constexpr Player otherPlayer(Player player) {
     return Player(1 - int(player));
 }
