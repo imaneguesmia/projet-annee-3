@@ -7,34 +7,6 @@
 
 /* ---- DEFINE class MoveGenerator ---- */
 
-bool MoveGenerator::isSquareAttacked(
-    const Position& position, Player player,
-    const Board& board
-) const {
-    Player other_player = otherPlayer(player);
-
-    // If a piece P is on a square S, it follows that a piece of the same type on any 
-    // square that P is attacking is also attacking S.
-
-    return (
-        // Pawn attacks
-        at.getPawnAttackBitboard(other_player, position) & board.bitboard(Piece(Piece::Pawn, player)) ||
-        // Knight attacks
-        at.getKnightAttackBitboard(position) & board.bitboard(Piece(Piece::Knight, player)) ||
-        // King attacks
-        at.getKingAttackBitboard(position) & board.bitboard(Piece(Piece::King, player)) ||
-
-        // Bishop attacks
-        // For example, here we check if there is a good bishop on the squares attacked by an opposing bishop on
-        // this square.
-        at.getBishopAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(Piece::Bishop, player)) ||
-        // Rook attacks
-        at.getRookAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(Piece::Rook, player)) ||
-        // Queen attacks
-        at.getQueenAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(Piece::Queen, player))
-    );
-}
-
 std::vector<Move> MoveGenerator::generatePseudoLegals(
     const Player player, const Board& board
 ) const {
@@ -82,28 +54,28 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     }
 
                     // Special attack validation: can only do this move if attacking something.
-                    BB::BitBoard attacks = at.getPawnAttackBitboard(player, from) & board.occupancy(other);
+                    BB::BitBoard attacks = at->getPawnAttackBitboard(player, from) & board.occupancy(other);
 
                     en_passant = board.getEnPassantPosition() != Position::Invalid;
-                    en_passant *= at.getPawnAttackBitboard(player, from) & BB::new_at(board.getEnPassantPosition());
+                    en_passant *= at->getPawnAttackBitboard(player, from) & BB::new_at(board.getEnPassantPosition());
 
                     capture = attacks | en_passant;
                     pseudo_legals = single_push | double_push | capture;
                 } break;
                 case Piece::Knight:
-                    pseudo_legals = at.getKnightAttackBitboard(from) & ~board.occupancy(player);
+                    pseudo_legals = at->getKnightAttackBitboard(from) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::Bishop:
-                    pseudo_legals = at.getBishopAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    pseudo_legals = at->getBishopAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::Rook:
-                    pseudo_legals = at.getRookAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    pseudo_legals = at->getRookAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::Queen:
-                    pseudo_legals = at.getQueenAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    pseudo_legals = at->getQueenAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::King: {
@@ -115,14 +87,15 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
 
                         if (
                             (castling_rights & 1ULL) &&
-                            !isSquareAttacked(from, other, board) && !isSquareAttacked(between, other, board) &&
+                            !board_analysis.isSquareAttacked(from, other, board) && 
+                            !board_analysis.isSquareAttacked(between, other, board) &&
                             !BB::get_bit(board.occupancy(), between) && !BB::get_bit(board.occupancy(), target)
                         ) {
                             BB::set_bit(castle, target);
                         }
                     }
 
-                    BB::BitBoard attacks = at.getKingAttackBitboard(from) & ~board.occupancy(player);
+                    BB::BitBoard attacks = at->getKingAttackBitboard(from) & ~board.occupancy(player);
 
                     pseudo_legals = attacks | castle;
                     capture = attacks & board.occupancy(other);
@@ -168,12 +141,6 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
     return std::move(moves);
 }
 
-bool MoveGenerator::isInCheck(const Player player, const Board& board) const {
-    Position king_square = BB::leastSignificantBitIndex(board.bitboard(Piece(Piece::King, player)));
-
-    return isSquareAttacked(king_square, otherPlayer(player), board);
-}
-
 std::vector<Move> MoveGenerator::filterPseudoLegals(
     const Player player, const Board& board,
     const std::vector<Move>& pseudo_legals
@@ -186,7 +153,7 @@ std::vector<Move> MoveGenerator::filterPseudoLegals(
         copy = std::make_unique<Board>(board);
         copy->makeMove(move);
 
-        if (!isInCheck(player, *copy)) legals.push_back(move);
+        if (!board_analysis.isInCheck(player, *copy)) legals.push_back(move);
     }
 
     return std::move(legals);

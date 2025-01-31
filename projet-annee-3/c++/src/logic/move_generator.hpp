@@ -5,6 +5,9 @@
 #include "player.hpp"
 #include "board.hpp"
 #include "move.hpp"
+#include "board_analysis.hpp"
+
+#include <memory>
 
 /* ---- DECLARE class MoveGenerator ---- */
 
@@ -26,17 +29,9 @@ class MoveGenerator {
         {Position::d8, Position::c8}    // Queen-side black
     };
 
-    AttackTables at;
-
-    /**
-     * @brief Determines whether or not a position is attacked.
-     * 
-     * @param position  The position to test.
-     * @param player    The attacking player.
-     * @param board     The board to check.
-     * @return `true` if the position is attacked by the player. 
-     */
-    bool isSquareAttacked(const Position& position, Player player, const Board& board) const;
+    // Shared pointer to the pre-initialized attack tables.
+    const std::shared_ptr<const AttackTables> at;
+    const BoardAnalysis board_analysis;
 
     /**
      * @brief Generates all possible pseudo-legal moves from the given board state.
@@ -46,9 +41,6 @@ class MoveGenerator {
      * @return A vector containing all found pseudo-legal moves.
      */
     std::vector<Move> generatePseudoLegals(const Player player, const Board& board) const;
-
-    // Tests if a player is in check.
-    bool isInCheck(const Player player, const Board& board) const;
 
     /**
      * @brief Filters pseudo-legals to produce true legal moves.
@@ -64,7 +56,10 @@ class MoveGenerator {
     ) const;
 
 public:
-    MoveGenerator() {};
+    MoveGenerator(const std::shared_ptr<const AttackTables> at) 
+        : at(at)
+        , board_analysis(std::move(at))
+    {};
     ~MoveGenerator() {};
 
     /**

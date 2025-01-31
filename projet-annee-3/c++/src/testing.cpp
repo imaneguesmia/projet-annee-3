@@ -11,7 +11,7 @@ C++ library and will not have any entry point.
 
 #include <iostream>
 #include <vector>
-#include <utility>
+#include <memory>
 
 int main(int argc, char ** argv) {
     std::cout << "Hello worlderferf !" << std::endl;
@@ -105,7 +105,10 @@ int main(int argc, char ** argv) {
     //     BB::out(std::cout << "Result\n", a.getQueenAttackBitboard(p, occ));
     // }
 
-    MoveGenerator mg;
+    // *const* AttackTables. This baby ain't ever changin', boaïe.
+    auto at = std::make_shared<const AttackTables>();
+
+    MoveGenerator mg(at);
     
     auto moves = mg.generateMoves(Player::White, b);
 
