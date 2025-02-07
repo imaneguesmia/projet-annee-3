@@ -8,6 +8,7 @@ C++ library and will not have any entry point.
 #include "logic/position.hpp"
 #include "logic/player.hpp"
 #include "logic/move_generator.hpp"
+#include "logic/game.hpp"
 
 #include <iostream>
 #include <vector>
@@ -16,8 +17,13 @@ C++ library and will not have any entry point.
 int main(int argc, char ** argv) {
     std::cout << "Hello worlderferf !" << std::endl;
 
-    Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
-    std::cout << b << std::endl;
+    // Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
+    // std::cout << b << std::endl;
+
+    Game b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
+
+    b.printBoard();
+    std::cout << b.fen() << '\n';
 
     // b.makeMove({
     //     Position::e1, Position::g1,
@@ -106,15 +112,15 @@ int main(int argc, char ** argv) {
     // }
 
     // *const* AttackTables. This baby ain't ever changin', boaïe.
-    auto at = std::make_shared<const AttackTables>();
+    // auto at = std::make_shared<const AttackTables>();
 
-    MoveGenerator mg(at);
+    // MoveGenerator mg(at);
     
-    auto moves = mg.generateMoves(Player::White, b);
+    // auto moves = mg.generateMoves(Player::White, b);
 
-    for (const auto& m : moves) {
-        std::cout << m << '\n';
-    }
+    // for (const auto& m : moves) {
+    //     std::cout << m << '\n';
+    // }
 
     return 0;
 }

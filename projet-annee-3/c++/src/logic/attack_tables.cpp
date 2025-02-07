@@ -202,11 +202,12 @@ std::unique_ptr<AttackTables::Magic> AttackTables::generateMagicTableForPosition
     while (!succeeded) {
         // Fill the table with dummy value ~0ULL.
         std::vector<BB::BitBoard> magic_table(1 << magic->index_bits, dummy);
-        // Generate a random magic number. Biased towards 0 since magic numbers don't
-        // require a lot of set bits.
+
 #ifndef FIND_NEW_MAGICS
         uint64_t possible_magic_number = magic_numbers[position];
 #else
+        // Generate a random magic number. Biased towards 0 since magic numbers don't
+        // require a lot of set bits.
         uint64_t possible_magic_number = random64() & random64() & random64();
 #endif
 

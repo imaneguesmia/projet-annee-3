@@ -27,6 +27,7 @@ add_library(
     "src/${LOGIC}/move.cpp" "src/${LOGIC}/move.hpp"
     "src/${LOGIC}/board_analysis.cpp" "src/${LOGIC}/board_analysis.hpp"
     "src/${LOGIC}/move_generator.cpp" "src/${LOGIC}/move_generator.hpp"
+    "src/${LOGIC}/game.cpp" "src/${LOGIC}/game.hpp"
 )
 target_compile_features(logic PUBLIC cxx_std_23)
 

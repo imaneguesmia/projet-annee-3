@@ -34,6 +34,8 @@ public:
 
     // Tests if a player is in check.
     bool isInCheck(const Player player, const Board& board) const;
+
+    
 };
 
 /* ---- END DECLARE ---- */

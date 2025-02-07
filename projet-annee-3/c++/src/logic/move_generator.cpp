@@ -8,7 +8,8 @@
 /* ---- DEFINE class MoveGenerator ---- */
 
 std::vector<Move> MoveGenerator::generatePseudoLegals(
-    const Player player, const Board& board
+    const Player player, const Board& board,
+    const Position& en_passant_position, const uint8_t castling_rights
 ) const {
     std::vector<Move> moves;
 
@@ -56,8 +57,8 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     // Special attack validation: can only do this move if attacking something.
                     BB::BitBoard attacks = at->getPawnAttackBitboard(player, from) & board.occupancy(other);
 
-                    en_passant = board.getEnPassantPosition() != Position::Invalid;
-                    en_passant *= at->getPawnAttackBitboard(player, from) & BB::new_at(board.getEnPassantPosition());
+                    en_passant = en_passant_position != Position::Invalid;
+                    en_passant *= at->getPawnAttackBitboard(player, from) & BB::new_at(en_passant_position);
 
                     capture = attacks | en_passant;
                     pseudo_legals = single_push | double_push | capture;
@@ -79,7 +80,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case Piece::King: {
-                    uint8_t castling_rights = board.getCastlingRights();
+                    uint8_t castling_rights = castling_rights;
 
                     // [TODO] This is not the most efficient way to do this.
                     for (int i = 0; castling_rights; i++, castling_rights >>= 1) {
@@ -159,10 +160,13 @@ std::vector<Move> MoveGenerator::filterPseudoLegals(
     return std::move(legals);
 };
 
-std::vector<Move> MoveGenerator::generateMoves(const Player player, const Board& board) const {
+std::vector<Move> MoveGenerator::generateMoves(
+    const Player player, const Board& board,
+    const Position& en_passant_position, const uint8_t castling_rights
+) const {
     std::vector<Move> legals = filterPseudoLegals(
         player, board, 
-        generatePseudoLegals(player, board)
+        generatePseudoLegals(player, board, en_passant_position, castling_rights)
     );
 
     return std::move(legals);

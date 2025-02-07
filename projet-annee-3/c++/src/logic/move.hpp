@@ -4,7 +4,7 @@
 #include <iostream>
 
 /**
- * @brief Structure containing move data.
+ * @brief Structure containing move parameters.
  * 
  * Bitfields? In *my* modern C++ application? It's more likely than you'd think.
  */
@@ -19,5 +19,5 @@ struct Move {
     bool castle         : 1;    // Castle flag. 
 };
 
-// Prints the move data to the stream in a readable format.
+// Prints the move parameters to the stream in a readable format.
 std::ostream& operator<<(std::ostream& out, const Move& move);

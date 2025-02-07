@@ -34,15 +34,6 @@ class MoveGenerator {
     const BoardAnalysis board_analysis;
 
     /**
-     * @brief Generates all possible pseudo-legal moves from the given board state.
-     * 
-     * @param player    The player making each move.
-     * @param board     The current board state.
-     * @return A vector containing all found pseudo-legal moves.
-     */
-    std::vector<Move> generatePseudoLegals(const Player player, const Board& board) const;
-
-    /**
      * @brief Filters pseudo-legals to produce true legal moves.
      * 
      * @param player    The player making each move.
@@ -63,27 +54,46 @@ public:
     ~MoveGenerator() {};
 
     /**
+     * @brief Generates all possible pseudo-legal moves from the given board state.
+     * 
+     * @param player                The player making each move.
+     * @param board                 The current board state.
+     * @param en_passant_position   The current valid en passant target.
+     * @param castling_rights       Bitflags indicating castling rights.
+     * @return A vector containing all found pseudo-legal moves.
+     */
+    std::vector<Move> generatePseudoLegals(
+        const Player player, const Board& board,
+        const Position& en_passant_position, const uint8_t castling_rights
+    ) const;
+
+    /**
      * @brief Generates all legal moves that a player can make from the current position.
      * 
-     * @param player    The current player.
-     * @param board     The current board state.
-     * @return A vector containing the move data of all legal moves.
+     * @param player                The player making each move.
+     * @param board                 The current board state.
+     * @param en_passant_position   The current valid en passant target.
+     * @param castling_rights       Bitflags indicating castling rights.
+     * @return A vector containing all found legal moves.
      */
-    std::vector<Move> generateMoves(const Player player, const Board& board) const;
+    std::vector<Move> generateMoves(
+        const Player player, const Board& board,
+        const Position& en_passant_position, const uint8_t castling_rights
+    ) const;
 
     void _test() {
-        std::cout << "hello world" << std::endl;
-        // Board b("8/8/8/8/8/8/8/8 w K e3 0 0");
-        Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
-        // Board b("8/8/8/8/8/8/8/R3K3 w Q - 0 1");
-        std::cout << b << std::endl;
+        // std::cout << "hello world" << std::endl;
+        // // Board b("8/8/8/8/8/8/8/8 w K e3 0 0");
+        // Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
+        // // Board b("8/8/8/8/8/8/8/R3K3 w Q - 0 1");
+        // std::cout << b << std::endl;
 
-        auto moves = generatePseudoLegals(b.getCurrentPlayer(), b);
-        auto legals = filterPseudoLegals(b.getCurrentPlayer(), b, moves);
+        // auto moves = generatePseudoLegals(b.getCurrentPlayer(), b);
+        // auto legals = filterPseudoLegals(b.getCurrentPlayer(), b, moves);
 
-        for (const auto& m : legals) {
-            std::cout << m << '\n';
-        }
+        // for (const auto& m : legals) {
+        //     std::cout << m << '\n';
+        // }
 
         // std::cout << "Squares attacked by White" << std::endl;
 

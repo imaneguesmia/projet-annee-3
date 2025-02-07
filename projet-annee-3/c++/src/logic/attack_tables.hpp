@@ -57,9 +57,7 @@ class AttackTables {
      */
     BB::BitBoard generateKingAttacks(const Position& position);
 
-    /**
-     * @brief Generates attacks for each leaper piece type and stores them in the relevant lookup tables.
-     */
+    // Generates attacks for each leaper piece type and stores them in the relevant lookup tables.
     void generateLeapingAttacks();
 
     /* -- Sliding attacks -- */
@@ -80,7 +78,7 @@ class AttackTables {
         /**
          * @brief Construct a new Direction object.
          * 
-         * @param direction The direction to will handle.
+         * @param direction The cardinal direction this object will advance positions in.
          */
         Direction(D direction) {
             switch (direction) {
@@ -210,7 +208,7 @@ class AttackTables {
     std::unique_ptr<Magic> rook_magics[64];     // [Position]
 
     /**
-     * @brief Generates magic tables for rook and bishop slider pieces and stores them in the relevant
+     * Generates magic tables for rook and bishop slider pieces and stores them in the relevant
      * lookup tables.
      * 
      * Queen magic tables are unnecessary, as queen moves are merely a composite of rook and bishop moves.
