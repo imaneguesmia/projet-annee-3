@@ -51,10 +51,10 @@ std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move);
 /* ---- DECLARE class Game ---- */
 
 class Game {
-    Board board;
-
     const BoardAnalysis board_analysis;
     const MoveGenerator move_generator;
+
+    Board board;
 
     // Lookup table to handle castling rights changes.
     static constexpr uint8_t castling_table[64] = {
@@ -120,7 +120,7 @@ private:
      * @brief Calculates castling rights bits according to the given string.
      * 
      * @param castling_indicators   The string indicating castling rights, i.e. "KQq" => `0b1011`.
-     * @returns Bitflags indicating castling rights: `0b[qkQK]`.
+     * @return Bitflags indicating castling rights: `0b[qkQK]`.
      */
     uint8_t castlingRightsFromString(const std::string& castling_indicators) const;
 
@@ -128,7 +128,7 @@ private:
      * @brief Makes the given move on the board, without testing legality.
      * 
      * @param move  The parameters of the move to make.
-     * @returns The `UnmakeMove` object associated with this action.
+     * @return The `UnmakeMove` object associated with this action.
      */
     UnmakeMove makeMoveOnBoard(const Move move);
     /**
@@ -165,16 +165,23 @@ public:
      * @param from          Source square of the move.
      * @param to            Target square of the move.
      * @param promoted_to   Piece to promote to, if applicable.
-     * @returns `true` if the move is legal and was successfully made.
+     * @return `true` if the move is legal and was successfully made.
      */
     bool move(const Position& from, const Position& to, const Piece& promoted_to);
     /**
      * @brief Makes a move on the board.
      * 
      * @param move          The parameters of the move to make.
-     * @returns `true` if the move is legal and was successfully made. 
+     * @return `true` if the move is legal and was successfully made. 
      */
     bool move(const Move move);
+
+    /**
+     * @brief Undoes the last made move.
+     * 
+     * @return The last made move, or `std::nullopt` if there are no moves to undo.
+     */
+    std::optional<Move> undoLastMove();
 
     /* -- -- */
 

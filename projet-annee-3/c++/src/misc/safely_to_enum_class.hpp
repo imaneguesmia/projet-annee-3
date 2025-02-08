@@ -10,7 +10,7 @@
  * @tparam EnumType         The enum class type to convert to.
  * @tparam IntegralType     The integral type to convert from.
  * @param n                 The integral value to convert.
- * @returns The converted enum class value.
+ * @return The converted enum class value.
  * 
  * @throws `std::invalid_argument` if the given integral value is out of bounds.
  */

@@ -133,17 +133,23 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
     halfmoves++;
     fullmoves += static_cast<int>(move.player);
 
+    /* Update current player */
+
+    current_player = otherPlayer(move.player);
+
     return unmake_move;
 }
 
 void Game::unmakeMoveOnBoard(const UnmakeMove unmake_move) {
+    board.unmovePiece(unmake_move.move, unmake_move.captured);
+
     castling_rights = unmake_move.castling_rights;
     en_passant = unmake_move.en_passant;
 
     halfmoves = unmake_move.halfmoves;
     fullmoves -= static_cast<int>(unmake_move.move.player);
     
-    board.unmovePiece(unmake_move.move, unmake_move.captured);
+    current_player = unmake_move.move.player;
 }
 
 bool Game::move(const Position& from, const Position& to, const Piece& promoted_to) {
@@ -164,9 +170,21 @@ bool Game::move(const Move move) {
         unmake_move_list.push(unmake_move);
     }
 
-    return true;
+    return !is_invalid_move;
 }
 
+std::optional<Move> Game::undoLastMove() {
+    if (unmake_move_list.empty()) {
+        return std::nullopt;
+    } else {
+        const UnmakeMove& unmake_move = unmake_move_list.top();
+        unmake_move_list.pop();
+
+        unmakeMoveOnBoard(unmake_move);
+
+        return unmake_move.move;
+    }
+}
 
 const std::string Game::fen() const {
     std::ostringstream out;

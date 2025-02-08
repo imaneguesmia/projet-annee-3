@@ -1,7 +1,9 @@
 #pragma once
 
-enum class Player {
-    White,
+#include <cstdint>
+
+enum class Player : uint8_t {
+    White = 0U,
     Black,
 
     OOB, FIRST = White, LAST = Black
@@ -9,5 +11,5 @@ enum class Player {
 
 // Returns the opposing player.
 constexpr Player otherPlayer(Player player) {
-    return Player(1 - int(player));
-}
+    return player == Player::White ? Player::Black : Player::White;
+};

@@ -19,7 +19,7 @@ C++ library and will not have any entry point.
 int main(int argc, char ** argv) {
     // safely_to_enum_class<Player>(2);
 
-    std::cout << "Hello worlderferf !" << std::endl;
+    std::cout << "Initial state :" << std::endl;
 
     // Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
     // std::cout << b << std::endl;
@@ -45,26 +45,40 @@ int main(int argc, char ** argv) {
             Player::White, PType::King,
             PType::NoneType,
             false, false, false, true
+        },
+        Move {
+            Position(Square::e5), Position(Square::d4),
+            Player::Black, PType::Pawn,
+            PType::NoneType,
+            true, false, false, false
+        },
+        Move {
+            Position(Square::g1), Position(Square::f2),
+            Player::White, PType::King,
+            PType::NoneType,
+            false, false, false, false
         }
     };
 
-    // Move m {
-    //     Position(Square::e2), Position(Square::e4),
-    //     Player::White, PType::Pawn,
-    //     PType::NoneType,
-    //     false, true, false, false
-    // };
-
     for (const auto& move : m) {
         if (b.move(move)) {
-            std::cout << "Did legal move\n" << move;
+            std::cout << "\nDid legal move\n" << move;
 
             b.printBoard();
             std::cout << b.fen() << '\n';
         } else {
-            std::cout << "Move was illegal\n" << move;
+            std::cout << "\nMove was illegal\n" << move;
         }
     }
+
+    for (auto lm = b.undoLastMove(); lm != std::nullopt; lm = b.undoLastMove()) {
+        std::cout << "\nUndid last move\n";
+
+        b.printBoard();
+        std::cout << b.fen() << '\n';
+    }
+
+    std::cout << "Done undoing all moves!\n";
 
     // b.makeMove({
     //     Position::e1, Position::g1,

@@ -57,7 +57,7 @@ class Board {
      * @param move                  The parameters of the move.
      * @param captured_type         The type of piece captured. If not specifically given, it will be
      *                              determined and returned.
-     * @returns The type of piece captured, if any (`PType::NoneType` if no piece captured).
+     * @return The type of piece captured, if any (`PType::NoneType` if no piece captured).
      */
     PType _movePieceHelper(const Move move, std::optional<PType> captured_type);
 
@@ -81,7 +81,7 @@ public:
      * @brief Moves a piece on the board according to the given parameters.
      * 
      * @param move  The parameters of the move.
-     * @returns The type of piece captured, if any (`PType::NoneType` if no piece captured).
+     * @return The type of piece captured, if any (`PType::NoneType` if no piece captured).
      */
     PType movePiece(const Move move) { return _movePieceHelper(move, std::nullopt); };
     /**

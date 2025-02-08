@@ -6,7 +6,7 @@
 
 // Enum over piece type, i.e. pieces without player information.
 enum class PType : uint8_t {
-    Pawn, Knight, Bishop,
+    Pawn = 0U, Knight, Bishop,
     Rook, Queen, King,
 
     NoneType,  // Special value indicating no piece.
