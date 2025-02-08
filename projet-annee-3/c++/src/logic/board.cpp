@@ -1,5 +1,8 @@
 #include "board.hpp"
 
+#include "../misc/safely_to_enum_class.hpp"
+#include "../misc/increment_enum.hpp"
+
 #include <sstream>
 #include <format>
 #include <cstring>
@@ -28,7 +31,7 @@ void Board::setPiecePositions(const std::string& piece_positions) {
                     , c));
             }
         } else {
-            setPieceAt(position_index, piece);
+            setPieceAt(safely_to_enum_class<Square>(position_index), piece);
         }
 
         if (position_index / 8 != row) {
@@ -39,13 +42,6 @@ void Board::setPiecePositions(const std::string& piece_positions) {
     }
 }
 
-void Board::setPieceAt(const Position& position, const Piece& piece) {
-    BB::set_bit(piece_bb[int(piece.getPlayer())][piece.getType()], position);
-
-    BB::set_bit(occupancy_bb[int(piece.getPlayer())], position);
-    BB::set_bit(occupancy_bb[2], position);
-}
-
 Piece Board::pieceAt(const Position& position) const {
     for (int i = 0; i < 2; i++) {
         for (int p_type = Piece::Pawn; p_type < Piece::NoneType; p_type++) {
@@ -54,7 +50,18 @@ Piece Board::pieceAt(const Position& position) const {
         }
     }
 
-    return Piece::NoneId;
+    return Piece();
+}
+
+void Board::setPieceAt(const Position& position, const Piece& piece) {
+    BB::set_bit(piece_bb[int(piece.getPlayer())][piece.getType()], position);
+
+    BB::set_bit(occupancy_bb[int(piece.getPlayer())], position);
+    BB::set_bit(occupancy_bb[2], position);
+}
+
+void Board::movePieceByBitboard(const Piece& piece, const BB::BitBoard fromTo_bb) {
+    // piece_bb[int(piece.getPlayer())][piece.getType()]
 }
 
 std::string Board::getPositionString() const {
@@ -88,7 +95,7 @@ std::string Board::getPositionString() const {
         if (row != 7) out << '/';
     }
 
-    return std::move(out.str());
+    return out.str();
 }
 
 std::ostream& operator<<(std::ostream& out, const Board& board) {

@@ -1,5 +1,7 @@
 #include "board_analysis.hpp"
 
+#include "../misc/safely_to_enum_class.hpp"
+
 /* ---- DEFINE class BoardAnalysis ---- */
 
 bool BoardAnalysis::isSquareAttacked(
@@ -31,7 +33,8 @@ bool BoardAnalysis::isSquareAttacked(
 }
 
 bool BoardAnalysis::isInCheck(const Player player, const Board& board) const {
-    Position king_square = BB::leastSignificantBitIndex(board.bitboard(Piece(Piece::King, player)));
+    int king_index = BB::leastSignificantBitIndex(board.bitboard(Piece(Piece::King, player)));
+    Position king_square {safely_to_enum_class<Square>(king_index)};
 
     return isSquareAttacked(king_square, otherPlayer(player), board);
 }

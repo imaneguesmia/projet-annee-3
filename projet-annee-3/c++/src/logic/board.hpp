@@ -47,11 +47,21 @@ public:
 
     /* -- Getters and setters -- */
 
+    // Gets the piece at the given position on the board.
+    Piece pieceAt(const Position& position) const;
     // Places a piece at a given position.
     void setPieceAt(const Position& position, const Piece& piece);
 
     // Makes the given move. Note that this modifies the board state.
     void makeMove(const Move move);
+
+    /**
+     * @brief Moves a piece on the board according to a given bitboard.
+     * 
+     * @param piece      The piece to move.
+     * @param fromTo_bb  Bitboard indicating source and target squares.
+     */
+    void movePieceByBitboard(const Piece& piece, const BB::BitBoard fromTo_bb);
     
     /* -- Board operations -- */
 
@@ -78,9 +88,6 @@ public:
     BB::BitBoard occupancy() const { return occupancy_bb[2]; };
 
     /* -- State exporting -- */
-
-    // Gets the piece at the given position on the board.
-    Piece pieceAt(const Position& position) const;
 
     // Gets the FEN symbol of the piece at the given position on the board.
     char pieceFenAt(const Position& position) const { return pieceAt(position).fen(); };

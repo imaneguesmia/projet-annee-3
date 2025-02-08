@@ -5,6 +5,8 @@
 #include "position.hpp"
 #include "player.hpp"
 
+#include "../misc/enum_array.hpp"
+
 #include <vector>
 #include <memory>
 
@@ -30,9 +32,9 @@ class AttackTables {
     /* -- Leaping attacks -- */
 
     // Lookup tables for leaper pieces.
-    BB::BitBoard pawn_attacks[2][64];   // [Player][Position]
-    BB::BitBoard knight_attacks[64];    // [Position]
-    BB::BitBoard king_attacks[64];      // [Position]
+    enum_array<Player, enum_array<Square, BB::BitBoard>> pawn_attacks;   // [Player][Position]
+    enum_array<Square, BB::BitBoard> knight_attacks;    // [Position]
+    enum_array<Square, BB::BitBoard> king_attacks;      // [Position]
 
     /**
      * @brief Generates all possible pawn attacks from the given position for the given player.
@@ -204,8 +206,8 @@ class AttackTables {
     );
 
     // Lookup table for magic entries.
-    std::unique_ptr<Magic> bishop_magics[64];   // [Position]
-    std::unique_ptr<Magic> rook_magics[64];     // [Position]
+    enum_array<Square, std::unique_ptr<Magic>> bishop_magics;   // [Position]
+    enum_array<Square, std::unique_ptr<Magic>> rook_magics;     // [Position]
 
     /**
      * Generates magic tables for rook and bishop slider pieces and stores them in the relevant
@@ -225,7 +227,7 @@ class AttackTables {
      */
     BB::BitBoard getSlidingAttackTable(
         const Position& position, BB::BitBoard occupancy,
-        const std::unique_ptr<Magic> * magics
+        const enum_array<Square, std::unique_ptr<Magic>>& magics
     ) const;
 
 public:
@@ -247,7 +249,7 @@ public:
     constexpr BB::BitBoard getPawnAttackBitboard(
         Player player, const Position& position
     ) const {
-        return pawn_attacks[int(player)][position];
+        return pawn_attacks[player][position.getPositionSquare()];
     }
     /**
      * @brief Gets the attack bitboard of a knight.
@@ -256,7 +258,7 @@ public:
      * @return A bitboard indicating all attack positions of the knight.
      */
     constexpr BB::BitBoard getKnightAttackBitboard(const Position& position) const {
-        return knight_attacks[position];
+        return knight_attacks[position.getPositionSquare()];
     }
     /**
      * @brief Gets the attack bitboard of a king.
@@ -265,7 +267,7 @@ public:
      * @return A bitboard indicating all attack positions of the king.
      */
     constexpr BB::BitBoard getKingAttackBitboard(const Position& position) const {
-        return king_attacks[position];
+        return king_attacks[position.getPositionSquare()];
     }
 
     /**

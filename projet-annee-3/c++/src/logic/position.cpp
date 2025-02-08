@@ -1,10 +1,17 @@
 #include "position.hpp"
 
+#include "../misc/safely_to_enum_class.hpp"
+#include "../misc/increment_enum.hpp"
+
 #include <stdexcept>
 #include <format>
 #include <cstring>
 
 /* -- DEFINE class Position -- */
+
+Position::Position(int index) {
+    setPositionIndex(safely_to_enum_class<Square>(index));
+}
 
 void Position::setPosition(int row, int col) {
     if (row < 0 || row > 7 || col < 0 || col > 7) {
@@ -14,23 +21,12 @@ void Position::setPosition(int row, int col) {
     position_index = Square((row * 8) + col);
 }
 
-void Position::setPositionIndex(int index) {
-    if (index < Position::a8 || index > Position::Invalid) {
-        throw std::invalid_argument(std::format("Invalid position index: {}", index));
-    }
-
-    position_index = index;
-}
-
 void Position::getPositionString(char out[3]) const {
     if (!isValid()) {
         strcpy(out, "-");
     } else {
-        int row = position_index / 8;
-        int col = position_index % 8;
-
-        out[0] = 'a' + col;
-        out[1] = '8' - row;
+        out[0] = 'a' + getColumn();
+        out[1] = '8' - getRow();
         out[2] = '\0';
     }
 };
@@ -53,6 +49,28 @@ void Position::setPositionString(const char string[3]) {
         position_index = Square(row*8 + col);
     }
 }
+
+Position& Position::operator++() {
+    increment_enum(position_index);
+    return *this;
+};
+Position Position::operator++(int) {
+    Position previous = *this;
+    operator++();
+    return previous;
+};
+
+// Decrements the position to the previous index, i.e. e7->d7, a5->h6.
+
+Position& Position::operator--() {
+    decrement_enum(position_index);
+    return *this;
+};
+Position Position::operator--(int) {
+    Position previous = *this;
+    operator--();
+    return previous;
+};
 
 std::ostream& operator<<(std::ostream& out, const Position& position) {
     char string[3];

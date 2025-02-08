@@ -7,8 +7,8 @@
 
 #define TO_LOWER_CASE 32
 
-Piece::Id Piece::fenToId(char fen) {
-    int out;
+Piece Piece::fromFen(char fen) {
+    Type out;
 
     bool is_black = islower(fen);
     int type = fen - (TO_LOWER_CASE * is_black);
@@ -21,11 +21,10 @@ Piece::Id Piece::fenToId(char fen) {
         case 'Q': out = Type::Queen; break;
         case 'K': out = Type::King; break;
 
-        default: return Id::NoneId;
+        default: return Piece();
     }
 
-    out += 6 * is_black;
-    return Id(out);
+    return Piece(out, is_black ? Player::Black : Player::White);
 }
 
 char Piece::fen() const {

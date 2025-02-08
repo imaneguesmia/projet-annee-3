@@ -1,5 +1,7 @@
 #include "attack_tables.hpp"
 
+#include "../misc/increment_enum.hpp"
+
 #ifndef FIND_NEW_MAGICS
 #include "magic_numbers.hpp"
 #endif
@@ -94,8 +96,8 @@ BB::BitBoard AttackTables::generateKingAttacks(const Position& position) {
 }
 
 void AttackTables::generateLeapingAttacks() {
-    for (int position = Position::a8; position < Position::Invalid; position++) {
-        for (int player = 0; player < 2; player++) {
+    for (Square position = Square::FIRST; position < Square::LAST; increment_enum(position)) {
+        for (Player player = Player::FIRST; player < Player::LAST; increment_enum(player)) {
             pawn_attacks[player][position] = generatePawnAttacks(Player(player), position);
         }
 
@@ -241,13 +243,13 @@ std::unique_ptr<AttackTables::Magic> AttackTables::generateMagicTableForPosition
         }
     }
 
-    return std::move(magic);
+    return magic;
 }
 
 void AttackTables::generateMagicTables() {
     std::srand(std::time(0));
 
-    for (int position = Position::a8; position < Position::Invalid; position++) {
+    for (Square position = Square::FIRST; position < Square::LAST; increment_enum(position)) {
         auto bishop_magic = generateMagicTableForPosition(position, 0b01010101);
         auto rook_magic = generateMagicTableForPosition(position, 0b10101010);
 
@@ -258,9 +260,9 @@ void AttackTables::generateMagicTables() {
 
 BB::BitBoard AttackTables::getSlidingAttackTable(
     const Position& position, BB::BitBoard occupancy,
-    const std::unique_ptr<Magic> * magics
+    const enum_array<Square, std::unique_ptr<Magic>>& magics
 ) const {
-    auto magic = *magics[position];
+    auto magic = *magics[position.getPositionSquare()];
 
     // Apply the hashing calculation to find the index of the attack bitboard.
     occupancy &= magic.relevance_mask;      // Get the relevant blockers

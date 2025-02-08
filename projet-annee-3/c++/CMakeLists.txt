@@ -10,6 +10,7 @@ project(
 # Directories
 
 set(LOGIC "logic")
+set(MISC "misc")
 
 # Libraries
 # NOTE : Even if it's annoying, please list EVERY source file required for each target!
@@ -30,6 +31,14 @@ add_library(
     "src/${LOGIC}/game.cpp" "src/${LOGIC}/game.hpp"
 )
 target_compile_features(logic PUBLIC cxx_std_23)
+target_compile_options(logic PRIVATE -Wall -Wextra -Wpedantic)
+
+add_library(
+    misc INTERFACE
+    "src/${MISC}/enum_array.hpp"
+    "src/${MISC}/increment_enum.hpp"
+    "src/${MISC}/safely_to_enum_class.hpp"
+)
 
 # Comment out this line if you want to use the pregenerated magics
 # target_compile_definitions(logic PRIVATE FIND_NEW_MAGICS)
@@ -37,3 +46,4 @@ target_compile_features(logic PUBLIC cxx_std_23)
 # Comment out the next lines if you don't want to build the testing executable
 add_executable(testing "src/testing.cpp")
 target_link_libraries(testing PRIVATE logic)
+target_link_libraries(testing PRIVATE misc)

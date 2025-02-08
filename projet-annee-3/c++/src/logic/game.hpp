@@ -33,14 +33,16 @@ public:
  * for undoing than saving a copy of the entire state.
  */
 struct UnmakeMove {
-    // The made move.
-    Move move;
+    Move move;                      // The made move.
+    Piece::Type captured    : 4;    // `Piece::Type` of captured piece (`Piece::NoneType` if no capture).
 
-    // Irreversibles
-    uint8_t castling_rights;
-    Position en_passant;
-    size_t halfmoves;
+    uint8_t castling_rights : 4;    // Bitflags indicating previous castling rights: `0b[qkQK]`.
+    uint8_t en_passant;             // Previous valid en passant target.
+
+    size_t halfmoves;               // Halfmove clock before the move.
 };
+
+std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move);
 
 /* ---- END DECLARE ---- */
 
@@ -134,8 +136,15 @@ private:
      * @brief Makes the given move on the board, without testing legality.
      * 
      * @param move  The parameters of the move to make.
+     * @returns The `UnmakeMove` object associated with this action.
      */
-    void makeMoveOnBoard(const Move move);
+    UnmakeMove makeMoveOnBoard(const Move move);
+    /**
+     * @brief Unmakes a move.
+     * 
+     * @param unmake_move   The associated `UnmakeMove` object.
+     */
+    void unmakeMoveOnBoard(const UnmakeMove unmake_move);
 
 public:
     Game(const std::string& fen) : Game(

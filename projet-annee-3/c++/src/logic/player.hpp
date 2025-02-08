@@ -2,7 +2,9 @@
 
 enum class Player {
     White,
-    Black
+    Black,
+
+    FIRST = White, LAST = Black
 };
 
 // Returns the opposing player.

@@ -57,7 +57,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     // Special attack validation: can only do this move if attacking something.
                     BB::BitBoard attacks = at->getPawnAttackBitboard(player, from) & board.occupancy(other);
 
-                    en_passant = en_passant_position != Position::Invalid;
+                    en_passant = en_passant_position.isValid();
                     en_passant *= at->getPawnAttackBitboard(player, from) & BB::new_at(en_passant_position);
 
                     capture = attacks | en_passant;
@@ -90,9 +90,10 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                             (castling_rights & 1ULL) &&
                             !board_analysis.isSquareAttacked(from, other, board) && 
                             !board_analysis.isSquareAttacked(between, other, board) &&
-                            !BB::get_bit(board.occupancy(), between) && !BB::get_bit(board.occupancy(), target)
+                            !BB::get_bit(board.occupancy(), static_cast<int>(between)) &&
+                            !BB::get_bit(board.occupancy(), static_cast<int>(target))
                         ) {
-                            BB::set_bit(castle, target);
+                            BB::set_bit(castle, static_cast<int>(target));
                         }
                     }
 
@@ -101,6 +102,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     pseudo_legals = attacks | castle;
                     capture = attacks & board.occupancy(other);
                 } break;
+                default: break;
             }
 
             /* Extract moves from pseudo-legal bitboard */
@@ -111,7 +113,8 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
 
                 move.source      = from;
                 move.target      = to;
-                move.piece       = piece.getId();
+                move.player      = player;
+                move.p_type      = Piece::Type(p_type);
                 move.capture     = target & capture;
                 move.double_push = target & double_push;
                 move.en_passant  = target & en_passant;
@@ -122,11 +125,11 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     for (int i = Piece::Knight; i <= Piece::Queen; i++) {
                         uint8_t promoted_piece = int(player)*6 + i;
 
-                        move.promotion = promoted_piece;
+                        move.promotion = Piece::Type(promoted_piece);
                         moves.push_back(move);
                     }
                 } else {
-                    move.promotion = Piece::NoneId;
+                    move.promotion = Piece::NoneType;
                     moves.push_back(move);
                 }
 
@@ -139,7 +142,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
         }
     }
 
-    return std::move(moves);
+    return moves;
 }
 
 std::vector<Move> MoveGenerator::filterPseudoLegals(
@@ -157,7 +160,7 @@ std::vector<Move> MoveGenerator::filterPseudoLegals(
         if (!board_analysis.isInCheck(player, *copy)) legals.push_back(move);
     }
 
-    return std::move(legals);
+    return legals;
 };
 
 std::vector<Move> MoveGenerator::generateMoves(
@@ -169,7 +172,7 @@ std::vector<Move> MoveGenerator::generateMoves(
         generatePseudoLegals(player, board, en_passant_position, castling_rights)
     );
 
-    return std::move(legals);
+    return legals;
 }
 
 /* ---- END DEFINE ---- */

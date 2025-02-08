@@ -2,6 +2,23 @@
 
 #include <sstream>
 
+/* ---- DEFINE struct UnmakeMove ---- */
+
+std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move) {
+    Piece captured {unmake_move.captured, otherPlayer(unmake_move.move.player)};
+
+    out << ">>        Move        <<\n" << unmake_move.move << ">>  Unmake move data  <<\n";
+
+    out << "Captured ?        " << captured.fen() << '\n';
+    out << "Prev castle ?     " << int(unmake_move.castling_rights) << '\n';
+    out << "Prev en passant ? " << Position(unmake_move.en_passant) << '\n';
+    out << "Prev halfmoves ?  " << unmake_move.halfmoves << '\n';
+
+    return out;
+}
+
+/* ---- END DEFINE ---- */
+
 /* ---- DEFINE class Game ---- */
 
 const Game::GameState Game::gameStateFromFEN(const std::string& fen) const {
@@ -44,7 +61,7 @@ const Game::GameState Game::gameStateFromFEN(const std::string& fen) const {
 
     ss >> game_state.halfmoves >> game_state.fullmoves;
 
-    return std::move(game_state);
+    return game_state;
 }
 
 // Mem O'Sprite
@@ -81,50 +98,55 @@ uint8_t Game::castlingRightsFromString(const std::string& castling_indicators) c
 BB::BitBoard Game::rookMovementWhenCastling(const Position& king_target) const {
     BB::BitBoard rook_movement = 0ULL;
 
-    switch (king_target) {
-        case Position::g1:  // White king's side
-            BB::set_bit(rook_movement, Position::h1);
-            BB::set_bit(rook_movement, Position::f1);
+    switch (king_target.getPositionSquare()) {
+        case Square::g1:  // White king's side
+            BB::set_bit(rook_movement, static_cast<int>(Square::h1));
+            BB::set_bit(rook_movement, static_cast<int>(Square::f1));
         break;
-        case Position::c1:  // White queen's side
-            BB::set_bit(rook_movement, Position::a1);
-            BB::set_bit(rook_movement, Position::d1);
+        case Square::c1:  // White queen's side
+            BB::set_bit(rook_movement, static_cast<int>(Square::a1));
+            BB::set_bit(rook_movement, static_cast<int>(Square::d1));
         break;
-        case Position::g8:  // Black king's side
-            BB::set_bit(rook_movement, Position::h8);
-            BB::set_bit(rook_movement, Position::f8);
+        case Square::g8:  // Black king's side
+            BB::set_bit(rook_movement, static_cast<int>(Square::h8));
+            BB::set_bit(rook_movement, static_cast<int>(Square::f8));
         break;
-        case Position::c8:  // Black queen's side
-            BB::set_bit(rook_movement, Position::a8);
-            BB::set_bit(rook_movement, Position::d8);
+        case Square::c8:  // Black queen's side
+            BB::set_bit(rook_movement, static_cast<int>(Square::a8));
+            BB::set_bit(rook_movement, static_cast<int>(Square::d8));
         break;
+        default: break;
     }
 
     return rook_movement;
 }
 
-void Game::makeMoveOnBoard(const Move move) {
+UnmakeMove Game::makeMoveOnBoard(const Move move) {
+    UnmakeMove unmake_move;
+
+    unmake_move.move = move;
+    unmake_move.castling_rights = castling_rights;
+    unmake_move.en_passant = en_passant;
+    unmake_move.halfmoves = halfmoves;
+
     BB::BitBoard from_bb = BB::new_at(move.source), to_bb = BB::new_at(move.target);
     BB::BitBoard fromTo_bb = from_bb | to_bb;
 
-    Piece piece {Piece::Id(move.piece)};
-    Piece::Type p_type = piece.getType();
+    int player_index = int(move.player);
+    int other_index = int(otherPlayer(move.player));
 
-    Player player = piece.getPlayer();
-
-    int player_index = int(player);
-    int other_index = int(otherPlayer(player));
-
-    board.piece_bb[player_index][p_type] ^= fromTo_bb;
+    board.piece_bb[player_index][move.p_type] ^= fromTo_bb;
     board.occupancy_bb[player_index] ^= fromTo_bb;
 
     if (move.capture) {
+        en_passant.setPositionInvalid();
+
         // Determine the type of the captured piece.
         Piece::Type captured_type;
 
         if (move.en_passant) {
             // Move the "captured piece" position up or down depending on the player color
-            to_bb = (to_bb >> 8) << (player_index << 4);
+            to_bb = (to_bb << 8) >> (player_index << 4);
             
             // Remove the captured pawn from global occupancy bitboard.
             board.occupancy_bb[2] ^= to_bb;
@@ -140,6 +162,9 @@ void Game::makeMoveOnBoard(const Move move) {
             }
         }
 
+        // Save the captured piece type.
+        unmake_move.captured = captured_type;
+
         // Remove the captured piece from the relevant bitboards.
         board.piece_bb[other_index][captured_type] ^= to_bb;
         board.occupancy_bb[other_index] ^= to_bb;
@@ -151,6 +176,9 @@ void Game::makeMoveOnBoard(const Move move) {
         // Reset halfmoves on capture.
         halfmoves = 0;
     } else {
+        // No capture.
+        unmake_move.captured = Piece::NoneType;
+
         // If no capture, move the piece on the global occupancy bitboard.
         board.occupancy_bb[2] ^= fromTo_bb;
 
@@ -164,7 +192,7 @@ void Game::makeMoveOnBoard(const Move move) {
         }
 
         if (move.double_push) {
-            en_passant = move.target + (player == Player::White ? 8 : -8);
+            en_passant = move.target + (move.player == Player::White ? 8 : -8);
         } else {
             en_passant.setPositionInvalid();
         }
@@ -172,11 +200,11 @@ void Game::makeMoveOnBoard(const Move move) {
         // If pieces moved on the relevant squares, update castling rights accordingly.
         castling_rights &= castling_table[move.source] & castling_table[move.target];
         // Reset halfmoves on pawn move.
-        halfmoves *= p_type != Piece::Pawn;
+        halfmoves *= move.p_type != Piece::Pawn;
     }
 
-    if (move.promotion != Piece::NoneId) {
-        Piece promoted_to = Piece(Piece::Id(move.promotion));
+    if (move.promotion != Piece::NoneType) {
+        Piece promoted_to = Piece(move.p_type, move.player);
 
         board.piece_bb[player_index][Piece::Pawn] ^= to_bb;
         board.piece_bb[player_index][promoted_to.getType()] ^= to_bb;
@@ -184,10 +212,30 @@ void Game::makeMoveOnBoard(const Move move) {
 
     halfmoves++;
     fullmoves += player_index;
+
+    return unmake_move;
+}
+
+void Game::unmakeMoveOnBoard(const UnmakeMove unmake_move) {
+    castling_rights = unmake_move.castling_rights;
+    en_passant = unmake_move.en_passant;
+    halfmoves = unmake_move.halfmoves;
+
+
 }
 
 bool Game::move(const Position& from, const Position& to, const Piece& promoted_to) {
     
+}
+
+bool Game::move(const Move move) {
+    UnmakeMove unmake_move = makeMoveOnBoard(move);
+
+    std::cout << unmake_move << '\n';
+
+
+
+    return true;
 }
 
 
@@ -226,7 +274,7 @@ const std::string Game::fen() const {
 
     out << ' ' << halfmoves << ' ' << fullmoves;
 
-    return std::move(out.str());
+    return out.str();
 }
 
 /* ---- END DEFINE ---- */

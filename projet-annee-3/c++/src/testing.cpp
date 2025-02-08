@@ -20,7 +20,26 @@ int main(int argc, char ** argv) {
     // Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
     // std::cout << b << std::endl;
 
-    Game b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
+    Game b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ e6 0 1");
+
+    b.printBoard();
+    std::cout << b.fen() << '\n';
+
+    // b.move({
+    //     Position::e1, Position::g1,
+    //     Player::White, Piece::King,
+    //     Piece::NoneType,
+    //     false, false, false, true
+    // });
+
+    Move m {
+        Position(Square::d5), Position(Square::e6),
+        Player::White, Piece::Pawn,
+        Piece::NoneType,
+        true, false, true, false
+    };
+
+    b.move(m);
 
     b.printBoard();
     std::cout << b.fen() << '\n';
