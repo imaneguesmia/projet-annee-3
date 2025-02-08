@@ -30,6 +30,14 @@ class Board {
     // Sets pieces in the bitboards according to the given FEN string.
     void setPiecePositions(const std::string& piece_positions);
 
+    /**
+     * @brief Determines the source and target positions of the rook when castling.
+     * 
+     * @param king_target           The target position of the king when castling.
+     * @return A bitboard indicating the source and target positions of the rook.
+     */
+    BB::BitBoard rookMovementWhenCastling(const Position& king_target) const;
+
 public:
     // Constructs a new Board object from the given position string.
     Board(const std::string& piece_positions) { setPiecePositions(piece_positions); };
@@ -55,16 +63,13 @@ public:
     // Places a piece at a given position.
     void setPieceAt(const Position& position, const Piece& piece);
 
-    // Makes the given move. Note that this modifies the board state.
-    void makeMove(const Move move);
-
     /**
-     * @brief Moves a piece on the board according to a given bitboard.
+     * @brief Moves a piece on the board according to the given parameters.
      * 
-     * @param piece      The piece to move.
-     * @param fromTo_bb  Bitboard indicating source and target squares.
+     * @param move  The parameters of the move.
+     * @returns The type of piece captured, if any (`PType::NoneType` if no piece captured).
      */
-    void movePieceByBitboard(const Piece& piece, const BB::BitBoard fromTo_bb);
+    PType movePiece(const Move move);
     
     /* -- Board operations -- */
 

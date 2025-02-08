@@ -60,8 +60,105 @@ void Board::setPieceAt(const Position& position, const Piece& piece) {
     BB::set_bit(global_occupancy_bb, position);
 }
 
-void Board::movePieceByBitboard(const Piece& piece, const BB::BitBoard fromTo_bb) {
-    // piece_bb[int(piece.getPlayer())][piece.getType()]
+BB::BitBoard Board::rookMovementWhenCastling(const Position& king_target) const {
+    BB::BitBoard rook_movement = 0ULL;
+
+    switch (king_target.getPositionSquare()) {
+        case Square::g1:  // White king's side
+            BB::set_bit(rook_movement, static_cast<int>(Square::h1));
+            BB::set_bit(rook_movement, static_cast<int>(Square::f1));
+        break;
+        case Square::c1:  // White queen's side
+            BB::set_bit(rook_movement, static_cast<int>(Square::a1));
+            BB::set_bit(rook_movement, static_cast<int>(Square::d1));
+        break;
+        case Square::g8:  // Black king's side
+            BB::set_bit(rook_movement, static_cast<int>(Square::h8));
+            BB::set_bit(rook_movement, static_cast<int>(Square::f8));
+        break;
+        case Square::c8:  // Black queen's side
+            BB::set_bit(rook_movement, static_cast<int>(Square::a8));
+            BB::set_bit(rook_movement, static_cast<int>(Square::d8));
+        break;
+        default: break;
+    }
+
+    return rook_movement;
+}
+
+PType Board::movePiece(const Move move) {
+    Player other_player = otherPlayer(move.player);
+
+    BB::BitBoard from_bb = BB::new_at(move.source), to_bb = BB::new_at(move.target);
+    BB::BitBoard fromTo_bb = from_bb | to_bb;
+
+    /* Move the moved piece */
+
+    // Flip source and target bits in occupancy bitboards.
+    piece_bb[move.player][move.p_type] ^= fromTo_bb;
+    occupancy_bb[move.player] ^= fromTo_bb;
+
+    // If the destination has a piece (i.e. non-en passant capture), the target bit will be flipped to 0 here.
+    // It will be flipped again back to 1 when treating captures.
+    global_occupancy_bb ^= fromTo_bb;
+
+    PType captured_type = PType::NoneType;
+
+    /* Handle castling */
+
+    if (move.castle) {
+        /* Move the rook after castling */
+
+        BB::BitBoard rook_movement = rookMovementWhenCastling(move.target);
+
+        // Flip source and target bits for rook movement.
+        piece_bb[move.player][PType::Rook] ^= rook_movement;
+        occupancy_bb[move.player] ^= rook_movement;
+        global_occupancy_bb ^= rook_movement;
+    }
+
+    else {
+        /* Handle the captured piece */
+
+        if (move.capture) {
+            /* Find captured piece type */
+
+            if (move.en_passant) {
+                // Move the "captured piece" position up or down depending on the player color.
+                to_bb = (to_bb << 8) >> (static_cast<int>(move.player) << 4);
+
+                // Captured piece has to be a pawn.
+                captured_type = PType::Pawn;
+            } else {
+                // Find opposing piece that is captured.
+                for (PType type = PType::FIRST; type != PType::OOB; increment_enum(type)) {
+                    if (BB::get_bit(piece_bb[other_player][type], move.target)) {
+                        captured_type = PType(type);
+
+                        break;
+                    }
+                }
+            }
+
+            /* Remove captured piece */
+
+            // Flip the captured piece bit in occupancy bitboards.
+            piece_bb[other_player][captured_type] ^= to_bb;
+
+            // If 0 at this bit previously (non-en passant capture, see above) flipped back to 1.
+            global_occupancy_bb ^= to_bb;
+        }
+
+        /* Promotion */
+
+        if (move.promotion != PType::NoneType) {
+            // Replace pawn with the new piece type
+            piece_bb[move.player][PType::Pawn] ^= to_bb;
+            piece_bb[move.player][move.p_type] ^= to_bb;
+        }
+    }
+
+    return captured_type;
 }
 
 std::string Board::getPositionString() const {

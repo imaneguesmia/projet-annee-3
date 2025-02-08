@@ -155,7 +155,7 @@ std::vector<Move> MoveGenerator::filterPseudoLegals(
     for (const auto& move : pseudo_legals) {
         // [TODO] The laziest implementation of copy-and-make I've ever seen. Can probably be improved.
         copy = std::make_unique<Board>(board);
-        copy->makeMove(move);
+        copy->movePiece(move);
 
         if (!board_analysis.isInCheck(player, *copy)) legals.push_back(move);
     }

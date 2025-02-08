@@ -125,14 +125,6 @@ private:
     uint8_t castlingRightsFromString(const std::string& castling_indicators) const;
 
     /**
-     * @brief Determines the source and target positions of the rook when castling.
-     * 
-     * @param king_target           The target position of the king when castling.
-     * @return A bitboard indicating the source and target positions of the rook.
-     */
-    BB::BitBoard rookMovementWhenCastling(const Position& king_target) const;
-
-    /**
      * @brief Makes the given move on the board, without testing legality.
      * 
      * @param move  The parameters of the move to make.
