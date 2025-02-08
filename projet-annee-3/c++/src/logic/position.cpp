@@ -10,7 +10,8 @@
 /* -- DEFINE class Position -- */
 
 Position::Position(int index) {
-    setPositionIndex(safely_to_enum_class<Square>(index));
+    if (index == static_cast<int>(Square::Invalid)) setPositionInvalid();
+    else setPositionIndex(safely_to_enum_class<Square>(index));
 }
 
 void Position::setPosition(int row, int col) {

@@ -12,6 +12,7 @@
 #include <iostream>
 #include <bitset>
 #include <string>
+#include <optional>
 
 /* ---- DECLARE class Board ---- */
 
@@ -27,6 +28,17 @@
  * See also: FEN Notation (https://www.chess.com/terms/fen-chess)
  */
 class Board {
+    /* -- Bitboards -- */
+
+    // Each bitboard represents the occupancy of a certain piece type or player.
+    // For example, if the bit 32 is set on the bitboard for white bishops,
+    // that means that there is a white bishop on position 32 of the board.
+    enum_array<Player, enum_array<PType, BB::BitBoard>> piece_bb;     // [Player][Piece::Type]
+    enum_array<Player, BB::BitBoard> occupancy_bb;                    // [Player]
+    BB::BitBoard global_occupancy_bb;                                 // (Both players/all pieces)
+
+    /* -- Helpers -- */
+
     // Sets pieces in the bitboards according to the given FEN string.
     void setPiecePositions(const std::string& piece_positions);
 
@@ -38,6 +50,17 @@ class Board {
      */
     BB::BitBoard rookMovementWhenCastling(const Position& king_target) const;
 
+    /**
+     * @brief Moves a piece on the board according to the given parameters. Used internally
+     * for both making and unmaking moves, since the logic of the two is nearly identical.
+     * 
+     * @param move                  The parameters of the move.
+     * @param captured_type         The type of piece captured. If not specifically given, it will be
+     *                              determined and returned.
+     * @returns The type of piece captured, if any (`PType::NoneType` if no piece captured).
+     */
+    PType _movePieceHelper(const Move move, std::optional<PType> captured_type);
+
 public:
     // Constructs a new Board object from the given position string.
     Board(const std::string& piece_positions) { setPiecePositions(piece_positions); };
@@ -46,15 +69,6 @@ public:
     Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR") {};
 
     ~Board() {};
-
-    /* -- Bitboards -- */
-
-    // Each bitboard represents the occupancy of a certain piece type or player.
-    // For example, if the bit 32 is set on the bitboard for white bishops,
-    // that means that there is a white bishop on position 32 of the board.
-    enum_array<Player, enum_array<PType, BB::BitBoard>> piece_bb;     // [Player][Piece::Type]
-    enum_array<Player, BB::BitBoard> occupancy_bb;                    // [Player]
-    BB::BitBoard global_occupancy_bb;                                 // (Both players/all pieces)
 
     /* -- Getters and setters -- */
 
@@ -69,7 +83,14 @@ public:
      * @param move  The parameters of the move.
      * @returns The type of piece captured, if any (`PType::NoneType` if no piece captured).
      */
-    PType movePiece(const Move move);
+    PType movePiece(const Move move) { return _movePieceHelper(move, std::nullopt); };
+    /**
+     * @brief Undoes the piece move with the given parameters.
+     * 
+     * @param move           The parameters of the move to undo.
+     * @param captured_type  The type of piece captured, if any (`PType::NoneType` if no piece captured).
+     */
+    void unmovePiece(const Move move, PType captured_type) { _movePieceHelper(move, captured_type); };
     
     /* -- Board operations -- */
 

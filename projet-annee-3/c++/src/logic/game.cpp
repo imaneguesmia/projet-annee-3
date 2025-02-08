@@ -139,15 +139,11 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
 void Game::unmakeMoveOnBoard(const UnmakeMove unmake_move) {
     castling_rights = unmake_move.castling_rights;
     en_passant = unmake_move.en_passant;
+
     halfmoves = unmake_move.halfmoves;
-
-    const Move last_move = unmake_move.move;
-
-    BB::BitBoard from_bb = BB::new_at(last_move.source), to_bb = BB::new_at(last_move.target);
-    BB::BitBoard fromTo_bb = from_bb | to_bb;
-
-    board.piece_bb[last_move.player][last_move.p_type] ^= fromTo_bb;
-
+    fullmoves -= static_cast<int>(unmake_move.move.player);
+    
+    board.unmovePiece(unmake_move.move, unmake_move.captured);
 }
 
 bool Game::move(const Position& from, const Position& to, const Piece& promoted_to) {
@@ -157,9 +153,16 @@ bool Game::move(const Position& from, const Position& to, const Piece& promoted_
 bool Game::move(const Move move) {
     UnmakeMove unmake_move = makeMoveOnBoard(move);
 
-    std::cout << unmake_move << '\n';
+    // If the player's king is left in check after the move, it is invalid.
+    bool is_invalid_move = board_analysis.isInCheck(move.player, board);
 
-
+    if (is_invalid_move) {
+        // If not valid, immediately undo the move.
+        unmakeMoveOnBoard(unmake_move);
+    } else {
+        // If valid, add the UnmakeMove to the history stack.
+        unmake_move_list.push(unmake_move);
+    }
 
     return true;
 }

@@ -143,6 +143,7 @@ public:
         std::make_shared<const AttackTables>(), 
         gameStateFromFEN(fen)
     ) {};
+    Game() : Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {};
 
     /* -- Getters and setters -- */
 
@@ -156,7 +157,7 @@ public:
         return current_pseudo_legals;
     }
 
-    /* -- -- */
+    /* -- (Un)doing moves -- */
 
     /**
      * @brief Makes a move on the board.
@@ -171,7 +172,7 @@ public:
      * @brief Makes a move on the board.
      * 
      * @param move          The parameters of the move to make.
-     * @returns `true` if the move is legal and was successfully made.
+     * @returns `true` if the move is legal and was successfully made. 
      */
     bool move(const Move move);
 

@@ -86,11 +86,13 @@ BB::BitBoard Board::rookMovementWhenCastling(const Position& king_target) const 
     return rook_movement;
 }
 
-PType Board::movePiece(const Move move) {
+PType Board::_movePieceHelper(const Move move, std::optional<PType> captured_type) {
     Player other_player = otherPlayer(move.player);
 
     BB::BitBoard from_bb = BB::new_at(move.source), to_bb = BB::new_at(move.target);
     BB::BitBoard fromTo_bb = from_bb | to_bb;
+
+    PType final_captured_type = PType::NoneType;
 
     /* Move the moved piece */
 
@@ -98,11 +100,11 @@ PType Board::movePiece(const Move move) {
     piece_bb[move.player][move.p_type] ^= fromTo_bb;
     occupancy_bb[move.player] ^= fromTo_bb;
 
+    // BB::out(std::cout, fromTo_bb);
+
     // If the destination has a piece (i.e. non-en passant capture), the target bit will be flipped to 0 here.
     // It will be flipped again back to 1 when treating captures.
     global_occupancy_bb ^= fromTo_bb;
-
-    PType captured_type = PType::NoneType;
 
     /* Handle castling */
 
@@ -121,19 +123,25 @@ PType Board::movePiece(const Move move) {
         /* Handle the captured piece */
 
         if (move.capture) {
-            /* Find captured piece type */
+            /* Find final captured piece type */
 
             if (move.en_passant) {
                 // Move the "captured piece" position up or down depending on the player color.
                 to_bb = (to_bb << 8) >> (static_cast<int>(move.player) << 4);
 
                 // Captured piece has to be a pawn.
-                captured_type = PType::Pawn;
-            } else {
-                // Find opposing piece that is captured.
+                final_captured_type = PType::Pawn;
+            } 
+            
+            // If captured piece type is given, copy its value.
+            else if (captured_type.has_value()) {
+                final_captured_type = captured_type.value();
+            } 
+            // If captured piece type is not given, find it.
+            else {
                 for (PType type = PType::FIRST; type != PType::OOB; increment_enum(type)) {
                     if (BB::get_bit(piece_bb[other_player][type], move.target)) {
-                        captured_type = PType(type);
+                        final_captured_type = PType(type);
 
                         break;
                     }
@@ -143,7 +151,7 @@ PType Board::movePiece(const Move move) {
             /* Remove captured piece */
 
             // Flip the captured piece bit in occupancy bitboards.
-            piece_bb[other_player][captured_type] ^= to_bb;
+            piece_bb[other_player][final_captured_type] ^= to_bb;
 
             // If 0 at this bit previously (non-en passant capture, see above) flipped back to 1.
             global_occupancy_bb ^= to_bb;
@@ -158,7 +166,7 @@ PType Board::movePiece(const Move move) {
         }
     }
 
-    return captured_type;
+    return final_captured_type;
 }
 
 std::string Board::getPositionString() const {
@@ -209,8 +217,6 @@ std::ostream& operator<<(std::ostream& out, const Board& board) {
 
         out << std::endl;
     }
-
-    out << '\n' << board.getPositionString(); 
 
     return out;
 }

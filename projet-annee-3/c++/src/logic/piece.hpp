@@ -2,8 +2,10 @@
 
 #include "player.hpp"
 
+#include <cstdint>
+
 // Enum over piece type, i.e. pieces without player information.
-enum class PType {
+enum class PType : uint8_t {
     Pawn, Knight, Bishop,
     Rook, Queen, King,
 

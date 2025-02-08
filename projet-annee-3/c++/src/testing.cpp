@@ -25,6 +25,7 @@ int main(int argc, char ** argv) {
     // std::cout << b << std::endl;
 
     Game b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ e6 0 1");
+    // Game b;
 
     b.printBoard();
     std::cout << b.fen() << '\n';
@@ -36,17 +37,34 @@ int main(int argc, char ** argv) {
     //     false, false, false, true
     // });
 
-    Move m {
-        Position(Square::d5), Position(Square::e6),
-        Player::White, PType::Pawn,
-        PType::NoneType,
-        true, false, true, false
+    // Flags : capture, double_push, en_passant, castle
+
+    std::vector<Move> m {
+        Move {
+            Position(Square::e1), Position(Square::g1),
+            Player::White, PType::King,
+            PType::NoneType,
+            false, false, false, true
+        }
     };
 
-    b.move(m);
+    // Move m {
+    //     Position(Square::e2), Position(Square::e4),
+    //     Player::White, PType::Pawn,
+    //     PType::NoneType,
+    //     false, true, false, false
+    // };
 
-    b.printBoard();
-    std::cout << b.fen() << '\n';
+    for (const auto& move : m) {
+        if (b.move(move)) {
+            std::cout << "Did legal move\n" << move;
+
+            b.printBoard();
+            std::cout << b.fen() << '\n';
+        } else {
+            std::cout << "Move was illegal\n" << move;
+        }
+    }
 
     // b.makeMove({
     //     Position::e1, Position::g1,
