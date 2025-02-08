@@ -13,7 +13,7 @@
 template <class IndexEnum, class ValueType>
     requires(std::is_scoped_enum_v<IndexEnum>)
 class enum_array {
-    ValueType array[static_cast<int>(IndexEnum::LAST) + 1];
+    ValueType array[static_cast<int>(IndexEnum::LAST) + 1] {};
 
 public:
     ValueType& operator[](IndexEnum index) {

@@ -10,11 +10,15 @@ C++ library and will not have any entry point.
 #include "logic/move_generator.hpp"
 #include "logic/game.hpp"
 
+#include "misc/safely_to_enum_class.hpp"
+
 #include <iostream>
 #include <vector>
 #include <memory>
 
 int main(int argc, char ** argv) {
+    // safely_to_enum_class<Player>(2);
+
     std::cout << "Hello worlderferf !" << std::endl;
 
     // Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
@@ -27,15 +31,15 @@ int main(int argc, char ** argv) {
 
     // b.move({
     //     Position::e1, Position::g1,
-    //     Player::White, Piece::King,
-    //     Piece::NoneType,
+    //     Player::White, PType::King,
+    //     PType::NoneType,
     //     false, false, false, true
     // });
 
     Move m {
         Position(Square::d5), Position(Square::e6),
-        Player::White, Piece::Pawn,
-        Piece::NoneType,
+        Player::White, PType::Pawn,
+        PType::NoneType,
         true, false, true, false
     };
 
@@ -46,15 +50,15 @@ int main(int argc, char ** argv) {
 
     // b.makeMove({
     //     Position::e1, Position::g1,
-    //     Piece::W_King,
-    //     Piece::NoneId,
+    //     PType::W_King,
+    //     PType::NoneId,
     //     false, false, false, true
     // });
 
     // b.makeMove({
     //     Position::c7, Position::c8,
-    //     Piece::W_Pawn,
-    //     Piece::W_Queen,
+    //     PType::W_Pawn,
+    //     PType::W_Queen,
     //     false, false, false, false
     // });
 
@@ -62,8 +66,8 @@ int main(int argc, char ** argv) {
 
     // b.makeMove({
     //     Position::e2, Position::e4,
-    //     Piece::W_Pawn,
-    //     Piece::NoneId,
+    //     PType::W_Pawn,
+    //     PType::NoneId,
     //     false, true, false, false
     // });
 
@@ -71,8 +75,8 @@ int main(int argc, char ** argv) {
 
     // b.makeMove({
     //     Position::d7, Position::d5,
-    //     Piece::B_Pawn,
-    //     Piece::NoneId,
+    //     PType::B_Pawn,
+    //     PType::NoneId,
     //     false, true, false, false
     // });
 

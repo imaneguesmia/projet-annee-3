@@ -34,7 +34,7 @@ public:
  */
 struct UnmakeMove {
     Move move;                      // The made move.
-    Piece::Type captured    : 4;    // `Piece::Type` of captured piece (`Piece::NoneType` if no capture).
+    PType captured          : 4;    // `PType` of captured piece (`PType::NoneType` if no capture).
 
     uint8_t castling_rights : 4;    // Bitflags indicating previous castling rights: `0b[qkQK]`.
     uint8_t en_passant;             // Previous valid en passant target.

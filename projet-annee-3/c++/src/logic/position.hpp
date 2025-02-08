@@ -16,7 +16,7 @@ enum class Square : uint8_t {
 
     Invalid,  // Special value indicating an invalid position.
 
-    FIRST = a8, LAST = h1
+    OOB, FIRST = a8, LAST = h1
 };
 
 /* ---- DECLARE class Position ---- */

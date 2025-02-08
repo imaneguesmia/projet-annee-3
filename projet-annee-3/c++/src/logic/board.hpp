@@ -7,6 +7,8 @@
 #include "piece.hpp"
 #include "move.hpp"
 
+#include "../misc/enum_array.hpp"
+
 #include <iostream>
 #include <bitset>
 #include <string>
@@ -42,8 +44,9 @@ public:
     // Each bitboard represents the occupancy of a certain piece type or player.
     // For example, if the bit 32 is set on the bitboard for white bishops,
     // that means that there is a white bishop on position 32 of the board.
-    BB::BitBoard piece_bb[2][6] {0ULL};     // [Player][Piece::Type]
-    BB::BitBoard occupancy_bb[3] {0ULL};    // [Player | 2 (Both)]
+    enum_array<Player, enum_array<PType, BB::BitBoard>> piece_bb;     // [Player][Piece::Type]
+    enum_array<Player, BB::BitBoard> occupancy_bb;                    // [Player]
+    BB::BitBoard global_occupancy_bb;                                 // (Both players/all pieces)
 
     /* -- Getters and setters -- */
 
@@ -71,7 +74,7 @@ public:
      * @param piece     The piece to get the bitboard of.
      * @return A bitboard indicating the squares occupied by this piece.
      */
-    BB::BitBoard bitboard(Piece piece) const { return piece_bb[int(piece.getPlayer())][piece.getType()]; };
+    BB::BitBoard bitboard(Piece piece) const { return piece_bb[piece.getPlayer()][piece.getType()]; };
 
     /**
      * @brief Shorthand to get the occupancy bitboard of all the given player's pieces.
@@ -79,13 +82,13 @@ public:
      * @param player    The player to get the occupancy of.
      * @return A bitboard indicating the squares occupied by this player.
      */
-    BB::BitBoard occupancy(Player player) const { return occupancy_bb[int(player)]; };
+    BB::BitBoard occupancy(Player player) const { return occupancy_bb[player]; };
     /**
      * @brief Shorthand to get the global occupancy of all pieces.
      * 
      * @return A bitboard indicating all occupied squares on the board.
      */
-    BB::BitBoard occupancy() const { return occupancy_bb[2]; };
+    BB::BitBoard occupancy() const { return global_occupancy_bb; };
 
     /* -- State exporting -- */
 

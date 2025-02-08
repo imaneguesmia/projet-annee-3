@@ -43,10 +43,10 @@ void Board::setPiecePositions(const std::string& piece_positions) {
 }
 
 Piece Board::pieceAt(const Position& position) const {
-    for (int i = 0; i < 2; i++) {
-        for (int p_type = Piece::Pawn; p_type < Piece::NoneType; p_type++) {
-            if (BB::get_bit(piece_bb[i][p_type], position)) 
-                return Piece(Piece::Type(p_type), Player(i));
+    for (Player player = Player::FIRST; player != Player::OOB; increment_enum(player)) {
+        for (PType p_type = PType::FIRST; p_type != PType::OOB; increment_enum(p_type)) {
+            if (BB::get_bit(piece_bb[player][p_type], position)) 
+                return Piece(p_type, Player(player));
         }
     }
 
@@ -54,10 +54,10 @@ Piece Board::pieceAt(const Position& position) const {
 }
 
 void Board::setPieceAt(const Position& position, const Piece& piece) {
-    BB::set_bit(piece_bb[int(piece.getPlayer())][piece.getType()], position);
+    BB::set_bit(piece_bb[piece.getPlayer()][piece.getType()], position);
 
-    BB::set_bit(occupancy_bb[int(piece.getPlayer())], position);
-    BB::set_bit(occupancy_bb[2], position);
+    BB::set_bit(occupancy_bb[piece.getPlayer()], position);
+    BB::set_bit(global_occupancy_bb, position);
 }
 
 void Board::movePieceByBitboard(const Piece& piece, const BB::BitBoard fromTo_bb) {

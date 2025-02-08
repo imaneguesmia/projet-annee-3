@@ -2,39 +2,40 @@
 
 #include "player.hpp"
 
+// Enum over piece type, i.e. pieces without player information.
+enum class PType {
+    Pawn, Knight, Bishop,
+    Rook, Queen, King,
+
+    NoneType,  // Special value indicating no piece.
+
+    OOB, FIRST = Pawn, LAST = King,
+};
+
 /**
  * @brief Class representing a chess piece.
  */
 class Piece {
 
-public:
-    // Enum over piece type, i.e. pieces without player information.
-    enum Type {
-        Pawn, Knight, Bishop,
-        Rook, Queen, King,
-
-        NoneType  // Special value indicating no piece.
-    };
-
 private:
-    Type type;
+    PType type;
     Player player;
 
 public:
     // Constructs a new Piece object with the given type and player.
-    Piece(const Type type, const Player player)
+    Piece(const PType type, const Player player)
         : type(type)
         , player(player)
     {};
     // Constructs an empty Piece object.
-    Piece() : Piece(Type::NoneType, Player::White) {};
+    Piece() : Piece(PType::NoneType, Player::White) {};
     ~Piece() {};
 
-    Type getType() const { return type; };
+    PType getType() const { return type; };
     Player getPlayer() const { return player; };
 
     // Returns `true` if the piece is empty.
-    bool isNone() const { return type == Type::NoneType; };
+    bool isNone() const { return type == PType::NoneType; };
 
     // Returns the FEN symbol of the piece.
     char fen() const;

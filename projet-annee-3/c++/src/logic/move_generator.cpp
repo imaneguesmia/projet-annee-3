@@ -2,6 +2,8 @@
 
 #include "bitboard.hpp"
 
+#include "../misc/increment_enum.hpp"
+
 #include <cmath>
 #include <vector>
 
@@ -23,8 +25,8 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
     
     Move move;
 
-    for (int p_type = Piece::Pawn; p_type < Piece::NoneType; p_type++) {
-        Piece piece {Piece::Type(p_type), player};
+    for (PType p_type = PType::FIRST; p_type != PType::OOB; increment_enum(p_type)) {
+        Piece piece {p_type, player};
         Player other = otherPlayer(player);
 
         bitboard = board.bitboard(piece);
@@ -39,7 +41,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
             /* Generate pseudo-legals for piece */
 
             switch (piece.getType()) {
-                case Piece::Pawn: {
+                case PType::Pawn: {
                     // Generate pushes on the fly because I can't be bothered.
 
                     BB::BitBoard single_push;
@@ -63,23 +65,23 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     capture = attacks | en_passant;
                     pseudo_legals = single_push | double_push | capture;
                 } break;
-                case Piece::Knight:
+                case PType::Knight:
                     pseudo_legals = at->getKnightAttackBitboard(from) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
-                case Piece::Bishop:
+                case PType::Bishop:
                     pseudo_legals = at->getBishopAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
-                case Piece::Rook:
+                case PType::Rook:
                     pseudo_legals = at->getRookAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
-                case Piece::Queen:
+                case PType::Queen:
                     pseudo_legals = at->getQueenAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
-                case Piece::King: {
+                case PType::King: {
                     uint8_t castling_rights = castling_rights;
 
                     // [TODO] This is not the most efficient way to do this.
@@ -114,7 +116,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                 move.source      = from;
                 move.target      = to;
                 move.player      = player;
-                move.p_type      = Piece::Type(p_type);
+                move.p_type      = p_type;
                 move.capture     = target & capture;
                 move.double_push = target & double_push;
                 move.en_passant  = target & en_passant;
@@ -122,14 +124,12 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
 
                 if (target & promotion) {
                     // Loop through all possible promotions.
-                    for (int i = Piece::Knight; i <= Piece::Queen; i++) {
-                        uint8_t promoted_piece = int(player)*6 + i;
-
-                        move.promotion = Piece::Type(promoted_piece);
+                    for (PType new_type = PType::Knight; new_type <= PType::Queen; increment_enum(new_type)) {
+                        move.promotion = new_type;
                         moves.push_back(move);
                     }
                 } else {
-                    move.promotion = Piece::NoneType;
+                    move.promotion = PType::NoneType;
                     moves.push_back(move);
                 }
 

@@ -96,8 +96,8 @@ BB::BitBoard AttackTables::generateKingAttacks(const Position& position) {
 }
 
 void AttackTables::generateLeapingAttacks() {
-    for (Square position = Square::FIRST; position < Square::LAST; increment_enum(position)) {
-        for (Player player = Player::FIRST; player < Player::LAST; increment_enum(player)) {
+    for (Square position = Square::FIRST; position != Square::OOB; increment_enum(position)) {
+        for (Player player = Player::FIRST; player != Player::OOB; increment_enum(player)) {
             pawn_attacks[player][position] = generatePawnAttacks(Player(player), position);
         }
 
@@ -249,7 +249,7 @@ std::unique_ptr<AttackTables::Magic> AttackTables::generateMagicTableForPosition
 void AttackTables::generateMagicTables() {
     std::srand(std::time(0));
 
-    for (Square position = Square::FIRST; position < Square::LAST; increment_enum(position)) {
+    for (Square position = Square::FIRST; position != Square::OOB; increment_enum(position)) {
         auto bishop_magic = generateMagicTableForPosition(position, 0b01010101);
         auto rook_magic = generateMagicTableForPosition(position, 0b10101010);
 

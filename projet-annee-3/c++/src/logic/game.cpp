@@ -1,5 +1,7 @@
 #include "game.hpp"
 
+#include "../misc/increment_enum.hpp"
+
 #include <sstream>
 
 /* ---- DEFINE struct UnmakeMove ---- */
@@ -132,30 +134,46 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
     BB::BitBoard from_bb = BB::new_at(move.source), to_bb = BB::new_at(move.target);
     BB::BitBoard fromTo_bb = from_bb | to_bb;
 
-    int player_index = int(move.player);
-    int other_index = int(otherPlayer(move.player));
+    Player other_player = otherPlayer(move.player);
 
-    board.piece_bb[player_index][move.p_type] ^= fromTo_bb;
-    board.occupancy_bb[player_index] ^= fromTo_bb;
+    board.piece_bb[move.player][move.p_type] ^= fromTo_bb;
+    board.occupancy_bb[move.player] ^= fromTo_bb;
+
+    /* Double push en passant target */
+
+    if (move.double_push) {
+        en_passant = move.target + (move.player == Player::White ? 8 : -8);
+    } else {
+        en_passant.setPositionInvalid();
+    }
+
+    /* Promotion */
+
+    if (move.promotion != PType::NoneType) {
+        board.piece_bb[move.player][PType::Pawn] ^= to_bb;
+        board.piece_bb[move.player][move.p_type] ^= to_bb;
+    }
+
+    /* Capture */
 
     if (move.capture) {
         en_passant.setPositionInvalid();
 
         // Determine the type of the captured piece.
-        Piece::Type captured_type;
+        PType captured_type;
 
         if (move.en_passant) {
             // Move the "captured piece" position up or down depending on the player color
-            to_bb = (to_bb << 8) >> (player_index << 4);
+            to_bb = (to_bb << 8) >> (static_cast<int>(move.player) << 4);
             
             // Remove the captured pawn from global occupancy bitboard.
-            board.occupancy_bb[2] ^= to_bb;
-            captured_type = Piece::Pawn;
+            board.global_occupancy_bb ^= to_bb;
+            captured_type = PType::Pawn;
         } else {
             // Find opposing piece that is captured
-            for (int type = Piece::Pawn; type < Piece::NoneType; type++) {
-                if (BB::get_bit(board.piece_bb[other_index][type], move.target)) {
-                    captured_type = Piece::Type(type);
+            for (PType type = PType::FIRST; type != PType::OOB; increment_enum(type)) {
+                if (BB::get_bit(board.piece_bb[other_player][type], move.target)) {
+                    captured_type = PType(type);
 
                     break;
                 }
@@ -166,29 +184,29 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
         unmake_move.captured = captured_type;
 
         // Remove the captured piece from the relevant bitboards.
-        board.piece_bb[other_index][captured_type] ^= to_bb;
-        board.occupancy_bb[other_index] ^= to_bb;
+        board.piece_bb[other_player][captured_type] ^= to_bb;
+        board.occupancy_bb[other_player] ^= to_bb;
 
         // If capture, only remove the source from the global occupancy bitboard since the target
         // is occupied by the capturing piece. The only exception is en passant, which is taken
         // care of above.
-        board.occupancy_bb[2] ^= from_bb;
+        board.global_occupancy_bb ^= from_bb;
         // Reset halfmoves on capture.
         halfmoves = 0;
     } else {
         // No capture.
-        unmake_move.captured = Piece::NoneType;
+        unmake_move.captured = PType::NoneType;
 
         // If no capture, move the piece on the global occupancy bitboard.
-        board.occupancy_bb[2] ^= fromTo_bb;
+        board.global_occupancy_bb ^= fromTo_bb;
 
         if (move.castle) {
             BB::BitBoard rook_movement = rookMovementWhenCastling(move.target);
 
             // Flip relevant occupancy bits for rook movement.
-            board.piece_bb[player_index][Piece::Rook] ^= rook_movement;
-            board.occupancy_bb[player_index] ^= rook_movement;
-            board.occupancy_bb[2] ^= rook_movement;
+            board.piece_bb[move.player][PType::Rook] ^= rook_movement;
+            board.occupancy_bb[move.player] ^= rook_movement;
+            board.global_occupancy_bb ^= rook_movement;
         }
 
         if (move.double_push) {
@@ -200,18 +218,11 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
         // If pieces moved on the relevant squares, update castling rights accordingly.
         castling_rights &= castling_table[move.source] & castling_table[move.target];
         // Reset halfmoves on pawn move.
-        halfmoves *= move.p_type != Piece::Pawn;
-    }
-
-    if (move.promotion != Piece::NoneType) {
-        Piece promoted_to = Piece(move.p_type, move.player);
-
-        board.piece_bb[player_index][Piece::Pawn] ^= to_bb;
-        board.piece_bb[player_index][promoted_to.getType()] ^= to_bb;
+        halfmoves *= move.p_type != PType::Pawn;
     }
 
     halfmoves++;
-    fullmoves += player_index;
+    fullmoves += static_cast<int>(move.player);
 
     return unmake_move;
 }
