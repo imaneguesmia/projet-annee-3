@@ -1,0 +1,3 @@
+/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles/chess-engine.dir
+/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles/rebuild_cache.dir
