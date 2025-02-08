@@ -52,7 +52,7 @@ int MinimaxAI::minimax(Board& board, int depth, int alpha, int beta) {
     return bestScore;
 }
 
-    int MinimaxAI::evaluate(const Board& board) {
+int MinimaxAI::evaluate(const Board& board) {
     static const std::unordered_map<PieceType, int, PieceType::Hash> pieceValues = {
         {PieceType::PAWN,   100},
         {PieceType::KNIGHT, 300},
@@ -92,7 +92,4 @@ int MinimaxAI::minimax(Board& board, int depth, int alpha, int beta) {
 
     return score;
 }
-
-
-
 }

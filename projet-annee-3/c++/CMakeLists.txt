@@ -4,13 +4,11 @@ project(ChessEngine)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Inclure le dossier contenant chess.hpp
 include_directories(external/chess-library)
 
-# Inclure les headers de ton projet
 include_directories(include)
 
-# Liste des fichiers sources
+
 set(SOURCES
         src/main.cpp
         src/Player.cpp
@@ -19,7 +17,6 @@ set(SOURCES
         src/GameManager.cpp
 )
 
-# Créer l'exécutable
 add_executable(chess-engine ${SOURCES})
 
 
