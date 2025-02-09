@@ -72,11 +72,6 @@ public:
 
     /* -- Getters and setters -- */
 
-    // Gets the piece at the given position on the board.
-    Piece pieceAt(const Position& position) const;
-    // Places a piece at a given position.
-    void setPieceAt(const Position& position, const Piece& piece);
-
     /**
      * @brief Moves a piece on the board according to the given parameters.
      * 
@@ -93,6 +88,11 @@ public:
     void unmovePiece(const Move move, PType captured_type) { _movePieceHelper(move, captured_type); };
     
     /* -- Board operations -- */
+
+    // Gets the piece at the given position on the board.
+    Piece pieceAt(const Position& position) const;
+    // Places a piece at a given position.
+    void setPieceAt(const Position& position, const Piece& piece);
 
     /**
      * @brief Shorthand to get the bitboard of the given piece.

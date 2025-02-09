@@ -9,6 +9,8 @@
 
 /* ---- DEFINE class Board ---- */
 
+/* -- Helpers -- */
+
 void Board::setPiecePositions(const std::string& piece_positions) {
     int position_index = 0;
     int row = 0;  // Mostly just to check that the given FEN is valid.
@@ -40,24 +42,6 @@ void Board::setPiecePositions(const std::string& piece_positions) {
 
         position_index++;
     }
-}
-
-Piece Board::pieceAt(const Position& position) const {
-    for (Player player = Player::FIRST; player != Player::OOB; increment_enum(player)) {
-        for (PType p_type = PType::FIRST; p_type != PType::OOB; increment_enum(p_type)) {
-            if (BB::get_bit(piece_bb[player][p_type], position)) 
-                return Piece(p_type, Player(player));
-        }
-    }
-
-    return Piece();
-}
-
-void Board::setPieceAt(const Position& position, const Piece& piece) {
-    BB::set_bit(piece_bb[piece.getPlayer()][piece.getType()], position);
-
-    BB::set_bit(occupancy_bb[piece.getPlayer()], position);
-    BB::set_bit(global_occupancy_bb, position);
 }
 
 BB::BitBoard Board::rookMovementWhenCastling(const Position& king_target) const {
@@ -167,6 +151,26 @@ PType Board::_movePieceHelper(const Move move, std::optional<PType> captured_typ
     }
 
     return final_captured_type;
+}
+
+/* -- Board operations -- */
+
+Piece Board::pieceAt(const Position& position) const {
+    for (Player player = Player::FIRST; player != Player::OOB; increment_enum(player)) {
+        for (PType p_type = PType::FIRST; p_type != PType::OOB; increment_enum(p_type)) {
+            if (BB::get_bit(piece_bb[player][p_type], position)) 
+                return Piece(p_type, Player(player));
+        }
+    }
+
+    return Piece();
+}
+
+void Board::setPieceAt(const Position& position, const Piece& piece) {
+    BB::set_bit(piece_bb[piece.getPlayer()][piece.getType()], position);
+
+    BB::set_bit(occupancy_bb[piece.getPlayer()], position);
+    BB::set_bit(global_occupancy_bb, position);
 }
 
 std::string Board::getPositionString() const {
