@@ -40,7 +40,7 @@ int main(int argc, char ** argv) {
     // Flags : capture, double_push, en_passant, castle
 
     std::vector<Move> m {
-        // Castling
+        // Castling (this isn't technically legal, but it's for testing purposes)
         Move {
             Position(Square::e1), Position(Square::g1),
             Player::White, PType::King,

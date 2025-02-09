@@ -23,6 +23,8 @@ std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move) {
 
 /* ---- DEFINE class Game ---- */
 
+/* -- Construction -- */
+
 const Game::GameState Game::gameStateFromFEN(const std::string& fen) const {
     std::istringstream ss(fen);
 
@@ -66,7 +68,7 @@ const Game::GameState Game::gameStateFromFEN(const std::string& fen) const {
     return game_state;
 }
 
-// Mem O'Sprite
+/* -- Helpers -- */
 
 uint8_t Game::castlingRightsFromString(const std::string& castling_indicators) const {
     uint8_t flags = 0b0000;
@@ -95,6 +97,24 @@ uint8_t Game::castlingRightsFromString(const std::string& castling_indicators) c
     }
 
     return flags;
+}
+
+/* -- (Un)doing moves -- */
+
+const std::vector<Move>& Game::getCurrentPseudoLegals() {
+    // If the board position has changed, update pseudo-legal moves.
+    if (board_position_changed) {
+        auto new_pseudo_legals = move_generator.generatePseudoLegals(
+            current_player, board,
+            en_passant, castling_rights
+        );
+
+        current_pseudo_legals = std::move(new_pseudo_legals);
+
+        board_position_changed = false;
+    }
+
+    return current_pseudo_legals;
 }
 
 UnmakeMove Game::makeMoveOnBoard(const Move move) {
@@ -168,6 +188,9 @@ bool Game::move(const Move move) {
     } else {
         // If valid, add the UnmakeMove to the history stack.
         unmake_move_list.push(unmake_move);
+
+        // Set board changed flag to update list of pseudo-legal moves.
+        board_position_changed = true;
     }
 
     return !is_invalid_move;
@@ -182,9 +205,14 @@ std::optional<Move> Game::undoLastMove() {
 
         unmakeMoveOnBoard(unmake_move);
 
+        // Set board changed flag to update list of pseudo-legal moves.
+        board_position_changed = true;
+
         return unmake_move.move;
     }
 }
+
+/* -- String representation -- */
 
 const std::string Game::fen() const {
     std::ostringstream out;

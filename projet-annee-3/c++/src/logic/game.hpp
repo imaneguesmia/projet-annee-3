@@ -80,6 +80,9 @@ class Game {
     // Used so that it doesn't have to be recalculated every time a human player makes
     // an invalid move.
     std::vector<Move> current_pseudo_legals;
+    // The list of pseudo-legal moves will be lazily updated when being fetched if this flag
+    // is set.
+    bool board_position_changed {false};
 
     std::stack<UnmakeMove> unmake_move_list;
 
@@ -152,12 +155,11 @@ public:
 
     // Gets the current valid en passant target.
     const Position& getEnPassantPosition() const { return en_passant; };
-    // Gets the list of pseudo-legal moves from the current board position.
-    const std::vector<Move>& getCurrentPseudoLegals() const {
-        return current_pseudo_legals;
-    }
 
     /* -- (Un)doing moves -- */
+
+    // Gets the list of pseudo-legal moves from the current board position.
+    const std::vector<Move>& getCurrentPseudoLegals();
 
     /**
      * @brief Makes a move on the board.
@@ -183,7 +185,7 @@ public:
      */
     std::optional<Move> undoLastMove();
 
-    /* -- -- */
+    /* -- String representation -- */
 
     // Translates the current board state into FEN notation.
     const std::string fen() const;
