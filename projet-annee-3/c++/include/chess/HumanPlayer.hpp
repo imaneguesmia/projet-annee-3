@@ -7,7 +7,7 @@ namespace chess {
 
     class HumanPlayer : public Player {
     public:
-        Move getMove(const Board& board) override;
+        Move getMove(Board& board) override;
     };
 
 } // namespace chess

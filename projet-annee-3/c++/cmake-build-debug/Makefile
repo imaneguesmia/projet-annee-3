@@ -201,6 +201,30 @@ src/MinimaxAI.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/chess-engine.dir/build.make CMakeFiles/chess-engine.dir/src/MinimaxAI.cpp.s
 .PHONY : src/MinimaxAI.cpp.s
 
+src/MinimaxAI2.o: src/MinimaxAI2.cpp.o
+.PHONY : src/MinimaxAI2.o
+
+# target to build an object file
+src/MinimaxAI2.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/chess-engine.dir/build.make CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o
+.PHONY : src/MinimaxAI2.cpp.o
+
+src/MinimaxAI2.i: src/MinimaxAI2.cpp.i
+.PHONY : src/MinimaxAI2.i
+
+# target to preprocess a source file
+src/MinimaxAI2.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/chess-engine.dir/build.make CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.i
+.PHONY : src/MinimaxAI2.cpp.i
+
+src/MinimaxAI2.s: src/MinimaxAI2.cpp.s
+.PHONY : src/MinimaxAI2.s
+
+# target to generate assembly for a file
+src/MinimaxAI2.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/chess-engine.dir/build.make CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.s
+.PHONY : src/MinimaxAI2.cpp.s
+
 src/Player.o: src/Player.cpp.o
 .PHONY : src/Player.o
 
@@ -267,6 +291,9 @@ help:
 	@echo "... src/MinimaxAI.o"
 	@echo "... src/MinimaxAI.i"
 	@echo "... src/MinimaxAI.s"
+	@echo "... src/MinimaxAI2.o"
+	@echo "... src/MinimaxAI2.i"
+	@echo "... src/MinimaxAI2.s"
 	@echo "... src/Player.o"
 	@echo "... src/Player.i"
 	@echo "... src/Player.s"

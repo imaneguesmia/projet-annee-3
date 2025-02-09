@@ -1,17 +1,17 @@
 #include "chess/GameManager.hpp"
 #include "chess/MinimaxAI.hpp"
+#include "chess/MinimaxAI2.hpp"
 #include "chess/HumanPlayer.hpp"
-
 
 int main() {
     // ai vs human
-    chess::MinimaxAI ai(5);
+    chess::MinimaxAI2 betterai(3);
     chess::HumanPlayer human;
     // ai vs ai
-    // chess::MinimaxAI ai(3);
-    // chess::MinimaxAI betterai(5);
+     chess::MinimaxAI badai(3);
+     chess::MinimaxAI ai(5);
 
-    chess::GameManager game(&human, &ai);
+    chess::GameManager game(&betterai, &ai);
     game.playGame();
 
     return 0;

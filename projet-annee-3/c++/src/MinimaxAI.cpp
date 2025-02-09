@@ -4,7 +4,8 @@ namespace chess {
 
 MinimaxAI::MinimaxAI(int depth) : searchDepth(depth) {}
 
-Move MinimaxAI::getMove(const Board& board) {
+Move MinimaxAI::getMove(Board& board)
+    {
     Movelist moves;
     movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
 
@@ -14,25 +15,34 @@ Move MinimaxAI::getMove(const Board& board) {
 
     Move bestMove = moves[0];
     int bestScore = -999999;
-    int alpha = -999999;
-    int beta =  999999;
+    int alpha     = -999999;
+    int beta      =  999999;
 
     for (const Move& move : moves) {
-        Board newBoard = board;
-        newBoard.makeMove(move);
-        int score = -minimax(newBoard, searchDepth - 1, -beta, -alpha);
+        board.makeMove(move);
+        int score = -negamax(board, searchDepth - 1, -beta, -alpha);
+        board.unmakeMove(move);
 
         if (score > bestScore) {
             bestScore = score;
-            bestMove = move;
+            bestMove  = move;
         }
-        alpha = std::max(alpha, score);
-        if (alpha >= beta) break;
-    }
-    return bestMove;
-}
 
-int MinimaxAI::minimax(Board& board, int depth, int alpha, int beta) {
+        if (score > alpha) {
+            alpha = score;
+        }
+        if (alpha >= beta) {
+            break;
+        }
+    }
+
+    return bestMove;
+    }
+
+
+int MinimaxAI::negamax(Board& board, int depth, int alpha, int beta)
+{
+
     if (depth == 0 || board.isGameOver().first != GameResultReason::NONE) {
         return evaluate(board);
     }
@@ -40,17 +50,31 @@ int MinimaxAI::minimax(Board& board, int depth, int alpha, int beta) {
     Movelist moves;
     movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
 
-    int bestScore = -999999;
-    for (const Move& move : moves) {
-        Board newBoard = board;
-        newBoard.makeMove(move);
-        int score = -minimax(newBoard, depth - 1, -beta, -alpha);
-        bestScore = std::max(bestScore, score);
-        alpha = std::max(alpha, score);
-        if (alpha >= beta) break;
+    if (moves.empty()) {
+        return evaluate(board);
     }
+
+    int bestScore = -999999;
+
+    for (const Move& move : moves) {
+        board.makeMove(move);
+        int score = -negamax(board, depth-1, -beta, -alpha);
+        board.unmakeMove(move);
+
+        if (score > bestScore) {
+            bestScore = score;
+        }
+        if (bestScore > alpha) {
+            alpha = bestScore;
+        }
+        if (alpha >= beta) {
+            break;
+        }
+    }
+
     return bestScore;
 }
+
 
 int MinimaxAI::evaluate(const Board& board) {
     static const std::unordered_map<PieceType, int, PieceType::Hash> pieceValues = {

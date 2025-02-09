@@ -13,6 +13,7 @@ set(SOURCES
         src/main.cpp
         src/Player.cpp
         src/MinimaxAI.cpp
+        src/MinimaxAI2.cpp
         src/HumanPlayer.cpp
         src/GameManager.cpp
 )

@@ -1,7 +1,6 @@
-CMakeFiles/chess-engine.dir/src/main.cpp.o: \
-  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/main.cpp \
-  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/include/chess/GameManager.hpp \
-  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/include/chess/Player.hpp \
+CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o: \
+  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/MinimaxAI2.cpp \
+  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/include/chess/MinimaxAI2.hpp \
   /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/external/chess-library/chess.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/functional \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/__algorithm/search.h \
@@ -796,6 +795,4 @@ CMakeFiles/chess-engine.dir/src/main.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/__bsd_locale_defaults.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/cstdarg \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/sstream \
-  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/include/chess/MinimaxAI.hpp \
-  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/include/chess/MinimaxAI2.hpp \
-  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/include/chess/HumanPlayer.hpp
+  /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/include/chess/Player.hpp

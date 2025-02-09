@@ -111,10 +111,24 @@ CMakeFiles/chess-engine.dir/src/MinimaxAI.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/chess-engine.dir/src/MinimaxAI.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/MinimaxAI.cpp -o CMakeFiles/chess-engine.dir/src/MinimaxAI.cpp.s
 
+CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o: CMakeFiles/chess-engine.dir/flags.make
+CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o: /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/MinimaxAI2.cpp
+CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o: CMakeFiles/chess-engine.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o -MF CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o.d -o CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o -c /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/MinimaxAI2.cpp
+
+CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/MinimaxAI2.cpp > CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.i
+
+CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/MinimaxAI2.cpp -o CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.s
+
 CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o: CMakeFiles/chess-engine.dir/flags.make
 CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o: /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/HumanPlayer.cpp
 CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o: CMakeFiles/chess-engine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o -MF CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o.d -o CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o -c /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/HumanPlayer.cpp
 
 CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.i: cmake_force
@@ -128,7 +142,7 @@ CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.s: cmake_force
 CMakeFiles/chess-engine.dir/src/GameManager.cpp.o: CMakeFiles/chess-engine.dir/flags.make
 CMakeFiles/chess-engine.dir/src/GameManager.cpp.o: /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/GameManager.cpp
 CMakeFiles/chess-engine.dir/src/GameManager.cpp.o: CMakeFiles/chess-engine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/chess-engine.dir/src/GameManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/chess-engine.dir/src/GameManager.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/chess-engine.dir/src/GameManager.cpp.o -MF CMakeFiles/chess-engine.dir/src/GameManager.cpp.o.d -o CMakeFiles/chess-engine.dir/src/GameManager.cpp.o -c /Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/src/GameManager.cpp
 
 CMakeFiles/chess-engine.dir/src/GameManager.cpp.i: cmake_force
@@ -144,6 +158,7 @@ chess__engine_OBJECTS = \
 "CMakeFiles/chess-engine.dir/src/main.cpp.o" \
 "CMakeFiles/chess-engine.dir/src/Player.cpp.o" \
 "CMakeFiles/chess-engine.dir/src/MinimaxAI.cpp.o" \
+"CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o" \
 "CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o" \
 "CMakeFiles/chess-engine.dir/src/GameManager.cpp.o"
 
@@ -153,11 +168,12 @@ chess__engine_EXTERNAL_OBJECTS =
 chess-engine: CMakeFiles/chess-engine.dir/src/main.cpp.o
 chess-engine: CMakeFiles/chess-engine.dir/src/Player.cpp.o
 chess-engine: CMakeFiles/chess-engine.dir/src/MinimaxAI.cpp.o
+chess-engine: CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o
 chess-engine: CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o
 chess-engine: CMakeFiles/chess-engine.dir/src/GameManager.cpp.o
 chess-engine: CMakeFiles/chess-engine.dir/build.make
 chess-engine: CMakeFiles/chess-engine.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable chess-engine"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/lucaferrari/CLionProjects/projet-annee-3/projet-annee-3/c++/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable chess-engine"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/chess-engine.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

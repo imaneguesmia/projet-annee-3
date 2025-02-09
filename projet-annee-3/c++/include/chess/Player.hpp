@@ -9,7 +9,7 @@ namespace chess {
         virtual ~Player() = default;
 
         /// Retourne le coup que le joueur souhaite jouer
-        virtual Move getMove(const Board& board) = 0;
+        virtual Move getMove(Board& board) = 0;
     };
 
 } // namespace chess

@@ -2,7 +2,7 @@
 #include "chess.hpp"
 namespace chess {
 
-    Move HumanPlayer::getMove(const Board& board) {
+    Move HumanPlayer::getMove(Board& board) {
         std::string moveStr;
         std::cout << "Entrez votre coup (UCI) : ";
         std::cin >> moveStr;

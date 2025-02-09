@@ -1,6 +1,7 @@
 #include "chess/GameManager.hpp"
 #include "chess.hpp"
 #include <iostream>
+#include <chrono>
 
 namespace chess {
 
@@ -12,7 +13,13 @@ namespace chess {
             board.displayBoard();
             // std::cout << board;
             Player* currentPlayer = (board.sideToMove() == Color::WHITE) ? white : black;
+
+            auto start = std::chrono::high_resolution_clock::now();
             Move move = currentPlayer->getMove(board);
+            auto end = std::chrono::high_resolution_clock::now();
+
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+            std::cout << "Temps pris pour choisir un coup : " << duration << " ms" << std::endl;
 
             if (move == Move::NO_MOVE) {
                 std::cout << "Partie terminée." << std::endl;

@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/chess-engine.dir/src/HumanPlayer.cpp.o.d"
   "CMakeFiles/chess-engine.dir/src/MinimaxAI.cpp.o"
   "CMakeFiles/chess-engine.dir/src/MinimaxAI.cpp.o.d"
+  "CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o"
+  "CMakeFiles/chess-engine.dir/src/MinimaxAI2.cpp.o.d"
   "CMakeFiles/chess-engine.dir/src/Player.cpp.o"
   "CMakeFiles/chess-engine.dir/src/Player.cpp.o.d"
   "CMakeFiles/chess-engine.dir/src/main.cpp.o"
