@@ -162,7 +162,7 @@ PType Board::_movePieceHelper(const Move move, std::optional<PType> captured_typ
         if (move.promotion != PType::NoneType) {
             // Replace pawn with the new piece type
             piece_bb[move.player][PType::Pawn] ^= to_bb;
-            piece_bb[move.player][move.p_type] ^= to_bb;
+            piece_bb[move.player][move.promotion] ^= to_bb;
         }
     }
 

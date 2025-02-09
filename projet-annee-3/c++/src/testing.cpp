@@ -40,24 +40,48 @@ int main(int argc, char ** argv) {
     // Flags : capture, double_push, en_passant, castle
 
     std::vector<Move> m {
+        // Castling
         Move {
             Position(Square::e1), Position(Square::g1),
             Player::White, PType::King,
             PType::NoneType,
             false, false, false, true
         },
+        // En passant
         Move {
             Position(Square::e5), Position(Square::d4),
             Player::Black, PType::Pawn,
             PType::NoneType,
             true, false, false, false
         },
+        // Illegal move
         Move {
             Position(Square::g1), Position(Square::f2),
             Player::White, PType::King,
             PType::NoneType,
             false, false, false, false
-        }
+        },
+        // Promotion
+        Move {
+            Position(Square::b7), Position(Square::b8),
+            Player::White, PType::Pawn,
+            PType::Queen,
+            false, false, false, false
+        },
+        // Illegal move (black king was checked last turn)
+        Move {
+            Position(Square::f6), Position(Square::f1),
+            Player::Black, PType::Queen,
+            PType::NoneType,
+            true, false, false, false
+        },
+        // Legal move (blocking the check)
+        Move {
+            Position(Square::f6), Position(Square::f8),
+            Player::Black, PType::Queen,
+            PType::NoneType,
+            false, false, false, false
+        },
     };
 
     for (const auto& move : m) {
@@ -71,14 +95,14 @@ int main(int argc, char ** argv) {
         }
     }
 
-    for (auto lm = b.undoLastMove(); lm != std::nullopt; lm = b.undoLastMove()) {
-        std::cout << "\nUndid last move\n";
+    // for (auto lm = b.undoLastMove(); lm != std::nullopt; lm = b.undoLastMove()) {
+    //     std::cout << "\nUndid last move\n";
 
-        b.printBoard();
-        std::cout << b.fen() << '\n';
-    }
+    //     b.printBoard();
+    //     std::cout << b.fen() << '\n';
+    // }
 
-    std::cout << "Done undoing all moves!\n";
+    // std::cout << "Done undoing all moves!\n";
 
     // b.makeMove({
     //     Position::e1, Position::g1,
