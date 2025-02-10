@@ -82,7 +82,7 @@ class Game {
     std::vector<Move> current_pseudo_legals;
     // The list of pseudo-legal moves will be lazily updated when being fetched if this flag
     // is set.
-    bool board_position_changed {false};
+    bool board_position_changed {true};
 
     std::stack<UnmakeMove> unmake_move_list;
 
