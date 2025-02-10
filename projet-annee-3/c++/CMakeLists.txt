@@ -7,24 +7,15 @@ project(
     LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 if (APPLE)
     target_compile_options(logic PRIVATE -stdlib=libc++)
 endif()
 
 # Directories
-
 set(LOGIC "logic")
 set(MISC "misc")
 
 # Libraries
-# NOTE : Even if it's annoying, please list EVERY source file required for each target!
-#        It's much more reliable and less error-prone when working with bigger codebases
-#        with multiple people.
-
 add_library(
     logic STATIC 
     "src/${LOGIC}/bitboard.cpp" "src/${LOGIC}/bitboard.hpp"
@@ -51,7 +42,21 @@ add_library(
 # Comment out this line if you want to use the pregenerated magics
 # target_compile_definitions(logic PRIVATE FIND_NEW_MAGICS)
 
+# Find Python and nanobind
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
+execute_process(
+  COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
+  OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE NB_DIR)
+list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
+find_package(nanobind REQUIRED)
+
+# Create the nanobind module
+nanobind_add_module(chess_module "src/export.cpp")
+target_link_libraries(chess_module PRIVATE logic misc)
+
 # Comment out the next lines if you don't want to build the testing executable
 add_executable(testing "src/testing.cpp")
 target_link_libraries(testing PRIVATE logic)
 target_link_libraries(testing PRIVATE misc)
+
+
