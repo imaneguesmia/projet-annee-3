@@ -1,9 +1,10 @@
 #include <nanobind/nanobind.h>
-#include "piece.hpp"
+
+#include "logic/piece.hpp"
 
 namespace nb = nanobind;
 
-NB_MODULE(moteur, m) {
+NB_MODULE(chess_module, m) {
     nb::enum_<PType>(m, "PType")  // Exporte l'enum PType
         .value("Pawn", PType::Pawn)
         .value("Knight", PType::Knight)

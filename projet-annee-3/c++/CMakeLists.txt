@@ -7,9 +7,9 @@ project(
     LANGUAGES CXX
 )
 
-if (APPLE)
-    target_compile_options(logic PRIVATE -stdlib=libc++)
-endif()
+# if (APPLE)
+#     target_compile_options(logic PRIVATE -stdlib=libc++)
+# endif()
 
 # Directories
 set(LOGIC "logic")
@@ -43,16 +43,34 @@ add_library(
 # target_compile_definitions(logic PRIVATE FIND_NEW_MAGICS)
 
 # Find Python and nanobind
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+set(Python_FIND_VIRTUALENV FIRST)
+find_package(Python 3.13 REQUIRED
+    COMPONENTS          Interpreter Development.Module
+    OPTIONAL_COMPONENTS Development.SABIModule
+)
 execute_process(
-  COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
-  OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE NB_DIR)
+    COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
+    OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE NB_DIR)
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind REQUIRED)
 
 # Create the nanobind module
 nanobind_add_module(chess_module "src/export.cpp")
 target_link_libraries(chess_module PRIVATE logic misc)
+
+# Python typing
+nanobind_add_stub(
+    chess_module_stub
+    MODULE chess_module
+    OUTPUT chess_module.pyi
+    PYTHON_PATH $<TARGET_FILE_DIR:chess_module>
+    DEPENDS chess_module
+)
+
+# Install the Python module
+set(CMAKE_INSTALL_PREFIX "../..")
+install(TARGETS chess_module DESTINATION cpp_chess)
+install(FILES "build/chess_module.pyi" DESTINATION cpp_chess)
 
 # Comment out the next lines if you don't want to build the testing executable
 add_executable(testing "src/testing.cpp")
