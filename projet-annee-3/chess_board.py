@@ -22,18 +22,18 @@ class ChessBoard:
 
     def load_piece_images(self):
         pieces = {
-            "P": pygame.image.load("images/white_pawn.png"),
-            "p": pygame.image.load("images/black_pawn.png"),
-            "R": pygame.image.load("images/white_rook.png"),
-            "r": pygame.image.load("images/black_rook.png"),
-            "N": pygame.image.load("images/white_knight.png"),
-            "n": pygame.image.load("images/black_knight.png"),
-            "B": pygame.image.load("images/white_bishop.png"),
-            "b": pygame.image.load("images/black_bishop.png"),
-            "Q": pygame.image.load("images/white_queen.png"),
-            "q": pygame.image.load("images/black_queen.png"),
-            "K": pygame.image.load("images/white_king.png"),
-            "k": pygame.image.load("images/black_king.png"),
+            "P": pygame.image.load("projet-annee-3/images/white_pawn.png"),
+            "p": pygame.image.load("projet-annee-3/images/black_pawn.png"),
+            "R": pygame.image.load("projet-annee-3/images/white_rook.png"),
+            "r": pygame.image.load("projet-annee-3/images/black_rook.png"),
+            "N": pygame.image.load("projet-annee-3/images/white_knight.png"),
+            "n": pygame.image.load("projet-annee-3/images/black_knight.png"),
+            "B": pygame.image.load("projet-annee-3/images/white_bishop.png"),
+            "b": pygame.image.load("projet-annee-3/images/black_bishop.png"),
+            "Q": pygame.image.load("projet-annee-3/images/white_queen.png"),
+            "q": pygame.image.load("projet-annee-3/images/black_queen.png"),
+            "K": pygame.image.load("projet-annee-3/images/white_king.png"),
+            "k": pygame.image.load("projet-annee-3/images/black_king.png"),
         }
         for key in pieces:
             pieces[key] = pygame.transform.scale(pieces[key], (self.square_size, self.square_size))
