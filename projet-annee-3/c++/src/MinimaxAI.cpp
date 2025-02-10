@@ -1,5 +1,7 @@
 #include "chess/MinimaxAI.hpp"
 #include "chess.hpp"
+
+#define MATE_SCORE 10e7
 namespace chess {
 
 MinimaxAI::MinimaxAI(int depth) : searchDepth(depth) {}
@@ -33,7 +35,25 @@ Move MinimaxAI::getMove(const Board& board) {
 }
 
 int MinimaxAI::minimax(Board& board, int depth, int alpha, int beta) {
-    if (depth == 0 || board.isGameOver().first != GameResultReason::NONE) {
+    // Vérifier si la partie est terminée
+    auto [gameResult, resultDetails] = board.isGameOver();
+
+    // Échec et mat
+    if (gameResult == GameResultReason::CHECKMATE) {
+        // Si c'est un mat pour le joueur actuel, retournez une valeur négative
+        // Sinon, retournez une valeur positive
+        return (resultDetails == GameResult::LOSE) ? (-MATE_SCORE + depth) : (MATE_SCORE - depth);
+    }
+
+    // Partie nulle (pat, répétition, etc.)
+    if (gameResult == GameResultReason::STALEMATE || 
+        gameResult == GameResultReason::INSUFFICIENT_MATERIAL || 
+        gameResult == GameResultReason::THREEFOLD_REPETITION) {
+        return 0; // Égalité
+    }
+
+    // Si la profondeur est atteinte ou si la partie n'est pas terminée, évaluez la position
+    if (depth == 0) {
         return evaluate(board);
     }
 
@@ -89,48 +109,44 @@ int MinimaxAI::evaluate(const Board& board) {
     } else if (board.inCheck() && board.sideToMove() == Color::WHITE) {
         score -= CHECK_BONUS;
     }
+    // Point en fonction de la position des pièces
+    score += pieceSquareHeuristic(board);
 
     return score;
 }
 
 int MinimaxAI::pieceSquareHeuristic(const Board& board){
-    // Piece-Square Tables (simplified values)
-    const int pawnTable[8][8] = {
-        {  0,   0,   0,   0,   0,   0,   0,   0 },
-        { 50,  50,  50,  50,  50,  50,  50,  50 },
-        { 10,  10,  20,  30,  30,  20,  10,  10 },
-        {  5,   5,  10,  25,  25,  10,   5,   5 },
-        {  0,   0,   0,  20,  20,   0,   0,   0 },
-        {  5,  -5, -10,   0,   0, -10,  -5,   5 },
-        {  5,  10,  10, -20, -20,  10,  10,   5 },
-        {  0,   0,   0,   0,   0,   0,   0,   0 }
-    };
+    int score = 0;
 
-    const int knightTable[8][8] = {
-        {-50, -40, -30, -30, -30, -30, -40, -50 },
-        {-40, -20,   0,   0,   0,   0, -20, -40 },
-        {-30,   0,  10,  15,  15,  10,   0, -30 },
-        {-30,   5,  15,  20,  20,  15,   5, -30 },
-        {-30,   0,  15,  20,  20,  15,   0, -30 },
-        {-30,   5,  10,  15,  15,  10,   5, -30 },
-        {-40, -20,   0,   5,   5,   0, -20, -40 },
-        {-50, -40, -30, -30, -30, -30, -40, -50 }
-    };
+    for (auto pt : {PieceType::PAWN, PieceType::KNIGHT, PieceType::BISHOP, PieceType::ROOK, PieceType::QUEEN}) {
+        //todo Replace with (PType p_type = PType::FIRST; p_type != PType::OOB; increment_enum(p_type))
+        uint64_t pieceBitboard = board.pieces(pt, Color::WHITE).getBits();
 
-    const int bishopTable[8][8] = {
-        {-20, -10, -10, -10, -10, -10, -10, -20},
-        {-10,   0,   0,   0,   0,   0,   0, -10},
-        {-10,   0,   5,  10,  10,   5,   0, -10},
-        {-10,   5,   5,  10,  10,   5,   5, -10},
-        {-10,   0,  10,  10,  10,  10,   0, -10},
-        {-10,  10,  10,  10,  10,  10,  10, -10},
-        {-10,   5,   0,   0,   0,   0,   5, -10},
-        {-20, -10, -10, -10, -10, -10, -10, -20}
-    };
+        while(pieceBitboard){
+            int pos = __builtin_ctzll(pieceBitboard); //todo or leastSignificantIndex
+            pieceBitboard &= pieceBitboard - 1;
 
-    const int rookTable[8][8] = {
-        
+            // Flip for black pieces
+            // if (!isWhite) pos = 63 - pos;
+            
+            score += pieceTable[int(pt)][pos];
+        }
     }
+    // King handling
+    int pt = int(PieceType::KING);
+    int64_t pieceBitboard = board.pieces(PieceType::KING, Color::WHITE).getBits();
+    int pos = __builtin_ctzll(pieceBitboard);
+
+    auto [gameResult, _] = board.isGameOver();
+
+    // Game is not over
+    if (gameResult == GameResultReason::NONE) {
+        score += pieceTable[pt][pos];
+    // Game is over
+    }else {
+        score += pieceTable[pt][++pos]; 
+    }
+    return score;
 }
 
 }
