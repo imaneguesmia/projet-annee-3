@@ -138,7 +138,7 @@ int leastSignificantBitIndex(uint64_t n) {
 int MinimaxAI::pieceSquareHeuristic(const Board& board){
     int score = 0;
 
-    for (auto pt : {PieceType::PAWN, PieceType::KNIGHT, PieceType::BISHOP, PieceType::ROOK, PieceType::QUEEN}) {
+    for (auto pt : {PieceType::PAWN, PieceType::KNIGHT, PieceType::BISHOP, PieceType::ROOK, PieceType::QUEEN,PieceType::KING}) {
         //todo Replace with (PType p_type = PType::FIRST; p_type != PType::OOB; increment_enum(p_type))
         uint64_t pieceBitboard = board.pieces(pt, Color::WHITE).getBits();
 
@@ -152,20 +152,7 @@ int MinimaxAI::pieceSquareHeuristic(const Board& board){
             score += pieceTable[int(pt)][pos];
         }
     }
-    // King handling
-    int pt = int(PieceType::KING);
-    int64_t pieceBitboard = board.pieces(PieceType::KING, Color::WHITE).getBits();
-    int pos = leastSignificantBitIndex(pieceBitboard);
 
-    auto [gameResult, _] = board.isGameOver();
-
-    // Game is not over
-    if (gameResult == GameResultReason::NONE) {
-        score += pieceTable[pt][pos];
-    // Game is over
-    }else {
-        score += pieceTable[pt][++pos]; 
-    }
     return score;
 }
 
