@@ -1,152 +1,329 @@
 #include "chess/MinimaxAI2.hpp"
-#include "chess.hpp"
 #include <algorithm>
-#include <limits>
+#include <cstdint>
 #include <unordered_map>
-#include <vector>
+#include <limits>
 
+/*
+Search optimisations done(may be improved):
+    Iterative deapening
+    Aspiration windows
+    Quiescence search
+    Transposition table
+    Move ordering:
+        -MVV-LVA
+        -Killer Move
+        -PV-Move
+        -History heuristic
+
+ */
 namespace chess {
 
-constexpr int INF = 10000000;
-constexpr int MATE_SCORE = 1000000;
+static constexpr int INF       = 100000000;  // "infinite" bound for alpha/beta
+static constexpr int MATE_SCORE= 1000000;    // checkmate scoring base
+static constexpr int ASP_WIN   = 50;         // aspiration window half‐width
 
-int scoreMove(Move move, const Board & board) {
-    if (board.isCapture(move)) {
-        // Récupération des pièces concernées
-        Piece movingPiece  = board.at(move.from());
-        Piece capturedPiece = board.at(move.to());
+// Bound Types for Transposition Table
+enum class Bound { EXACT, LOWER, UPPER };
 
-        // Valeurs associées à chaque type de pièce
-        static const std::unordered_map<PieceType, int, PieceType::Hash> pieceValues = {
-            {PieceType::PAWN,   100},
-            {PieceType::KNIGHT, 300},
-            {PieceType::BISHOP, 300},
-            {PieceType::ROOK,   500},
-            {PieceType::QUEEN,  900},
-            {PieceType::KING,   10000}
-        };
+struct TTEntry {
+    int          score;
+    int          depth;
+    Bound        bound;
+    Move         bestMove;
+};
 
-        // Si la case destination est vide (cas de l'en passant), on considère la victime comme un pion.
-        int victimValue = (capturedPiece != Piece())
-                          ? pieceValues.at(capturedPiece.type())
-                          : pieceValues.at(PieceType::PAWN);
-        int attackerValue = pieceValues.at(movingPiece.type());
-        return victimValue - attackerValue;
-    }
-    return 0;
+MinimaxAI2::MinimaxAI2(int depth)
+    : searchDepth(depth)
+{
+    // typical max ply for killer moves
+    killerMoves.resize(64, std::array<Move,2>{Move::NO_MOVE, Move::NO_MOVE});
+
+    // 16 piece types × 64 squares for history
+    historyHeuristic.resize(16, std::vector<int>(64, 0));
 }
 
-MinimaxAI2::MinimaxAI2(int depth) : searchDepth(depth) {}
 
-int MinimaxAI2::quiescence(Board & board, int alpha, int beta) {
-    int standPat = evaluate(board);
-    if (standPat >= beta)
-        return beta;
-    if (alpha < standPat)
-        alpha = standPat;
+Move MinimaxAI2::getMove(Board& board) {
+    /*
+      This function does iterative deepening from 1..searchDepth,
+      using a small aspiration window around the best score found
+      so far. If a fail-high/low occurs, it re-searches with the full window.
+    */
+    Move bestMove   = Move::NO_MOVE;
+    int  bestScore  = -INF;
 
-    Movelist moves;
+    // On the very first iteration, we have no “previous bestScore,”
+    // so start with the widest window.
+    int alphaGlobal = -INF;
+    int betaGlobal  = +INF;
 
-    movegen::legalmoves<movegen::MoveGenType::CAPTURE>(moves, board);
-
-    for (Move move : moves) {
-        board.makeMove(move);
-        int score = -quiescence(board, -beta, -alpha);
-        board.unmakeMove(move);
-        if (score >= beta)
-            return beta;
-        if (score > alpha)
-            alpha = score;
-    }
-    return alpha;
-}
-
-int MinimaxAI2::negamax(Board & board, int depth, int alpha, int beta) {
-    auto [gameResult, details] = board.isGameOver();
-    if (depth == 0 || gameResult != GameResultReason::NONE) {
-        if (gameResult != GameResultReason::NONE) {
-            if (gameResult == GameResultReason::CHECKMATE)
-                return -MATE_SCORE + depth;  // Favorise les mats rapides
-            else
-                return 0;  // Partie nulle (pat ou autre)
-        }
-        return quiescence(board, alpha, beta);
-    }
-
-    Movelist moves;
-    movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
-    if (moves.empty())
-        return quiescence(board, alpha, beta);
-
-    std::sort(moves.begin(), moves.end(),
-              [&board](Move a, Move b) {
-                  return scoreMove(a, board) > scoreMove(b, board);
-              });
-
-    int bestScore = -INF;
-    for (Move move : moves) {
-        board.makeMove(move);
-        int score = -negamax(board, depth - 1, -beta, -alpha);
-        board.unmakeMove(move);
-        if (score > bestScore)
-            bestScore = score;
-        if (bestScore > alpha)
-            alpha = bestScore;
-        if (alpha >= beta)
-            break;
-    }
-    return bestScore;
-}
-
-Move MinimaxAI2::getMove(Board & board) {
-    Movelist moves;
-    movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
-    if (moves.empty())
-        return Move::NO_MOVE;
-
-    // On initialise bestMove avec le premier coup disponible.
-    Move bestMove = moves[0];
-    int bestScore = -INF;
-
-    // Bonus pour privilégier le meilleru coup calculé précédemment
-    constexpr int BONUS_PV = 1000000;
-
-    // Itérative deepening de 1 à searchDepth
     for (int currentDepth = 1; currentDepth <= searchDepth; ++currentDepth) {
-        movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
+        // Use an aspiration window around bestScore only after the first iteration
+        int alpha = (currentDepth == 1) ? alphaGlobal : bestScore - ASP_WIN;
+        int beta  = (currentDepth == 1) ? betaGlobal  : bestScore + ASP_WIN;
 
-        // Tri des coups
-        std::sort(moves.begin(), moves.end(),
-                  [&board, bestMove](Move a, Move b) {
-                      int scoreA = scoreMove(a, board) + ((a == bestMove) ? BONUS_PV : 0);
-                      int scoreB = scoreMove(b, board) + ((b == bestMove) ? BONUS_PV : 0);
-                      return scoreA > scoreB;
-                  });
+        int score = negamax(board, currentDepth, alpha, beta, /*ply=*/0);
 
-        int alpha = -INF;
-        int beta  = INF;
-        bestScore = -INF;
+        // If we had a fail‐high or fail‐low, re‐search with full window
+        if (score <= alpha || score >= beta) {
+            score = negamax(board, currentDepth, -INF, +INF, /*ply=*/0);
+        }
 
-        for (Move move : moves) {
-            board.makeMove(move);
-            int score = -negamax(board, currentDepth - 1, -beta, -alpha);
-            board.unmakeMove(move);
-            if (score > bestScore) {
-                bestScore = score;
-                bestMove = move;
-            }
-            if (score > alpha)
-                alpha = score;
-            if (alpha >= beta)
-                break;
+        bestScore = score;
+        auto it = transpositionTable.find(board.hash());
+        if (it != transpositionTable.end()) {
+            bestMove = it->second.bestMove;
         }
     }
+
     return bestMove;
 }
 
 
-int MinimaxAI2::evaluate(const Board & board) {
-    static const std::unordered_map<PieceType, int, PieceType::Hash> pieceValues = {
+int MinimaxAI2::negamax(Board& board, int depth, int alpha, int beta, int ply) {
+    /*
+      Pure negamax with alpha–beta.
+    */
+    const std::uint64_t zKey = board.hash();
+    auto ttIt = transpositionTable.find(zKey);
+
+    if (ply) {
+        // prevent draw in winning positions
+        if (board.isRepetition(1) || board.isHalfMoveDraw()) return 0;}
+
+    // Transposition table lookup
+    if (ttIt != transpositionTable.end()) {
+        const TTEntry &entry = ttIt->second;
+        if (entry.depth >= depth) {
+            // If the stored bound is EXACT, or within alpha/beta, we can return
+            if (entry.bound == Bound::EXACT) {
+                return entry.score;
+            }
+            // Otherwise, we can use it to narrow alpha or beta
+            if (entry.bound == Bound::LOWER && entry.score > alpha) {
+                alpha = entry.score;
+            } else if (entry.bound == Bound::UPPER && entry.score < beta) {
+                beta = entry.score;
+            }
+            if (alpha >= beta) {
+                return entry.score;
+            }
+        }
+    }
+
+    // Terminal check (checkmate / stalemate / draw)
+    auto [gameResultReason, gameResult] = board.isGameOver();
+    if (gameResultReason != GameResultReason::NONE) {
+        // Evaluate terminal position
+        return evaluateTerminal(gameResultReason, gameResult, ply);
+    }
+
+    // Reached maximum depth => use quiescence
+    if (depth <= 0) {
+        return quiescence(board, alpha, beta, ply);
+    }
+
+    // Normal move search
+    Movelist moves;
+    movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
+
+    if (moves.empty()) {
+        return evaluate(board);
+    }
+
+    // Order moves: prefer captures, killers, PV moves, etc.
+    Move ttBestMove = Move::NO_MOVE;
+    if (ttIt != transpositionTable.end()) {
+        ttBestMove = ttIt->second.bestMove;
+    }
+    orderMoves(moves, board, ply, ttBestMove);
+
+    int bestValue   = -INF;
+    int alphaOrig   = alpha;
+    Move bestMove   = Move::NO_MOVE;
+
+    for (size_t i = 0; i < moves.size(); ++i) {
+        const Move move = moves[i];
+
+        board.makeMove(move);
+        int val = -negamax(board, depth - 1, -beta, -alpha, ply + 1);
+        board.unmakeMove(move);
+
+        if (val > bestValue) {
+            bestValue = val;
+            bestMove  = move;
+        }
+        if (bestValue > alpha) {
+            alpha = bestValue;
+        }
+        if (alpha >= beta) {
+            // Record killer/history moves
+            updateKillers(move, ply);
+            // Optionally update history heuristic if not a capture
+            if (!board.isCapture(move)) {
+                const int fromType = static_cast<int>(board.at(move.from()).type());
+                historyHeuristic[fromType][move.to().index()] += depth * depth;
+            }
+            break; // alpha–beta cutoff
+        }
+    }
+
+    // Store in TT
+    Bound bound;
+    if (bestValue <= alphaOrig) {
+        // Fail‐low => upper bound
+        bound = Bound::UPPER;
+    } else if (bestValue >= beta) {
+        // Fail‐high => lower bound
+        bound = Bound::LOWER;
+    } else {
+        // Otherwise exact
+        bound = Bound::EXACT;
+    }
+
+    TTEntry newEntry{bestValue, depth, bound, bestMove};
+    transpositionTable[zKey] = newEntry;
+
+    return bestValue;
+}
+
+
+int MinimaxAI2::quiescence(Board& board, int alpha, int beta, int ply) {
+    /*
+      Quiescence search (negamax style).
+      Evaluate the position (“stand pat”), then explore only captures (and possibly checks)
+      to avoid horizon effects.
+    */
+    int standPat = evaluate(board);
+
+    if (standPat >= beta) {
+        return beta;
+    }
+    if (standPat > alpha) {
+        alpha = standPat;
+    }
+
+    Movelist captures;
+    movegen::legalmoves<movegen::MoveGenType::CAPTURE>(captures, board);
+
+    orderMoves(captures, board, ply, Move::NO_MOVE);
+
+    for (const auto& capture : captures) {
+        board.makeMove(capture);
+        int score = -quiescence(board, -beta, -alpha, ply + 1);
+        board.unmakeMove(capture);
+
+        if (score > standPat) {
+            standPat = score;
+            if (score > alpha) {
+                alpha = score;
+            }
+            if (alpha >= beta) {
+                break;
+            }
+        }
+    }
+
+    return alpha;
+}
+
+
+void MinimaxAI2::orderMoves(Movelist& moves, Board& board, int ply, Move pvMove) {
+    /*
+      typical move ordering strategy:
+       - Give a big bonus if it’s the principal variation move (from TT).
+       - Give bonuses for captures (MVV-LVA).
+       - Give bonuses for killer moves.
+       - Give some history heuristic bonus if not capture.
+      Then sort descending by these “scores.”
+    */
+    std::vector<std::pair<Move, int>> scoredMoves;
+    scoredMoves.reserve(moves.size());
+
+    for (auto& mv : moves) {
+        int score = 0;
+
+        // Principal Variation from TT
+        if (mv == pvMove) {
+            score += 100000;
+        }
+
+        // If capture, MVV-LVA (roughly victim minus attacker)
+        if (board.isCapture(mv)) {
+            const Piece attacker = board.at(mv.from());
+            const Piece victim   = board.at(mv.to());
+            score += 1000
+                  + static_cast<int>(victim.type()) * 10
+                  - static_cast<int>(attacker.type());
+        }
+        else {
+            // Killer move?
+            if (mv == killerMoves[ply][0]) score += 900;
+            if (mv == killerMoves[ply][1]) score += 800;
+
+            // History heuristic?
+            int fromType = static_cast<int>(board.at(mv.from()).type());
+            score += historyHeuristic[fromType][mv.to().index()];
+        }
+
+        scoredMoves.emplace_back(mv, score);
+    }
+
+    std::sort(scoredMoves.begin(), scoredMoves.end(),
+              [](const auto& a, const auto& b) {
+                  return a.second > b.second; // descending
+              });
+
+    moves.clear();
+    for (auto& kv : scoredMoves) {
+        moves.add(kv.first);
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+void MinimaxAI2::updateKillers(Move move, int ply) {
+    // If this move is different from the first killer,
+    // shift them down and store it in [0].
+    if (killerMoves[ply][0] != move) {
+        killerMoves[ply][1] = killerMoves[ply][0];
+        killerMoves[ply][0] = move;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+int MinimaxAI2::evaluateTerminal(GameResultReason reason,
+                                 GameResult result,
+                                 int ply) const
+{
+    /*
+      If it’s checkmate, then from the side‐to‐move’s perspective:
+        - “WIN” means side‐to‐move has delivered checkmate => big positive
+        - “LOSE” means side‐to‐move is checkmated => big negative
+      The `(MATE_SCORE - ply)` part helps the engine find mate quickly.
+    */
+    if (reason == GameResultReason::CHECKMATE) {
+        if (result == GameResult::WIN) {
+            return  MATE_SCORE - ply;
+        } else {
+            return -MATE_SCORE + ply;
+        }
+    }
+    // Otherwise (draw / stalemate / etc.)
+    return 0;
+}
+
+// -----------------------------------------------------------------------------
+
+int MinimaxAI2::evaluate(const Board& board) {
+    /*
+      Returns a score from the current side‐to‐move's perspective.
+      White’s total material minus Black’s total material if White to move,
+      or the inverse if Black to move.
+    */
+    static const std::unordered_map<PieceType,int, PieceType::Hash> pieceValues = {
         {PieceType::PAWN,   100},
         {PieceType::KNIGHT, 300},
         {PieceType::BISHOP, 300},
@@ -155,23 +332,32 @@ int MinimaxAI2::evaluate(const Board & board) {
         {PieceType::KING,   10000}
     };
 
-    int score = 0;
-    for (auto pt : {PieceType::PAWN, PieceType::KNIGHT, PieceType::BISHOP, PieceType::ROOK, PieceType::QUEEN}) {
-        score += board.pieces(pt, Color::WHITE).count() * pieceValues.at(pt);
-        score -= board.pieces(pt, Color::BLACK).count() * pieceValues.at(pt);
+    int baseScore = 0;
+    for (auto pt : {PieceType::PAWN, PieceType::KNIGHT, PieceType::BISHOP,
+                    PieceType::ROOK, PieceType::QUEEN})
+    {
+        baseScore += board.pieces(pt, Color::WHITE).count() * pieceValues.at(pt);
+        baseScore -= board.pieces(pt, Color::BLACK).count() * pieceValues.at(pt);
     }
 
-    constexpr int BACKTRACK_PENALTY = 100;
-    if (board.isRepetition(2)) {
-        score += (board.sideToMove() == Color::WHITE) ? -BACKTRACK_PENALTY : BACKTRACK_PENALTY;
-    }
-
+    // Bonus for check
     constexpr int CHECK_BONUS = 150;
     if (board.inCheck()) {
-        score += (board.sideToMove() == Color::BLACK) ? CHECK_BONUS : -CHECK_BONUS;
+        if (board.sideToMove() == Color::BLACK) {
+            baseScore += CHECK_BONUS;
+        } else {
+            baseScore -= CHECK_BONUS;
+        }
     }
 
-    return score;
+    if (board.sideToMove() == Color::BLACK) {
+        baseScore = -baseScore;
+    }
+
+    return baseScore;
 }
 
 } // namespace chess
+
+
+

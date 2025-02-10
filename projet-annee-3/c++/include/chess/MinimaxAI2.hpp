@@ -1,11 +1,11 @@
-#pragma once
+#ifndef MINIMAXAI2_HPP
+#define MINIMAXAI2_HPP
 
-#include "chess.hpp"
 #include "Player.hpp"
-#include <vector>
-#include <limits>
+#include "chess.hpp"
 #include <unordered_map>
-#include <algorithm>
+#include <vector>
+#include <cstdint> // Pour std::uint64_t
 
 namespace chess {
 
@@ -15,10 +15,28 @@ namespace chess {
         Move getMove(Board& board) override;
 
     private:
-        int negamax(Board& board, int depth, int alpha, int beta);
-        int quiescence(Board& board, int alpha, int beta);
-        int evaluate(const Board& board);
+        enum Bound { LOWER, UPPER, EXACT };
+
+        struct TTEntry {
+            int score;
+            int depth;
+            Bound bound;
+            Move bestMove;
+        };
+
         int searchDepth;
+        std::unordered_map<std::uint64_t, TTEntry> transpositionTable; // Correction ici
+        std::vector<std::array<Move, 2>> killerMoves;
+        std::vector<std::vector<int>> historyHeuristic;
+
+        int negamax(Board& board, int depth, int alpha, int beta, int ply);
+        int quiescence(Board& board, int alpha, int beta, int ply);
+        void orderMoves(Movelist& moves, Board& board, int ply, Move pvMove);
+        void updateKillers(Move move, int ply);
+        int evaluateTerminal(GameResultReason result, GameResult details, int ply) const;
+        int evaluate(const Board& board);
     };
 
 } // namespace chess
+
+#endif
