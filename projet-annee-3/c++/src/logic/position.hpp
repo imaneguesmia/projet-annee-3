@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <iostream>
+#include <string>
 
 // Enum over board positions.
 enum class Square : uint8_t {
@@ -34,11 +35,11 @@ public:
     // Constructs a Position from the given row and column.
     Position(int row, int col) { setPosition(row, col); };
     // Constructs a Position with the given index.
-    Position(Square index) { setPositionIndex(index); };
+    Position(Square index) { setPositionSquare(index); };
     // Constructs a Position with the given index. Throws `std::invalid_argument` if the index is out of bounds.
-    Position(int index);
+    Position(int index) { setPositionSquare(index); };
     // Constructs a Position from the given position string, i.e. "e4". "-" if invalid.
-    Position(const char string[3]) { setPositionString(string); };
+    Position(const std::string& string) { setPositionString(string); };
 
     // Constructs an invalid Position.
     Position() : Position(Square::Invalid) {};
@@ -60,15 +61,16 @@ public:
     // Sets the position to the given row and column.
     void setPosition(int row, int col);
 
-    Square getPositionIndex() const { return position_index; };
-    void setPositionIndex(Square index) { position_index = index; };
+    Square getPositionSquare() const { return position_index; };
 
-    Square getPositionSquare() const { return Square(position_index); };
+    void setPositionSquare(Square index) { position_index = index; };
+    // Throws `std::invalid_argument` if the index is out of bounds.
+    void setPositionSquare(int index);
 
     // Gets the string representation of the position, i.e. "e4". "-" if invalid.
-    void getPositionString(char out[3]) const;
+    std::string getPositionString() const;
     // Sets the position from the given position string.
-    void setPositionString(const char string[3]);
+    void setPositionString(const std::string& string);
 
     /* -- Increment/decrement operators -- */
 

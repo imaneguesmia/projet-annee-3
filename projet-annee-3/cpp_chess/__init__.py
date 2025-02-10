@@ -1,6 +1,10 @@
-from .chess_module import PType, Piece
+from .chess_module import *
 
 # Import and export relevant members
 __all__ = [
-    "PType", "Piece"
+    "Player", "other_player",
+    "Square", "Position",
+    "PType", "Piece",
+    "Move",
+    "Game",
 ]

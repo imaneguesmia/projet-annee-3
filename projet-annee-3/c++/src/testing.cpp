@@ -19,16 +19,24 @@ C++ library and will not have any entry point.
 int main(int argc, char ** argv) {
     // safely_to_enum_class<Player>(2);
 
+    // std::cout << Position("e4") << '\n';
+    // return 0;
+
     std::cout << "Initial state :" << std::endl;
 
     // Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
     // std::cout << b << std::endl;
 
-    Game b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ e6 0 1");
+    // Game b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ e6 0 1");
     // Game b;
+    Game b("8/8/8/8/8/1p6/8/8 b - - 0 1");
 
     b.printBoard();
     std::cout << b.fen() << '\n';
+
+    for (const auto& m : b.getCurrentPseudoLegals()) {
+        std::cout << m << '\n';
+    }
 
     // b.move({
     //     Position::e1, Position::g1,
@@ -36,6 +44,8 @@ int main(int argc, char ** argv) {
     //     PType::NoneType,
     //     false, false, false, true
     // });
+
+    return 0;
 
     // Flags : capture, double_push, en_passant, castle
 

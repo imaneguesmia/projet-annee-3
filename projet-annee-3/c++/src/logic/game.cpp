@@ -52,14 +52,10 @@ const Game::GameState Game::gameStateFromFEN(const std::string& fen) const {
 
     /* En passant */
 
-    if (ss.peek() != '-') {
-        char position_string[3] {0};
-        ss >> position_string[0] >> position_string[1];
+    std::string position_string;
+    std::getline(ss, position_string, ' ');
 
-        game_state.en_passant = Position(position_string);
-    } else {
-        ss.ignore(2);
-    }
+    game_state.en_passant.setPositionString(position_string);
 
     /* Halfmoves and fullmoves */
 
@@ -135,7 +131,7 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
     /* Double push en passant target */
 
     if (move.double_push) {
-        en_passant = move.target + (move.player == Player::White ? 8 : -8);
+        en_passant.setPositionSquare(move.target + (move.player == Player::White ? 8 : -8));
     } else {
         en_passant.setPositionInvalid();
     }
@@ -164,7 +160,7 @@ void Game::unmakeMoveOnBoard(const UnmakeMove unmake_move) {
     board.unmovePiece(unmake_move.move, unmake_move.captured);
 
     castling_rights = unmake_move.castling_rights;
-    en_passant = unmake_move.en_passant;
+    en_passant.setPositionSquare(unmake_move.en_passant);
 
     halfmoves = unmake_move.halfmoves;
     fullmoves -= static_cast<int>(unmake_move.move.player);

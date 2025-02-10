@@ -9,11 +9,6 @@
 
 /* -- DEFINE class Position -- */
 
-Position::Position(int index) {
-    if (index == static_cast<int>(Square::Invalid)) setPositionInvalid();
-    else setPositionIndex(safely_to_enum_class<Square>(index));
-}
-
 void Position::setPosition(int row, int col) {
     if (row < 0 || row > 7 || col < 0 || col > 7) {
         throw std::invalid_argument(std::format("Invalid position: ({}, {})", row, col));
@@ -22,28 +17,38 @@ void Position::setPosition(int row, int col) {
     position_index = Square((row * 8) + col);
 }
 
-void Position::getPositionString(char out[3]) const {
+void Position::setPositionSquare(int index) {
+    if (index == static_cast<int>(Square::Invalid)) setPositionInvalid();
+    else setPositionSquare(safely_to_enum_class<Square>(index));
+}
+
+std::string Position::getPositionString() const {
+    char out[3] {'\0'};
+
     if (!isValid()) {
-        strcpy(out, "-");
+        out[0] = '-';
     } else {
         out[0] = 'a' + getColumn();
         out[1] = '8' - getRow();
-        out[2] = '\0';
     }
+
+    return out;
 };
 
-void Position::setPositionString(const char string[3]) {
-    if (
-        ('a' > string[0] || 'h' < string[0]) && string[0] != '-' ||
-        ('1' > string[1] || '8' < string[1]) && string[1] != '\0' ||
-        string[2] != '\0'
+void Position::setPositionString(const std::string& string) {
+    if (string.compare("-") == 0) {
+        setPositionInvalid();
+    }
+    
+    else if (
+        string.length() != 2 ||
+        ('a' > string[0] || 'h' < string[0]) ||
+        ('1' > string[1] || '8' < string[1])
     ) {
         throw std::invalid_argument(std::format("Invalid position string: {}", string));
     }
-
-    if (strcmp(string, "-") == 0) {
-        setPositionInvalid();
-    } else {
+    
+    else {
         int row = '8' - string[1];
         int col = string[0] - 'a';
 
@@ -74,10 +79,8 @@ Position Position::operator--(int) {
 };
 
 std::ostream& operator<<(std::ostream& out, const Position& position) {
-    char string[3];
-    position.getPositionString(string);
-
-    out << string;
+    out << position.getPositionString();
+    
     return out;
 }
 
