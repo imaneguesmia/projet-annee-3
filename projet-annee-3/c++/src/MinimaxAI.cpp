@@ -114,6 +114,26 @@ int MinimaxAI::evaluate(const Board& board) {
 
     return score;
 }
+int leastSignificantBitIndex(uint64_t n) {
+    // Algorithm by Kim Walisch.
+    // https://www.chessprogramming.org/BitScan#KimWalisch
+
+    static const uint64_t debruijn_hash_64 = 0x03f79d71b4cb0a89ULL;
+
+    static const int index_64[64] = {
+        0, 47,  1, 56, 48, 27,  2, 60,
+        57, 49, 41, 37, 28, 16,  3, 61,
+        54, 58, 35, 52, 50, 42, 21, 44,
+        38, 32, 29, 23, 17, 11,  4, 62,
+        46, 55, 26, 59, 40, 36, 15, 53,
+        34, 51, 20, 43, 31, 22, 10, 45,
+        25, 39, 14, 33, 19, 30,  9, 24,
+        13, 18,  8, 12,  7,  6,  5, 63
+    };
+
+    // Black magic hashery
+    return index_64[((n ^ (n-1)) * debruijn_hash_64) >> 58];
+};
 
 int MinimaxAI::pieceSquareHeuristic(const Board& board){
     int score = 0;
@@ -123,7 +143,7 @@ int MinimaxAI::pieceSquareHeuristic(const Board& board){
         uint64_t pieceBitboard = board.pieces(pt, Color::WHITE).getBits();
 
         while(pieceBitboard){
-            int pos = __builtin_ctzll(pieceBitboard); //todo or leastSignificantIndex
+            int pos = leastSignificantBitIndex(pieceBitboard);
             pieceBitboard &= pieceBitboard - 1;
 
             // Flip for black pieces
@@ -135,7 +155,7 @@ int MinimaxAI::pieceSquareHeuristic(const Board& board){
     // King handling
     int pt = int(PieceType::KING);
     int64_t pieceBitboard = board.pieces(PieceType::KING, Color::WHITE).getBits();
-    int pos = __builtin_ctzll(pieceBitboard);
+    int pos = leastSignificantBitIndex(pieceBitboard);
 
     auto [gameResult, _] = board.isGameOver();
 
