@@ -166,10 +166,10 @@ public:
      * 
      * @param from          Source square of the move.
      * @param to            Target square of the move.
-     * @param promoted_to   Piece to promote to, if applicable.
+     * @param promoted_to   Piece type to promote to, if applicable.
      * @return `true` if the move is legal and was successfully made.
      */
-    bool move(const Position& from, const Position& to, const Piece& promoted_to);
+    bool move(const Position& from, const Position& to, const PType promoted_to);
     /**
      * @brief Makes a move on the board.
      * 

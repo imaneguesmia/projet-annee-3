@@ -168,8 +168,17 @@ void Game::unmakeMoveOnBoard(const UnmakeMove unmake_move) {
     current_player = unmake_move.move.player;
 }
 
-bool Game::move(const Position& from, const Position& to, const Piece& promoted_to) {
-    
+bool Game::move(const Position& from, const Position& to, const PType promoted_to) {
+    for (const auto& possible_move : getCurrentPseudoLegals()) {
+        if (
+            possible_move.source == from && possible_move.target == to &&
+            possible_move.promotion == promoted_to
+        ) {
+            return move(possible_move);
+        }
+    }
+
+    return false;
 }
 
 bool Game::move(const Move move) {
