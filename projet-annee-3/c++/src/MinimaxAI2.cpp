@@ -315,49 +315,6 @@ int MinimaxAI2::evaluateTerminal(GameResultReason reason,
     return 0;
 }
 
-// -----------------------------------------------------------------------------
-
-//int MinimaxAI2::evaluate(const Board& board) {
-//    /*
-//      Returns a score from the current side‐to‐move's perspective.
-//      White’s total material minus Black’s total material if White to move,
-//      or the inverse if Black to move.
-//    */
-//    static const std::unordered_map<PieceType,int, PieceType::Hash> pieceValues = {
-//        {PieceType::PAWN,   100},
-//        {PieceType::KNIGHT, 300},
-//        {PieceType::BISHOP, 300},
-//        {PieceType::ROOK,   500},
-//        {PieceType::QUEEN,  900},
-//        {PieceType::KING,   10000}
-//    };
-//
-//    int baseScore = 0;
-//    for (auto pt : {PieceType::PAWN, PieceType::KNIGHT, PieceType::BISHOP,
-//                    PieceType::ROOK, PieceType::QUEEN})
-//    {
-//        baseScore += board.pieces(pt, Color::WHITE).count() * pieceValues.at(pt);
-//        baseScore -= board.pieces(pt, Color::BLACK).count() * pieceValues.at(pt);
-//    }
-//
-//    // Bonus for check
-//    constexpr int CHECK_BONUS = 150;
-//    if (board.inCheck()) {
-//        if (board.sideToMove() == Color::BLACK) {
-//            baseScore += CHECK_BONUS;
-//        } else {
-//            baseScore -= CHECK_BONUS;
-//        }
-//    }
-//
-//    if (board.sideToMove() == Color::BLACK) {
-//        baseScore = -baseScore;
-//    }
-//
-//    return baseScore;
-//}
-
-
 
 static inline int mirrorSquare(int sq) {
     // If squares are 0..63 with rank-major order,

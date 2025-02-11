@@ -17,6 +17,11 @@ set(SOURCES
         src/MinimaxAI3.cpp
         src/HumanPlayer.cpp
         src/GameManager.cpp
+        src/Search.cpp
+        src/TranspositionTable.cpp
+        src/MoveOrdering.cpp
+        src/Evaluator.cpp
+        src/QuiescenceSearch.cpp
 )
 
 add_executable(chess-engine ${SOURCES})
