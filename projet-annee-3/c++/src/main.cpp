@@ -10,13 +10,13 @@ int main() {
     chess::MinimaxAI2 betterai(5);
     chess::MinimaxAI2 betterrai(5);
     chess::HumanPlayer human;
-    chess::Nicolas theBest(5);
+    chess::Beluga theBest(5);
 
     // ai vs ai
      chess::MinimaxAI badai(3);
      chess::MinimaxAI ai(5);
 
-    chess::GameManager game(&human, &theBest);
+    chess::GameManager game(&betterai, &theBest);
     game.playGame();
 
     return 0;

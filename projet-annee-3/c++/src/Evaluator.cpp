@@ -4,19 +4,19 @@
 
 namespace chess {
 
-// On peut définir ces tables en "static" ou "constexpr" en global
-static const int baseValues[] = {
-    /* 0 : PAWN   */  100,
-    /* 1 : KNIGHT */  300,
-    /* 2 : BISHOP */  300,
-    /* 3 : ROOK   */  500,
-    /* 4 : QUEEN  */  900,
-    /* 5 : KING   */  10000,
-    /* 6 : NONE   */  0
+// Base material values for each piece type
+static constexpr int baseValues[] = {
+    100,   // Pawn
+    300,   // Knight
+    300,   // Bishop
+    500,   // Rook
+    900,   // Queen
+    10000, // King
+    0      // None (empty square)
 };
 
-// Indices : 0=Pawn, 1=Knight, 2=Bishop, 3=Rook, 4=Queen, 5=King, 6=KingEndgame(?)
-static const int pieceSquareTable[7][64] =
+// Piece-square tables for positional evaluation
+static constexpr int pieceSquareTable[7][64] =
 {
     // Pawn
     {
@@ -64,52 +64,58 @@ static const int pieceSquareTable[7][64] =
     },
     // Queen
     {
-       -20,-10,-10, -5, -5,-10,-10,-20,
-       -10,  0,  0,  0,  0,  0,  0,-10,
-       -10,  0,  5,  5,  5,  5,  0,-10,
-        -5,  0,  5,  5,  5,  5,  0, -5,
-         0,  0,  5,  5,  5,  5,  0, -5,
-       -10,  5,  5,  5,  5,  5,  0,-10,
-       -10,  0,  5,  0,  0,  0,  0,-10,
-       -20,-10,-10, -5, -5,-10,-10,-20
+        -20,-10,-10, -5, -5,-10,-10,-20,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -10,  0,  5,  5,  5,  5,  0,-10,
+         -5,  0,  5,  5,  5,  5,  0, -5,
+          0,  0,  5,  5,  5,  5,  0, -5,
+        -10,  5,  5,  5,  5,  5,  0,-10,
+        -10,  0,  5,  0,  0,  0,  0,-10,
+        -20,-10,-10, -5, -5,-10,-10,-20
     },
-    // King (midgame)
+    // King midgame
     {
-       -30,-40,-40,-50,-50,-40,-40,-30,
-       -30,-40,-40,-50,-50,-40,-40,-30,
-       -30,-40,-40,-50,-50,-40,-40,-30,
-       -30,-40,-40,-50,-50,-40,-40,-30,
-       -20,-30,-30,-40,-40,-30,-30,-20,
-       -10,-20,-20,-20,-20,-20,-20,-10,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -20,-30,-30,-40,-40,-30,-30,-20,
+        -10,-20,-20,-20,-20,-20,-20,-10,
         20, 20,  0,  0,  0,  0, 20, 20,
         20, 30, 10,  0,  0, 10, 30, 20
     },
-    // King (endgame) – vous pourriez distinguer midgame/endgame
+    // King endgame
     {
-       -50,-40,-30,-20,-20,-30,-40,-50,
-       -30,-20,-10,  0,  0,-10,-20,-30,
-       -30,-10, 20, 30, 30, 20,-10,-30,
-       -30,-10, 30, 40, 40, 30,-10,-30,
-       -30,-10, 30, 40, 40, 30,-10,-30,
-       -30,-10, 20, 30, 30, 20,-10,-30,
-       -30,-30,  0,  0,  0,  0,-30,-30,
-       -50,-30,-30,-30,-30,-30,-30,-50
+        -50,-40,-30,-20,-20,-30,-40,-50,
+        -30,-20,-10,  0,  0,-10,-20,-30,
+        -30,-10, 20, 30, 30, 20,-10,-30,
+        -30,-10, 30, 40, 40, 30,-10,-30,
+        -30,-10, 30, 40, 40, 30,-10,-30,
+        -30,-10, 20, 30, 30, 20,-10,-30,
+        -30,-30,  0,  0,  0,  0,-30,-30,
+        -50,-30,-30,-30,-30,-30,-30,-50
     }
 };
 
+/**
+ * @brief Mirrors a square index to reflect the board from White's perspective.
+ * @param sq Square index (0-63).
+ * @return Mirrored square index.
+ */
 int Evaluator::mirrorSquare(int sq) const
 {
-    // On suppose que 0..63 indexe les cases (a1=0, h1=7, a2=8, etc.)
-    // Pour retourner la "vue" miroir (blanc vs noir), on fait sq ^ 56.
-    // a1 (0) -> a8 (56), etc.
-    return sq ^ 56;
+    return sq ^ 56; // Flips the rank for Black's perspective
 }
 
+/**
+ * @brief Evaluates the given board position.
+ * @param board The current chess board state.
+ * @return The evaluation score from the current's Player perspective.
+ */
 int Evaluator::evaluate(const Board& board)
 {
     int score = 0;
 
-    // On liste les types qui nous intéressent
     for (auto pt : {
         PieceType::PAWN,
         PieceType::KNIGHT,
@@ -117,11 +123,10 @@ int Evaluator::evaluate(const Board& board)
         PieceType::ROOK,
         PieceType::QUEEN,
         PieceType::KING
-    })
-    {
+    }) {
         int typeIndex = static_cast<int>(pt);
 
-        // Pièces blanches
+        // Evaluate White pieces
         {
             Bitboard bbWhite = board.pieces(pt, Color::WHITE);
             while (bbWhite) {
@@ -130,21 +135,19 @@ int Evaluator::evaluate(const Board& board)
                 score += pieceSquareTable[typeIndex][sq];
             }
         }
-        // Pièces noires
+
+        // Evaluate Black pieces
         {
             Bitboard bbBlack = board.pieces(pt, Color::BLACK);
             while (bbBlack) {
                 int sq = bbBlack.pop();
                 score -= baseValues[typeIndex];
-                // On “mirroir” la case pour le black
-                int mirrored = mirrorSquare(sq);
-                score -= pieceSquareTable[typeIndex][mirrored];
+                score -= pieceSquareTable[typeIndex][mirrorSquare(sq)];
             }
         }
     }
 
-    // Option : vous pouvez inverser le score si sideToMove == BLACK
-    // pour rester cohérent à un point de vue "to move".
+    // Adjust score if Black is to move
     if (board.sideToMove() == Color::BLACK) {
         score = -score;
     }

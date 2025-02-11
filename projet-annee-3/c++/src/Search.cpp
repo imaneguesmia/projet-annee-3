@@ -1,48 +1,44 @@
 #include "chess/Search.hpp"
-#include <algorithm> // std::max, etc.
+#include <algorithm> // std::max
 #include "chess/MoveOrdering.hpp"
 #include "chess/QuiescenceSearch.hpp"
 
 namespace chess {
 
-Nicolas::Nicolas(int depth)
+Beluga::Beluga(int depth)
     : searchDepth(depth)
 {
-    // Rien de spécial ici, on fait juste
-    // l'initialisation par défaut de nos membres :
-    // - transpositionTable
-    // - searchHeuristics
-    // - evaluator
 }
 
-Move Nicolas::getMove(Board& board)
+Move Beluga::getMove(Board& board)
 {
-    /*
-      Cette fonction effectue l'iterative deepening de 1 à searchDepth,
-      avec une fenêtre d'aspiration autour du meilleur score trouvé à l'itération précédente.
-    */
-    Move bestMove  = Move::NO_MOVE;
-    int  bestScore = -INF;
+    /**
+     * @brief Implements iterative deepening search up to the set depth.
+     * Uses aspiration windows for more efficient search.
+     */
+
+    Move bestMove = Move::NO_MOVE;
+    int bestScore = -INF;
 
     int alphaGlobal = -INF;
     int betaGlobal  = +INF;
 
     for (int currentDepth = 1; currentDepth <= searchDepth; ++currentDepth)
     {
-        // Fenêtre d’aspiration autour de bestScore, sauf pour la première itération
+        // Aspiration window around bestScore (except for first iteration)
         int alpha = (currentDepth == 1) ? alphaGlobal : bestScore - ASP_WIN;
         int beta  = (currentDepth == 1) ? betaGlobal  : bestScore + ASP_WIN;
 
         int score = negamax(board, currentDepth, alpha, beta, /*ply=*/0);
 
-        // Si on a un fail-low ou fail-high, on refait la recherche avec la fenêtre complète
+        // If we have a fail-low or fail-high, redo search with full window
         if (score <= alpha || score >= beta) {
             score = negamax(board, currentDepth, -INF, +INF, /*ply=*/0);
         }
 
         bestScore = score;
 
-        // On va chercher le meilleur coup dans la TT
+        // Retrieve best move from transposition table
         auto it = transpositionTable.lookup(board.hash());
         if (it.has_value()) {
             bestMove = it->bestMove;
@@ -52,23 +48,27 @@ Move Nicolas::getMove(Board& board)
     return bestMove;
 }
 
-int Nicolas::negamax(Board& board, int depth, int alpha, int beta, int ply)
+int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
 {
+    /**
+     * @brief Executes the NegaMax algorithm with alpha-beta pruning.
+     * Uses transposition tables and move ordering heuristics.
+     */
+
     const std::uint64_t zKey = board.hash();
 
-    // Vérification répétition ou 50 coups
+    // Check for repetition or 50-move rule
     if (ply > 0) {
         if (board.isRepetition(1) || board.isHalfMoveDraw()) {
-            return 0; // On renvoie un score neutre
+            return 0; // Neutral score
         }
     }
 
-    // Lookup dans la table de transposition
+    // Transposition table lookup
     auto ttEntryOpt = transpositionTable.lookup(zKey);
     if (ttEntryOpt.has_value()) {
         const TTEntry& entry = *ttEntryOpt;
         if (entry.depth >= depth) {
-            // On vérifie le bound
             if (entry.bound == Bound::EXACT) {
                 return entry.score;
             }
@@ -84,33 +84,32 @@ int Nicolas::negamax(Board& board, int depth, int alpha, int beta, int ply)
         }
     }
 
-    // Vérification si game over (mat, pat, etc.)
+    // Check if game is over (checkmate, stalemate, etc.)
     auto [gameResultReason, gameResult] = board.isGameOver();
     if (gameResultReason != GameResultReason::NONE) {
         return evaluateTerminal(gameResultReason, gameResult, ply);
     }
 
-    // Si on atteint depth <= 0 => quiescence
+    // Quiescence search if depth is zero or negative
     if (depth <= 0) {
         return quiescenceSearch(board, alpha, beta, ply, evaluator, moveOrdering);
     }
 
-    // Génération de tous les coups
+    // Generate all legal moves
     Movelist moves;
     movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
 
     if (moves.empty()) {
-        // Pas de coup légal, c'est probablement un pat ou un mat
-        return evaluator.evaluate(board); // ou un fallback
+        return evaluator.evaluate(board);
     }
 
-    // On cherche un "pvMove" éventuel depuis la TT
+    // Retrieve a potential best move from transposition table
     Move ttBestMove = Move::NO_MOVE;
     if (ttEntryOpt.has_value()) {
         ttBestMove = ttEntryOpt->bestMove;
     }
 
-    // On trie les coups (MVV-LVA, killers, etc.)
+    // Order moves based on heuristics (MVV-LVA, killer moves, history..)
     moveOrdering.orderMoves(moves, board, ply, ttBestMove);
 
     int bestValue = -INF;
@@ -119,37 +118,31 @@ int Nicolas::negamax(Board& board, int depth, int alpha, int beta, int ply)
 
     for (auto& move : moves) {
         board.makeMove(move);
-        int val = -negamax(board, depth - 1, -beta, -alpha, ply+1);
+        int val = -negamax(board, depth - 1, -beta, -alpha, ply + 1);
         board.unmakeMove(move);
 
         if (val > bestValue) {
             bestValue = val;
-            bestMove  = move;
+            bestMove = move;
         }
         if (bestValue > alpha) {
             alpha = bestValue;
         }
         if (alpha >= beta) {
-            // Mise à jour killers
             moveOrdering.updateKillers(move, ply);
-
-            // Mise à jour history
             moveOrdering.updateHistory(board, move, depth);
-
             break;
         }
     }
 
-    // Stockage dans la TT
+    // Store result in transposition table
     Bound bound;
     if (bestValue <= alphaOrig) {
         bound = Bound::UPPER;  // fail-low
-    }
-    else if (bestValue >= beta) {
+    } else if (bestValue >= beta) {
         bound = Bound::LOWER;  // fail-high
-    }
-    else {
-        bound = Bound::EXACT;  // exact
+    } else {
+        bound = Bound::EXACT;  // exact value
     }
 
     TTEntry newEntry{bestValue, depth, bound, bestMove};
@@ -158,21 +151,15 @@ int Nicolas::negamax(Board& board, int depth, int alpha, int beta, int ply)
     return bestValue;
 }
 
-int Nicolas::evaluateTerminal(GameResultReason reason,
-                                 GameResult result,
-                                 int ply) const
+int Beluga::evaluateTerminal(GameResultReason reason, GameResult result, int ply) const
 {
-    // Si c'est un mat, on renvoie ±(MATE_SCORE - ply)
+    /**
+     * @brief Evaluates the score for terminal game states.
+     * @return MATE_SCORE adjusted for depth, or 0 for stalemate.
+     */
     if (reason == GameResultReason::CHECKMATE) {
-        if (result == GameResult::WIN) {
-            // Côté to-move a fait mat
-            return +MATE_SCORE - ply;
-        } else {
-            // Côté to-move s'est fait mater
-            return -MATE_SCORE + ply;
-        }
+        return (result == GameResult::WIN) ? +MATE_SCORE - ply : -MATE_SCORE + ply;
     }
-    // Stalemate, etc. => 0
     return 0;
 }
 

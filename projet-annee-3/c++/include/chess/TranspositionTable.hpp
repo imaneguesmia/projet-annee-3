@@ -1,5 +1,4 @@
-#ifndef CHESS_TRANSPOSITIONTABLE_HPP
-#define CHESS_TRANSPOSITIONTABLE_HPP
+#pragma once
 
 #include <cstdint>
 #include <unordered_map>
@@ -8,32 +7,52 @@
 
 namespace chess {
 
-    // Types de bound
+    /**
+     * @enum Bound
+     * @brief Represents the type of bound stored in the transposition table.
+     */
     enum class Bound { EXACT, LOWER, UPPER };
 
-    // Entrée de la TT
+    /**
+     * @struct TTEntry
+     * @brief Represents an entry in the transposition table.
+     */
     struct TTEntry {
-        int      score;
-        int      depth;
-        Bound    bound;
-        Move     bestMove;
+        int score;      ///< Evaluation score of the position.
+        int depth;      ///< Search depth at which this evaluation was obtained.
+        Bound bound;    ///< Bound type (Exact, Lower, Upper).
+        Move bestMove;  ///< Best move found at this position.
     };
 
-    class TranspositionTable
-    {
+    /**
+     * @class TranspositionTable
+     * @brief Implements a transposition table using an unordered map for caching evaluations.
+     * @link https://www.chessprogramming.org/Transposition_Table
+     */
+    class TranspositionTable {
     public:
+        /**
+         * @brief Default constructor for the transposition table.
+         */
         TranspositionTable() = default;
 
-        // Recherche d'une entrée
+        /**
+         * @brief Looks up a position in the transposition table.
+         * @param key The Zobrist hash key representing the board position.
+         * @return An optional TTEntry containing the stored evaluation if found, or std::nullopt if not found.
+         */
         std::optional<TTEntry> lookup(std::uint64_t key) const;
 
-        // Stockage d'une entrée
+        /**
+         * @brief Stores an entry in the transposition table.
+         * @param key The Zobrist hash key representing the board position.
+         * @param entry The TTEntry containing evaluation and best move data.
+         */
         void store(std::uint64_t key, const TTEntry& entry);
 
     private:
-        std::unordered_map<std::uint64_t, TTEntry> table;
+        std::unordered_map<std::uint64_t, TTEntry> table; ///< Hash table storing board evaluations.
     };
 
 } // namespace chess
 
-#endif // CHESS_TRANSPOSITIONTABLE_HPP

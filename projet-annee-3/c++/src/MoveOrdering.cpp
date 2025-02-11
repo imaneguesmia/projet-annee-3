@@ -6,18 +6,18 @@ namespace chess {
 
 MoveOrdering::MoveOrdering()
 {
-    // Initialiser les killerMoves
+    // Initialize killer moves with NO_MOVE
     killerMoves.resize(MAX_PLY, { Move::NO_MOVE, Move::NO_MOVE });
 
-    // 16 types × 64 cases
+    // Initialize history heuristic for 16 piece types × 64 squares
     historyHeuristic.resize(16, std::vector<int>(64, 0));
 }
 
 void MoveOrdering::updateKillers(Move move, int ply)
 {
-    if (ply < 0 || ply >= (int)killerMoves.size()) return;
+    if (ply < 0 || ply >= static_cast<int>(killerMoves.size())) return;
 
-    // Si le move n'est pas déjà killer[0], on décale
+    // Shift existing killer move if it's different
     if (killerMoves[ply][0] != move) {
         killerMoves[ply][1] = killerMoves[ply][0];
         killerMoves[ply][0] = move;
@@ -26,13 +26,13 @@ void MoveOrdering::updateKillers(Move move, int ply)
 
 void MoveOrdering::updateHistory(const Board& board, Move move, int depth)
 {
-    // On incrémente le history si ce n'est pas une capture
+    // Update history only if the move is not a capture
     if (!board.isCapture(move)) {
         Piece attacker = board.at(move.from());
-        int fromType   = static_cast<int>(attacker.type());
-        int toIndex    = move.to().index();
+        int fromType = static_cast<int>(attacker.type());
+        int toIndex = move.to().index();
 
-        if (fromType >= 0 && fromType < (int)historyHeuristic.size()) {
+        if (fromType >= 0 && fromType < static_cast<int>(historyHeuristic.size())) {
             historyHeuristic[fromType][toIndex] += depth * depth;
         }
     }
@@ -40,10 +40,7 @@ void MoveOrdering::updateHistory(const Board& board, Move move, int depth)
 
 Move MoveOrdering::killerAt(int ply, int index) const
 {
-    if (ply < 0 || ply >= (int)killerMoves.size()) {
-        return Move::NO_MOVE;
-    }
-    if (index < 0 || index > 1) {
+    if (ply < 0 || ply >= static_cast<int>(killerMoves.size()) || index < 0 || index > 1) {
         return Move::NO_MOVE;
     }
     return killerMoves[ply][index];
@@ -52,41 +49,37 @@ Move MoveOrdering::killerAt(int ply, int index) const
 int MoveOrdering::historyScore(const Board& board, Move move) const
 {
     Piece attacker = board.at(move.from());
-    int fromType   = static_cast<int>(attacker.type());
-    int toIndex    = move.to().index();
+    int fromType = static_cast<int>(attacker.type());
+    int toIndex = move.to().index();
 
-    if (fromType >= 0 && fromType < (int)historyHeuristic.size()) {
+    if (fromType >= 0 && fromType < static_cast<int>(historyHeuristic.size())) {
         return historyHeuristic[fromType][toIndex];
     }
     return 0;
 }
 
-void MoveOrdering::orderMoves(Movelist& moves,
-                              const Board& board,
-                              int ply,
-                              Move pvMove)
+void MoveOrdering::orderMoves(Movelist& moves, const Board& board, int ply, Move pvMove)
 {
-    std::vector<std::pair<Move,int>> scoredMoves;
+    std::vector<std::pair<Move, int>> scoredMoves;
     scoredMoves.reserve(moves.size());
 
     for (auto& mv : moves) {
         int score = 0;
 
-        // Bonus si PV move (venant de la TT par ex.)
+        // Assign a high score to PV move
         if (mv == pvMove) {
             score += 100000;
         }
 
-        // Si capture => MVV-LVA
+        // Capture move scoring using MVV-LVA heuristic
         if (board.isCapture(mv)) {
             Piece attacker = board.at(mv.from());
-            Piece victim   = board.at(mv.to());
-            score += 1000
-                   + static_cast<int>(victim.type()) * 10
-                   - static_cast<int>(attacker.type());
+            Piece victim = board.at(mv.to());
+            score += 1000 + static_cast<int>(victim.type()) * 10 - static_cast<int>(attacker.type());
         }
+        // Quiet move
         else {
-            // Killer moves
+            // Assign bonuses for killer moves
             if (mv == killerAt(ply, 0)) {
                 score += 900;
             }
@@ -94,21 +87,22 @@ void MoveOrdering::orderMoves(Movelist& moves,
                 score += 800;
             }
 
-            // History heuristic
+            // Add history heuristic score
             score += historyScore(board, mv);
         }
 
         scoredMoves.emplace_back(mv, score);
     }
 
-    // Tri décroissant
+    // Sort moves in descending order of score
     std::sort(scoredMoves.begin(), scoredMoves.end(),
-              [](auto& a, auto& b){
+              [](const auto& a, const auto& b) {
                   return a.second > b.second;
               });
 
+    // Clear original moves and repopulate with sorted moves
     moves.clear();
-    for (auto& kv : scoredMoves) {
+    for (const auto& kv : scoredMoves) {
         moves.add(kv.first);
     }
 }

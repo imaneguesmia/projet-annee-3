@@ -1,5 +1,4 @@
-#ifndef CHESS_SEARCH_HPP
-#define CHESS_SEARCH_HPP
+#pragma once
 
 #include <cstdint>
 #include "Player.hpp"
@@ -9,33 +8,56 @@
 
 namespace chess {
 
-    class Nicolas : public Player
-    {
-    public:
-        // Constructeur : on passe la profondeur max souhaitée
-        explicit Nicolas(int depth);
+/**
+ * @class Beluga
+ * @brief Implements the NegaMax search with alpha-beta pruning and aspiration windows.
+ */
+class Beluga : public Player {
+public:
+    /**
+     * @brief Constructor for the Beluga search engine.
+     * @param depth Maximum search depth.
+     */
+    explicit Beluga(int depth);
 
-        // Méthode principale pour obtenir le meilleur coup
-        Move getMove(Board& board) override;
+    /**
+     * @brief Determines the best move for the current board position.
+     * @param board The current chess board state.
+     * @return The best move found.
+     */
+    Move getMove(Board& board) override;
 
-    private:
-        // NegaMax (avec alpha–beta) et aspiration windows
-        int negamax(Board& board, int depth, int alpha, int beta, int ply);
+private:
+    /**
+     * @brief Implements the NegaMax search algorithm with alpha-beta pruning.
+     * @param board The current board state.
+     * @param depth Remaining search depth.
+     * @param alpha Alpha bound for pruning.
+     * @param beta Beta bound for pruning.
+     * @param ply Current search depth from the root.
+     * @return Evaluation score for the position.
+     */
+    int negamax(Board& board, int depth, int alpha, int beta, int ply);
 
-        // Évalue un etat terminal (mat/stalemate)
-        int evaluateTerminal(GameResultReason reason, GameResult result, int ply) const;
+    /**
+     * @brief Evaluates a terminal game state (checkmate, stalemate, etc.).
+     * @param reason The reason for game termination.
+     * @param result The result of the game (win/loss/draw).
+     * @param ply Current depth in the search.
+     * @return Evaluation score based on the game result.
+     */
+    int evaluateTerminal(GameResultReason reason, GameResult result, int ply) const;
 
-    private:
-        int               searchDepth;         // Profondeur maximale
-        TranspositionTable transpositionTable; // Table de transposition
-        MoveOrdering moveOrdering;   // Gestion des heuristiques (killers, history)
-        Evaluator          evaluator;          // Évaluation statique
+private:
+    int searchDepth;                 ///< Maximum search depth.
+    TranspositionTable transpositionTable; ///< Transposition table for caching results.
+    MoveOrdering moveOrdering;
+    Evaluator evaluator;             ///< Static board evaluator.
 
-        static constexpr int INF       = 100000000; // Limite "infinie"
-        static constexpr int MATE_SCORE= 1000000;   // Score de base pour un mat
-        static constexpr int ASP_WIN   = 50;        // Fenêtre d’aspiration (±50)
-    };
+    static constexpr int INF = 100000000;   ///< Representation of infinity for search values.
+    static constexpr int MATE_SCORE = 1000000; ///< Score for a checkmate position.
+    static constexpr int ASP_WIN = 50;      ///< Aspiration window value.
+};
 
 } // namespace chess
 
-#endif // CHESS_SEARCH_HPP

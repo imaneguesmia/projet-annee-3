@@ -1,5 +1,6 @@
-#ifndef CHESS_QUIESCENCESEARCH_HPP
-#define CHESS_QUIESCENCESEARCH_HPP
+// Could be improved
+
+#pragma once
 
 #include "chess.hpp"
 #include "Evaluator.hpp"
@@ -7,9 +8,17 @@
 
 namespace chess {
 
-    /*
-      Fonctions pour la quiescence search
-    */
+    /**
+     * @brief Performs a quiescence search to evaluate stable positions, avoiding horizon effects.
+     * @link https://www.chessprogramming.org/Quiescence_Search
+     * @param board The current board state.
+     * @param alpha Alpha bound for pruning.
+     * @param beta Beta bound for pruning.
+     * @param ply Current search depth from the root.
+     * @param evaluator Static evaluation function.
+     * @param moveordering Move ordering heuristics.
+     * @return Evaluation score of the position.
+     */
     int quiescenceSearch(Board& board,
                          int alpha,
                          int beta,
@@ -18,5 +27,3 @@ namespace chess {
                          MoveOrdering& moveordering);
 
 } // namespace chess
-
-#endif // CHESS_QUIESCENCESEARCH_HPP

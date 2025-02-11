@@ -11,27 +11,30 @@ namespace chess {
                          Evaluator& evaluator,
                          MoveOrdering& moveordering)
     {
-        // stand pat = évaluation statique (sans faire de coup)
+        /**
+         * @brief Performs a quiescence search to evaluate only capture moves, preventing horizon effects.
+         */
+
+        // Stand-pat evaluation (static evaluation without moving)
         int standPat = evaluator.evaluate(board);
 
         if (standPat >= beta) {
-            return beta;
+            return beta; // Beta cutoff (fail-hard)
         }
         if (standPat > alpha) {
-            alpha = standPat;
+            alpha = standPat; // Update alpha if the static eval is better
         }
 
-        // On ne génère que les captures
+        // Generate only capture moves
         Movelist captures;
         movegen::legalmoves<movegen::MoveGenType::CAPTURE>(captures, board);
 
-        // On peut réutiliser la même fonction de tri,
-        // en mettant pvMove = NO_MOVE, etc.
+        // Order moves using heuristics (MVV-LVA, etc.)
         moveordering.orderMoves(captures, board, ply, Move::NO_MOVE);
 
         for (const auto& capture : captures) {
             board.makeMove(capture);
-            int score = -quiescenceSearch(board, -beta, -alpha, ply+1, evaluator, moveordering);
+            int score = -quiescenceSearch(board, -beta, -alpha, ply + 1, evaluator, moveordering);
             board.unmakeMove(capture);
 
             if (score > standPat) {
@@ -40,7 +43,7 @@ namespace chess {
                     alpha = score;
                 }
                 if (alpha >= beta) {
-                    break;
+                    break; // Beta cutoff (fail-hard pruning)
                 }
             }
         }
