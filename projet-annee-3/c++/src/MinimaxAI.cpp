@@ -6,7 +6,7 @@ namespace chess {
 
 MinimaxAI::MinimaxAI(int depth) : searchDepth(depth) {}
 
-Move MinimaxAI::getMove(const Board& board) {
+Move MinimaxAI::getMove(Board& board) {
     Movelist moves;
     movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
 
