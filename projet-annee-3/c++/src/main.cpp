@@ -16,7 +16,7 @@ int main() {
      chess::MinimaxAI badai(3);
      chess::MinimaxAI ai(5);
 
-    chess::GameManager game(&theBest, &theBest);
+    chess::GameManager game(&betterai, &theBest);
     game.playGame();
 
     return 0;

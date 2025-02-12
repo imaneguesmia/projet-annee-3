@@ -110,14 +110,17 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
         ttBestMove = ttEntryOpt->bestMove;
     }
 
-    // Order moves based on heuristics (MVV-LVA, killer moves, history..)
-    moveOrdering.orderMoves(moves, board, ply, ttBestMove);
+    // Assign a score to moves based on heuristics (MVV-LVA, killer moves, history..)
+    moveOrdering.scoreMoves(moves, board, ply, ttBestMove);
 
     int bestValue = -INF;
     int alphaOrig = alpha;
     Move bestMove = Move::NO_MOVE;
 
-    for (auto& move : moves) {
+    for (int moveIndex = 0; moveIndex < moves.size(); moveIndex++) {
+        moveOrdering.pickNextMove(moves, moveIndex);  // Bring the best move to index 'moveIndex'
+        Move move = moves[moveIndex];
+
         board.makeMove(move);
         int val = -negamax(board, depth - 1, -beta, -alpha, ply + 1);
         board.unmakeMove(move);
@@ -130,8 +133,10 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
             alpha = bestValue;
         }
         if (alpha >= beta) {
-            moveOrdering.updateKillers(move, ply);
-            moveOrdering.updateHistory(board, move, depth);
+            if (!board.isCapture(move)) {
+                moveOrdering.updateKillers(move, ply);
+                moveOrdering.updateHistory(board, move, depth);
+            }
             break;
         }
     }

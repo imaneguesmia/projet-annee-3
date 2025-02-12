@@ -9,7 +9,7 @@ namespace chess {
                          int beta,
                          int ply,
                          Evaluator& evaluator,
-                         MoveOrdering& moveordering)
+                         MoveOrdering& moveOrdering)
     {
         /**
          * @brief Performs a quiescence search to evaluate only capture moves, preventing horizon effects.
@@ -29,12 +29,15 @@ namespace chess {
         Movelist captures;
         movegen::legalmoves<movegen::MoveGenType::CAPTURE>(captures, board);
 
-        // Order moves using heuristics (MVV-LVA, etc.)
-        moveordering.orderMoves(captures, board, ply, Move::NO_MOVE);
+        // Assign score to moves using heuristics (MVV-LVA, etc.)
+        moveOrdering.scoreMoves(captures, board, ply, Move::NO_MOVE);
 
-        for (const auto& capture : captures) {
+        for (int moveIndex = 0; moveIndex < captures.size(); moveIndex++) {
+            moveOrdering.pickNextMove(captures, moveIndex);
+            Move capture = captures[moveIndex];
+
             board.makeMove(capture);
-            int score = -quiescenceSearch(board, -beta, -alpha, ply + 1, evaluator, moveordering);
+            int score = -quiescenceSearch(board, -beta, -alpha, ply + 1, evaluator, moveOrdering);
             board.unmakeMove(capture);
 
             if (score > standPat) {
