@@ -26,6 +26,9 @@ namespace chess {
         Player* white;
         Player* black;
         Board board;
+        long long whiteTotalTime, blackTotalTime;
+        int whiteMoveCount, blackMoveCount;
+
 
         /**
          * @brief Displays the current board state in FEN format.

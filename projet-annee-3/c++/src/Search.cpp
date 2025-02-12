@@ -43,6 +43,7 @@ Move Beluga::getMove(Board& board)
         if (it.has_value()) {
             bestMove = it->bestMove;
         }
+        moveOrdering.decayHistory();
     }
 
     return bestMove;

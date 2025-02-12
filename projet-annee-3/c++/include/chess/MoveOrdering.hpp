@@ -7,11 +7,11 @@
  * - MVV-LVA (Most Valuable Victim - Least Valuable Attacker)
  * - Killer Moves heuristic
  * - History Heuristic
+ * - TT move ordering(Hash/PV Move)
  *
  * To do:
  * - SEE
  * - Late Move Reduction (LMR)
- * - Hash Move
  * - ....
  */
 
@@ -76,11 +76,24 @@ public:
      */
     void orderMoves(Movelist& moves, const Board& board, int ply, Move pvMove);
 
-private:
-    std::vector<std::array<Move, 2>> killerMoves; ///< Stores killer moves for each ply (max 2 per ply).
-    std::vector<std::vector<int>> historyHeuristic; ///< Stores history heuristic values (16 piece types × 64 squares).
+    /**
+     * @brief Reduces all history heuristic values over time.
+     * Prevents old moves from having excessive influence over move ordering.
+     *
+     * This function could be called:
+     * - **After each search iteration**
+     * - **Before making a new move** in the game loop
+     * - **At intervals during search** (e.g., every 4 plies in `negamax()`)
+     */
+    void decayHistory();
 
+private:
     static constexpr int MAX_PLY = 64; ///< Maximum search depth for move ordering.
+    static constexpr int HISTORY_MAX = 32768; ///< Capping history values
+
+    Move killerMoves[MAX_PLY][2]; ///< Stores killer moves for each ply (max 2 per ply).
+    int historyHeuristic[2][64][64] = {}; ///< Stores history heuristic values
+
 };
 
 } // namespace chess

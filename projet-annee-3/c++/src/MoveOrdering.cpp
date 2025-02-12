@@ -6,16 +6,11 @@ namespace chess {
 
 MoveOrdering::MoveOrdering()
 {
-    // Initialize killer moves with NO_MOVE
-    killerMoves.resize(MAX_PLY, { Move::NO_MOVE, Move::NO_MOVE });
-
-    // Initialize history heuristic for 16 piece types × 64 squares
-    historyHeuristic.resize(16, std::vector<int>(64, 0));
 }
 
 void MoveOrdering::updateKillers(Move move, int ply)
 {
-    if (ply < 0 || ply >= static_cast<int>(killerMoves.size())) return;
+    if (ply < 0 || ply >= MAX_PLY)  return;
 
     // Shift existing killer move if it's different
     if (killerMoves[ply][0] != move) {
@@ -24,23 +19,35 @@ void MoveOrdering::updateKillers(Move move, int ply)
     }
 }
 
-void MoveOrdering::updateHistory(const Board& board, Move move, int depth)
+    void MoveOrdering::updateHistory(const Board& board, Move move, int depth)
 {
-    // Update history only if the move is not a capture
     if (!board.isCapture(move)) {
-        Piece attacker = board.at(move.from());
-        int fromType = static_cast<int>(attacker.type());
-        int toIndex = move.to().index();
+        int from = move.from().index();
+        int to = move.to().index();
+        Color side = board.sideToMove();
+        int updateValue = depth * (depth + 1) / 2; ///< more stable than depth * depth
+        historyHeuristic[side][from][to] += updateValue;
+        // Capping
+        if (historyHeuristic[side][from][to] > HISTORY_MAX) {
+            historyHeuristic[side][from][to] = HISTORY_MAX;
+        }
+    }
+}
 
-        if (fromType >= 0 && fromType < static_cast<int>(historyHeuristic.size())) {
-            historyHeuristic[fromType][toIndex] += depth * depth;
+void MoveOrdering::decayHistory()
+{
+    for (int s = 0; s < 2; ++s) {
+        for (int f = 0; f < 64; ++f) {
+            for (int t = 0; t < 64; ++t) {
+                historyHeuristic[s][f][t] /= 2; // Slowly decreases old values
+            }
         }
     }
 }
 
 Move MoveOrdering::killerAt(int ply, int index) const
 {
-    if (ply < 0 || ply >= static_cast<int>(killerMoves.size()) || index < 0 || index > 1) {
+    if  (ply < 0 || ply >= MAX_PLY || index < 0 || index > 1) {
         return Move::NO_MOVE;
     }
     return killerMoves[ply][index];
@@ -48,14 +55,12 @@ Move MoveOrdering::killerAt(int ply, int index) const
 
 int MoveOrdering::historyScore(const Board& board, Move move) const
 {
-    Piece attacker = board.at(move.from());
-    int fromType = static_cast<int>(attacker.type());
-    int toIndex = move.to().index();
+    int from = move.from().index();
+    int to = move.to().index();
+    Color side = board.sideToMove();
 
-    if (fromType >= 0 && fromType < static_cast<int>(historyHeuristic.size())) {
-        return historyHeuristic[fromType][toIndex];
-    }
-    return 0;
+    // Normalize to prevent history from overpowering other heuristics
+    return historyHeuristic[side][from][to] / 32;
 }
 
 void MoveOrdering::orderMoves(Movelist& moves, const Board& board, int ply, Move pvMove)
@@ -66,7 +71,7 @@ void MoveOrdering::orderMoves(Movelist& moves, const Board& board, int ply, Move
     for (auto& mv : moves) {
         int score = 0;
 
-        // Assign a high score to PV move
+//         Assign a high score to PV move
         if (mv == pvMove) {
             score += 100000;
         }
@@ -75,7 +80,7 @@ void MoveOrdering::orderMoves(Movelist& moves, const Board& board, int ply, Move
         if (board.isCapture(mv)) {
             Piece attacker = board.at(mv.from());
             Piece victim = board.at(mv.to());
-            score += 1000 + static_cast<int>(victim.type()) * 10 - static_cast<int>(attacker.type());
+            score += 1000 + (int)victim.type() * 10 - (int)attacker.type();
         }
         // Quiet move
         else {
