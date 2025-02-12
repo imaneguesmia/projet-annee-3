@@ -33,19 +33,6 @@ class MoveGenerator {
     const std::shared_ptr<const AttackTables> at;
     const BoardAnalysis board_analysis;
 
-    /**
-     * @brief Filters pseudo-legals to produce true legal moves.
-     * 
-     * @param player    The player making each move.
-     * @param board     The current board state.
-     * @param pseudo_legals Vector containing pseudo-legal moves.
-     * @return A vector containing all legal moves.
-     */
-    std::vector<Move> filterPseudoLegals(
-        const Player player, const Board& board, 
-        const std::vector<Move>& pseudo_legals
-    ) const;
-
 public:
     MoveGenerator(const std::shared_ptr<const AttackTables> at) 
         : at(at)
@@ -65,6 +52,19 @@ public:
     std::vector<Move> generatePseudoLegals(
         const Player player, const Board& board,
         const Position& en_passant_position, const uint8_t castling_rights
+    ) const;
+
+    /**
+     * @brief Filters pseudo-legals to produce true legal moves.
+     * 
+     * @param player    The player making each move.
+     * @param board     The current board state.
+     * @param pseudo_legals Vector containing pseudo-legal moves.
+     * @return A vector containing all legal moves.
+     */
+    std::vector<Move> filterPseudoLegals(
+        const Player player, const Board& board, 
+        const std::vector<Move>& pseudo_legals
     ) const;
 
     /**

@@ -104,11 +104,14 @@ void export_game(nb::module_& m) {
         .def_prop_ro("en_passant_position", &Game::getEnPassantPosition)
 
         .def("get_current_pseudo_legals", &Game::getCurrentPseudoLegals)
+        .def("get_current_legals", &Game::getCurrentLegals)
 
-        .def("move", nb::overload_cast<const Position&, const Position&, const Piece&>(&Game::move))
+        .def("move", nb::overload_cast<const Position&, const Position&, const PType>(&Game::move))
         .def("move", nb::overload_cast<const Move>(&Game::move))
 
         .def("undo_last_move", &Game::undoLastMove)
+
+        .def("get_piece_at", &Game::getPieceAt)
 
         .def_prop_ro("fen", &Game::fen)
 

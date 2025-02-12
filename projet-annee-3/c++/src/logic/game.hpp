@@ -160,6 +160,8 @@ public:
 
     // Gets the list of pseudo-legal moves from the current board position.
     const std::vector<Move>& getCurrentPseudoLegals();
+    // Gets the list of legal moves from the current board position.
+    const std::vector<Move> getCurrentLegals();
 
     /**
      * @brief Makes a move on the board.
@@ -184,6 +186,12 @@ public:
      * @return The last made move, or `std::nullopt` if there are no moves to undo.
      */
     std::optional<Move> undoLastMove();
+
+    /* -- Board info -- */
+
+    Piece getPieceAt(const Position& position) const {
+        return board.pieceAt(position);
+    }
 
     /* -- String representation -- */
 

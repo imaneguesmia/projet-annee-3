@@ -1,5 +1,7 @@
+import cpp_chess as cm
+
 import pygame
-from chess_game import ChessGame
+
 from chess_board import ChessBoard
 
 # Initialisation de Pygame
@@ -8,7 +10,7 @@ window_size = 800
 fenetre = pygame.display.set_mode((window_size, window_size))
 
 # Initialisation des objets ChessGame et ChessBoard
-chess_game = ChessGame()
+chess_game = cm.Game()
 chess_board = ChessBoard(fenetre, window_size, chess_game)
 
 # Boucle principale
@@ -18,6 +20,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            print("clicked on screen")
             x, y = pygame.mouse.get_pos()
             chess_board.handle_click(x, y)  # Gère le clic de souris
 

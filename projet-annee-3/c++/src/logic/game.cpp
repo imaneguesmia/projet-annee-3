@@ -113,6 +113,13 @@ const std::vector<Move>& Game::getCurrentPseudoLegals() {
     return current_pseudo_legals;
 }
 
+const std::vector<Move> Game::getCurrentLegals() {
+    return move_generator.filterPseudoLegals(
+        current_player, board,
+        getCurrentPseudoLegals()
+    );
+}
+
 UnmakeMove Game::makeMoveOnBoard(const Move move) {
     /* Initialize UnmakeMove */
 
