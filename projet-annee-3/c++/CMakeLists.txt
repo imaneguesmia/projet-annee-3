@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.15...3.31)
+set(CMAKE_C_COMPILER "/opt/homebrew/opt/llvm/bin/clang")
+set(CMAKE_CXX_COMPILER "/opt/homebrew/opt/llvm/bin/clang++")
 
 project(
     ProjetAnnee3
@@ -7,13 +9,22 @@ project(
     LANGUAGES CXX
 )
 
-# if (APPLE)
-#     target_compile_options(logic PRIVATE -stdlib=libc++)
-# endif()
+
+# Forcer C++23 partout
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 
 # Directories
 set(LOGIC "logic")
 set(MISC "misc")
+
+# Compiler options (ajout de -stdlib=libc++ pour macOS)
+if (APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+
 
 # Libraries
 add_library(

@@ -50,7 +50,10 @@ void export_position(nb::module_& m) {
 
         .def_prop_rw("position_string", &Position::getPositionString, &Position::setPositionString)
 
-        .def("__repr__", &Position::getPositionString);
+        .def("__repr__", &Position::getPositionString)
+        .def("__eq__", [](const Position &a, const Position &b) { return a == b; });
+
+
 }
 
 void export_piece(nb::module_& m) {

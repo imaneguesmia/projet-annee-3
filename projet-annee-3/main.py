@@ -13,6 +13,7 @@ fenetre = pygame.display.set_mode((window_size, window_size))
 chess_game = cm.Game()
 chess_board = ChessBoard(fenetre, window_size, chess_game)
 
+
 # Boucle principale
 running = True
 while running:
@@ -20,7 +21,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print("clicked on screen")
+            #print("clicked on screen")
             x, y = pygame.mouse.get_pos()
             chess_board.handle_click(x, y)  # Gère le clic de souris
 

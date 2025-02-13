@@ -78,10 +78,21 @@ Position Position::operator--(int) {
     return previous;
 };
 
+
 std::ostream& operator<<(std::ostream& out, const Position& position) {
     out << position.getPositionString();
     
     return out;
 }
+
+
+bool Position::operator==(const Position& other) const {
+    return this->position_index == other.position_index;
+}
+
+bool Position::operator!=(const Position& other) const {
+    return !(*this == other);
+}
+
 
 /* -- END DEFINE -- */

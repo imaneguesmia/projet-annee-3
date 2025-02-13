@@ -82,6 +82,11 @@ public:
     Position& operator--();
     Position operator--(int);
 
+    bool operator==(const Position& other) const;
+    bool operator!=(const Position& other) const;
+
+
+
     /* -- Typecasting -- */
 
     operator uint8_t() const { return std::to_underlying(position_index); };
