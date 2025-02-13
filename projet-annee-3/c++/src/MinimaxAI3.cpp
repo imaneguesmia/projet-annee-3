@@ -1,4 +1,4 @@
-#include "chess/MinimaxAI2.hpp"
+#include "chess/MinimaxAI3.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <unordered_map>
@@ -33,7 +33,7 @@ struct TTEntry {
     Move         bestMove;
 };
 
-MinimaxAI2::MinimaxAI2(int depth)
+MinimaxAI3::MinimaxAI3(int depth)
     : searchDepth(depth)
 {
     // typical max ply for killer moves
@@ -44,7 +44,7 @@ MinimaxAI2::MinimaxAI2(int depth)
 }
 
 
-Move MinimaxAI2::getMove(Board& board) {
+Move MinimaxAI3::getMove(Board& board) {
     /*
       This function does iterative deepening from 1..searchDepth,
       using a small aspiration window around the best score found
@@ -81,7 +81,7 @@ Move MinimaxAI2::getMove(Board& board) {
 }
 
 
-int MinimaxAI2::negamax(Board& board, int depth, int alpha, int beta, int ply) {
+int MinimaxAI3::negamax(Board& board, int depth, int alpha, int beta, int ply) {
     /*
       Pure negamax with alpha–beta.
     */
@@ -189,7 +189,7 @@ int MinimaxAI2::negamax(Board& board, int depth, int alpha, int beta, int ply) {
 }
 
 
-int MinimaxAI2::quiescence(Board& board, int alpha, int beta, int ply) {
+int MinimaxAI3::quiescence(Board& board, int alpha, int beta, int ply) {
     /*
       Quiescence search (negamax style).
       Evaluate the position (“stand pat”), then explore only captures (and possibly checks)
@@ -229,7 +229,7 @@ int MinimaxAI2::quiescence(Board& board, int alpha, int beta, int ply) {
 }
 
 
-void MinimaxAI2::orderMoves(Movelist& moves, Board& board, int ply, Move pvMove) {
+void MinimaxAI3::orderMoves(Movelist& moves, Board& board, int ply, Move pvMove) {
     /*
       typical move ordering strategy:
        - Give a big bonus if it’s the principal variation move (from TT).
@@ -283,7 +283,7 @@ void MinimaxAI2::orderMoves(Movelist& moves, Board& board, int ply, Move pvMove)
 
 // -----------------------------------------------------------------------------
 
-void MinimaxAI2::updateKillers(Move move, int ply) {
+void MinimaxAI3::updateKillers(Move move, int ply) {
     // If this move is different from the first killer,
     // shift them down and store it in [0].
     if (killerMoves[ply][0] != move) {
@@ -294,7 +294,7 @@ void MinimaxAI2::updateKillers(Move move, int ply) {
 
 // -----------------------------------------------------------------------------
 
-int MinimaxAI2::evaluateTerminal(GameResultReason reason,
+int MinimaxAI3::evaluateTerminal(GameResultReason reason,
                                  GameResult result,
                                  int ply) const
 {
@@ -315,142 +315,32 @@ int MinimaxAI2::evaluateTerminal(GameResultReason reason,
     return 0;
 }
 
+// -----------------------------------------------------------------------------
 
-static inline int mirrorSquare(int sq) {
-    // If squares are 0..63 with rank-major order,
-    // flipping rank => sq ^ 56 is typical (a1 -> a8, a2 -> a7, etc.).
-    // Adapt if your numbering is different.
-    return sq ^ 56;
-}
-
-static const int pieceTable[7][64] = {
-        // PAWN
-        {
-            0, 0, 0, 0, 0, 0, 0, 0,
-            50, 50, 50, 50, 50, 50, 50, 50,
-            10, 10, 20, 30, 30, 20, 10, 10,
-            5, 5, 10, 25, 25, 10, 5, 5,
-            0, 0, 0, 20, 20, 0, 0, 0,
-            5, -5, -10, 0, 0, -10, -5, 5,
-            5, 10, 10, -20, -20, 10, 10, 5,
-            0, 0, 0, 0, 0, 0, 0, 0
-        },
-        // KNIGHT
-        {
-            -50, -40, -30, -30, -30, -30, -40, -50,
-            -40, -20, 0, 0, 0, 0, -20, -40,
-            -30, 0, 10, 15, 15, 10, 0, -30,
-            -30, 5, 15, 20, 20, 15, 5, -30,
-            -30, 0, 15, 20, 20, 15, 0, -30,
-            -30, 5, 10, 15, 15, 10, 5, -30,
-            -40, -20, 0, 5, 5, 0, -20, -40,
-            -50, -40, -30, -30, -30, -30, -40, -50
-        },
-        // BISHOP
-        {
-            -20, -10, -10, -10, -10, -10, -10, -20,
-            -10, 0, 0, 0, 0, 0, 0, -10,
-            -10, 0, 5, 10, 10, 5, 0, -10,
-            -10, 5, 5, 10, 10, 5, 5, -10,
-            -10, 0, 10, 10, 10, 10, 0, -10,
-            -10, 10, 10, 10, 10, 10, 10, -10,
-            -10, 5, 0, 0, 0, 0, 5, -10,
-            -20, -10, -10, -10, -10, -10, -10, -20
-        },
-        // ROOK
-        {
-            0,  0,  0,  0,  0,  0,  0,  0,
-            5, 10, 10, 10, 10, 10, 10,  5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            0,  0,  0,  5,  5,  0,  0,  0
-        },
-        // QUEEN
-        {
-            -20,-10,-10, -5, -5,-10,-10,-20,
-            -10,  0,  0,  0,  0,  0,  0,-10,
-            -10,  0,  5,  5,  5,  5,  0,-10,
-            -5,  0,  5,  5,  5,  5,  0, -5,
-            0,  0,  5,  5,  5,  5,  0, -5,
-            -10,  5,  5,  5,  5,  5,  0,-10,
-            -10,  0,  5,  0,  0,  0,  0,-10,
-            -20,-10,-10, -5, -5,-10,-10,-20
-        },
-        // KING MIDGAME
-        {
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -20,-30,-30,-40,-40,-30,-30,-20,
-            -10,-20,-20,-20,-20,-20,-20,-10,
-            20, 20,  0,  0,  0,  0, 20, 20,
-            20, 30, 10,  0,  0, 10, 30, 20
-        },
-        // KING ENDGAME
-        {
-            -50,-40,-30,-20,-20,-30,-40,-50,
-            -30,-20,-10,  0,  0,-10,-20,-30,
-            -30,-10, 20, 30, 30, 20,-10,-30,
-            -30,-10, 30, 40, 40, 30,-10,-30,
-            -30,-10, 30, 40, 40, 30,-10,-30,
-            -30,-10, 20, 30, 30, 20,-10,-30,
-            -30,-30,  0,  0,  0,  0,-30,-30,
-            -50,-30,-30,-30,-30,-30,-30,-50
-        }
+int MinimaxAI3::evaluate(const Board& board) {
+    /*
+      Returns a score from the current side‐to‐move's perspective.
+      White’s total material minus Black’s total material if White to move,
+      or the inverse if Black to move.
+    */
+    static const std::unordered_map<PieceType,int, PieceType::Hash> pieceValues = {
+        {PieceType::PAWN,   100},
+        {PieceType::KNIGHT, 300},
+        {PieceType::BISHOP, 300},
+        {PieceType::ROOK,   500},
+        {PieceType::QUEEN,  900},
+        {PieceType::KING,   10000}
     };
-        static const int baseValues[] = {
-            /* 0 : PAWN   */  100,
-            /* 1 : KNIGHT */  300,
-            /* 2 : BISHOP */  300,
-            /* 3 : ROOK   */  500,
-            /* 4 : QUEEN  */  900,
-            /* 5 : KING   */  10000,
-            /* 6 : NONE   */  0
-        };
-int MinimaxAI2::evaluate(const Board& board) {
+
     int baseScore = 0;
-
-    for (auto pt : {
-        PieceType::PAWN,
-        PieceType::KNIGHT,
-        PieceType::BISHOP,
-        PieceType::ROOK,
-        PieceType::QUEEN,
-        PieceType::KING
-    })
+    for (auto pt : {PieceType::PAWN, PieceType::KNIGHT, PieceType::BISHOP,
+                    PieceType::ROOK, PieceType::QUEEN})
     {
-        int typeIndex = static_cast<int>(pt);
-
-        // WHITE pieces
-        {
-            Bitboard bbWhite = board.pieces(PieceType(pt), Color::WHITE);
-            while (bbWhite) {
-                int sq = bbWhite.pop();
-
-                baseScore += baseValues[typeIndex];       // material
-                baseScore += pieceTable[typeIndex][sq];   // piece-square
-            }
-        }
-
-        // BLACK pieces
-        {
-            Bitboard bbBlack = board.pieces(PieceType(pt), Color::BLACK);
-            while (bbBlack) {
-                int sq = bbBlack.pop();
-//                std::cout<<"sq "<<sq<<std::endl;
-//                std::cout<<"piecevalue "<<pieceTable[typeIndex][sq]<<std::endl;
-                baseScore -= baseValues[typeIndex];
-                int mirrored = mirrorSquare(sq);
-//                std::cout<<"mir "<<mirrored<<std::endl;
-//                std::cout<<"piecevalue "<<pieceTable[typeIndex][mirrored]<<std::endl;
-                baseScore -= pieceTable[typeIndex][mirrored];
-            }
-        }
+        baseScore += board.pieces(pt, Color::WHITE).count() * pieceValues.at(pt);
+        baseScore -= board.pieces(pt, Color::BLACK).count() * pieceValues.at(pt);
     }
+
+
     if (board.sideToMove() == Color::BLACK) {
         baseScore = -baseScore;
     }
