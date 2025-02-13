@@ -7,7 +7,7 @@ namespace chess {
     class MinimaxAI : public Player {
     public:
         explicit MinimaxAI(int depth = 3);
-        Move getMove(const Board& board) override;
+        Move getMove(Board& board) override;
 
     private:
         int searchDepth;
@@ -91,9 +91,12 @@ namespace chess {
             -50,-30,-30,-30,-30,-30,-30,-50
         }
     };
-        int minimax(Board& board, int depth, int alpha, int beta);
-        int evaluate(const Board& board);
-        int pieceSquareHeuristic(const Board& board);
-    };
 
-} // namespace chess
+    uint64_t arrNeighborFiles[8];
+
+    int minimax(Board& board, int depth, int alpha, int beta);
+    int evaluate(const Board& board);
+    int pieceSquareHeuristic(const Board& board);
+    int pawnPatternHeuristic(const Board& board);
+
+}; // namespace chess
