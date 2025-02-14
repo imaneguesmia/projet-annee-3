@@ -136,6 +136,7 @@ PType Board::_movePieceHelper(const Move move, std::optional<PType> captured_typ
 
             // Flip the captured piece bit in occupancy bitboards.
             piece_bb[other_player][final_captured_type] ^= to_bb;
+            occupancy_bb[other_player] ^= to_bb;
 
             // If 0 at this bit previously (non-en passant capture, see above) flipped back to 1.
             global_occupancy_bb ^= to_bb;

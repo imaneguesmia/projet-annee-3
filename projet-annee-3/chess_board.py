@@ -79,7 +79,7 @@ class ChessBoard:
         current_player = self.chess_game.current_player
 
         # Mise à jour des coups légaux
-        self.legal_moves = self.chess_game.get_current_pseudo_legals()
+        self.legal_moves = self.chess_game.get_current_legals()
 
         # Sélectionner une pièce si elle appartient au joueur courant
         if not piece_on_square.is_none() and piece_on_square.get_player() == current_player:
@@ -98,7 +98,7 @@ class ChessBoard:
                 # Mettre à jour le plateau après un déplacement
                 self.selected_square = None
                 self.selected_moves = []
-                self.legal_moves = self.chess_game.get_current_pseudo_legals()
+                self.legal_moves = self.chess_game.get_current_legals()
 
         else:
             self.selected_square = None
@@ -111,6 +111,8 @@ class ChessBoard:
 
             if move_position == square:
                 filtered_moves.append(move)
+
+        print(filtered_moves)
 
         return filtered_moves
 

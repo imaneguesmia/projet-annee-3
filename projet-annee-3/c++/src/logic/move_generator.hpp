@@ -7,6 +7,8 @@
 #include "move.hpp"
 #include "board_analysis.hpp"
 
+#include "../misc/enum_array.hpp"
+
 #include <memory>
 
 /* ---- DECLARE class MoveGenerator ---- */
@@ -22,11 +24,25 @@ class MoveGenerator {
     static constexpr BB::BitBoard row_8 {255ULL};
 
     // Lookup table of relevant board squares to check when castling.
-    static constexpr Square relevant_castling_squares[4][2] {
-        {Square::f1, Square::g1},   // King-side white
-        {Square::d1, Square::c1},   // Queen-side white
-        {Square::f8, Square::g8},   // King-side black
-        {Square::d8, Square::c8}    // Queen-side black
+    // static constexpr Square relevant_castling_squares[2][2][2] {
+    //     {
+    //         {Square::f1, Square::g1},   // King-side white
+    //         {Square::d1, Square::c1}    // Queen-side white
+    //     },
+    //     {
+    //         {Square::f8, Square::g8},   // King-side black
+    //         {Square::d8, Square::c8}    // Queen-side black
+    //     }
+    // };
+    static constexpr Square relevant_castling_squares[2][2][2] {
+        {
+            {Square::f1, Square::g1},   // King-side white
+            {Square::d1, Square::c1}    // Queen-side white
+        },
+        {
+            {Square::f8, Square::g8},   // King-side black
+            {Square::d8, Square::c8}    // Queen-side black
+        }
     };
 
     // Shared pointer to the pre-initialized attack tables.

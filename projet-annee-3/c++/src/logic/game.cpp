@@ -100,12 +100,12 @@ uint8_t Game::castlingRightsFromString(const std::string& castling_indicators) c
 const std::vector<Move>& Game::getCurrentPseudoLegals() {
     // If the board position has changed, update pseudo-legal moves.
     if (board_position_changed) {
-        auto new_pseudo_legals = move_generator.generatePseudoLegals(
+        current_pseudo_legals = move_generator.generatePseudoLegals(
             current_player, board,
             en_passant, castling_rights
         );
 
-        current_pseudo_legals = std::move(new_pseudo_legals);
+        std::cout << fen() << '\n';
 
         board_position_changed = false;
     }

@@ -35,7 +35,7 @@ class Board {
     // that means that there is a white bishop on position 32 of the board.
     enum_array<Player, enum_array<PType, BB::BitBoard>> piece_bb;     // [Player][Piece::Type]
     enum_array<Player, BB::BitBoard> occupancy_bb;                    // [Player]
-    BB::BitBoard global_occupancy_bb;                                 // (Both players/all pieces)
+    BB::BitBoard global_occupancy_bb {};                                 // (Both players/all pieces)
 
     /* -- Helpers -- */
 

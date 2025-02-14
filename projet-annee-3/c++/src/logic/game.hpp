@@ -145,7 +145,13 @@ public:
     Game(const std::string& fen) : Game(
         std::make_shared<const AttackTables>(), 
         gameStateFromFEN(fen)
-    ) {};
+    ) {
+        getCurrentPseudoLegals();
+
+        for (const auto& m : current_pseudo_legals) {
+            std::cout << m << '\n';
+        }
+    };
     Game() : Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {};
 
     /* -- Getters and setters -- */

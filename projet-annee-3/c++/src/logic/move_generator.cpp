@@ -82,14 +82,30 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case PType::King: {
-                    uint8_t castling_rights = castling_rights;
+                    // uint8_t castling_rights = castling_rights;
 
                     // [TODO] This is not the most efficient way to do this.
-                    for (int i = 0; castling_rights; i++, castling_rights >>= 1) {
-                        auto [between, target] = relevant_castling_squares[i];
+                    // for (int i = 0; castling_rights; i++, castling_rights >>= 1) {
+                    //     auto [between, target] = relevant_castling_squares[i];
+
+                    //     if (
+                    //         (castling_rights & 1ULL) &&
+                    //         !board_analysis.isSquareAttacked(from, other, board) && 
+                    //         !board_analysis.isSquareAttacked(between, other, board) &&
+                    //         !BB::get_bit(board.occupancy(), static_cast<int>(between)) &&
+                    //         !BB::get_bit(board.occupancy(), static_cast<int>(target))
+                    //     ) {
+                    //         BB::set_bit(castle, static_cast<int>(target));
+                    //     }
+                    // }
+
+                    uint8_t relevant_castling_bits = castling_rights >> (2 * static_cast<int>(player));
+
+                    for (int i = 0; i < 2; i++) {
+                        auto [between, target] = relevant_castling_squares[static_cast<int>(player)][i];
 
                         if (
-                            (castling_rights & 1ULL) &&
+                            (relevant_castling_bits & (1 << i)) &&
                             !board_analysis.isSquareAttacked(from, other, board) && 
                             !board_analysis.isSquareAttacked(between, other, board) &&
                             !BB::get_bit(board.occupancy(), static_cast<int>(between)) &&
@@ -99,6 +115,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                         }
                     }
 
+
                     BB::BitBoard attacks = at->getKingAttackBitboard(from) & ~board.occupancy(player);
 
                     pseudo_legals = attacks | castle;
@@ -106,6 +123,8 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                 } break;
                 default: break;
             }
+
+            BB::out(std::cout, castle);
 
             /* Extract moves from pseudo-legal bitboard */
 
