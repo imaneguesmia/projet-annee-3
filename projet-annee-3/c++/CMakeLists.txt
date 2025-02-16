@@ -1,6 +1,4 @@
 cmake_minimum_required(VERSION 3.15...3.31)
-set(CMAKE_C_COMPILER "/opt/homebrew/opt/llvm/bin/clang")
-set(CMAKE_CXX_COMPILER "/opt/homebrew/opt/llvm/bin/clang++")
 
 project(
     ProjetAnnee3
@@ -9,24 +7,23 @@ project(
     LANGUAGES CXX
 )
 
-
-# Forcer C++23 partout
+# Use c++23
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
 
 # Directories
 set(LOGIC "logic")
 set(MISC "misc")
 
-# Compiler options (ajout de -stdlib=libc++ pour macOS)
-if (APPLE)
+# Compiler options (add -stdlib=libc++ for macOS)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    MESSAGE("Compiling with Clang/AppleClang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
+# ---- Libraries ---- #
 
-# Libraries
 add_library(
     logic STATIC 
     "src/${LOGIC}/bitboard.cpp" "src/${LOGIC}/bitboard.hpp"
@@ -40,7 +37,6 @@ add_library(
     "src/${LOGIC}/move_generator.cpp" "src/${LOGIC}/move_generator.hpp"
     "src/${LOGIC}/game.cpp" "src/${LOGIC}/game.hpp"
 )
-target_compile_features(logic PUBLIC cxx_std_23)
 target_compile_options(logic PRIVATE -Wall -Wextra -Wpedantic)
 
 add_library(
@@ -52,6 +48,8 @@ add_library(
 
 # Comment out this line if you want to use the pregenerated magics
 # target_compile_definitions(logic PRIVATE FIND_NEW_MAGICS)
+
+# ---- Create Python bindings ---- #
 
 # Find Python and nanobind
 set(Python_FIND_VIRTUALENV FIRST)
@@ -82,6 +80,8 @@ nanobind_add_stub(
 set(CMAKE_INSTALL_PREFIX "../..")
 install(TARGETS chess_module DESTINATION cpp_chess)
 install(FILES "build/chess_module.pyi" DESTINATION cpp_chess)
+
+# ---- Testing executable ---- #
 
 # Comment out the next lines if you don't want to build the testing executable
 add_executable(testing "src/testing.cpp")
