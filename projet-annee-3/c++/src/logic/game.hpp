@@ -50,6 +50,13 @@ std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move);
 
 /* ---- DECLARE class Game ---- */
 
+// Current game state
+enum class GameState {
+    INGAME, CHECKMATE, STALEMATE,
+
+    OOB, FIRST = INGAME, LAST = STALEMATE
+};
+
 class Game {
     const BoardAnalysis board_analysis;
     const MoveGenerator move_generator;
@@ -76,27 +83,43 @@ class Game {
     // Fullmoves are incremented after black's turn.
     size_t halfmoves, fullmoves;
 
+    /* -- Lazy board data -- */
+
     // Vector of all possible pseudo-legal moves from the current board position.
-    // Used so that it doesn't have to be recalculated every time a human player makes
-    // an invalid move.
     std::vector<Move> current_pseudo_legals;
-    // The list of pseudo-legal moves will be lazily updated when being fetched if this flag
-    // is set.
-    bool board_position_changed {true};
+    // Vector of all possible legal moves from the current board position.
+    std::vector<Move> current_legals;
+    // `true` if the current player is in check.
+    bool is_current_player_in_check;
+    // Enum representing the win state of the game.
+    GameState game_state {GameState::INGAME};
+
+
+    // The above information will be updated if the relevant flag below is not set.
+    enum LazyDataFlags {
+        PSEUDO_LEGALS   = 0b0001,
+        LEGALS          = 0b0010,
+        IS_IN_CHECK     = 0b0100,
+        GAME_STATE      = 0b1000,
+
+        ALL             = 0b1111
+    };
+    uint8_t update_flags {ALL};
 
     std::stack<UnmakeMove> unmake_move_list;
 
+
 private:
-    struct GameState {
+    struct GameData {
         std::string board_string;
         Player current_player;
         uint8_t castling_rights;
         Position en_passant;
         size_t halfmoves, fullmoves;
     };
-    const GameState gameStateFromFEN(const std::string& fen) const;
+    const GameData gameStateFromFEN(const std::string& fen) const;
 
-    Game(const std::shared_ptr<const AttackTables> at, const GameState& initial_state)
+    Game(const std::shared_ptr<const AttackTables> at, const GameData& initial_state)
         : board_analysis(at)
         , move_generator(std::move(at))
 
@@ -145,13 +168,7 @@ public:
     Game(const std::string& fen) : Game(
         std::make_shared<const AttackTables>(), 
         gameStateFromFEN(fen)
-    ) {
-        getCurrentPseudoLegals();
-
-        for (const auto& m : current_pseudo_legals) {
-            std::cout << m << '\n';
-        }
-    };
+    ) {};
     Game() : Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {};
 
     /* -- Getters and setters -- */
@@ -162,12 +179,19 @@ public:
     // Gets the current valid en passant target.
     const Position& getEnPassantPosition() const { return en_passant; };
 
-    /* -- (Un)doing moves -- */
+    /* -- Getting board data -- */
 
     // Gets the list of pseudo-legal moves from the current board position.
     const std::vector<Move>& getCurrentPseudoLegals();
     // Gets the list of legal moves from the current board position.
-    const std::vector<Move> getCurrentLegals();
+    const std::vector<Move>& getCurrentLegals();
+
+    // Returns `true` the current player's king is in check at the current board position.
+    bool isCurrentlyInCheck();
+
+    GameState getGameState();
+
+    /* -- (Un)doing moves -- */
 
     /**
      * @brief Makes a move on the board.

@@ -99,15 +99,22 @@ void export_move(nb::module_& m) {
 }
 
 void export_game(nb::module_& m) {
+    nb::enum_<GameState>(m, "GameState")
+        .value("INGAME", GameState::INGAME)
+        .value("CHECKMATE", GameState::CHECKMATE)
+        .value("STALEMATE", GameState::STALEMATE);
+
     nb::class_<Game>(m, "Game")
         .def(nb::init<const std::string&>())
         .def(nb::init<>())
 
         .def_prop_rw("current_player", &Game::getCurrentPlayer, &Game::setCurrentPlayer)
         .def_prop_ro("en_passant_position", &Game::getEnPassantPosition)
+        .def_prop_ro("game_state", &Game::getGameState)
 
         .def("get_current_pseudo_legals", &Game::getCurrentPseudoLegals)
         .def("get_current_legals", &Game::getCurrentLegals)
+        .def("is_currently_in_check", &Game::isCurrentlyInCheck)
 
         .def("move", nb::overload_cast<const Position&, const Position&, const PType>(&Game::move))
         .def("move", nb::overload_cast<const Move>(&Game::move))

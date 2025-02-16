@@ -25,10 +25,10 @@ std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move) {
 
 /* -- Construction -- */
 
-const Game::GameState Game::gameStateFromFEN(const std::string& fen) const {
+const Game::GameData Game::gameStateFromFEN(const std::string& fen) const {
     std::istringstream ss(fen);
 
-    GameState game_state;
+    GameData game_state;
 
     /* Piece positions */
 
@@ -95,30 +95,60 @@ uint8_t Game::castlingRightsFromString(const std::string& castling_indicators) c
     return flags;
 }
 
-/* -- (Un)doing moves -- */
+/* -- Getting board data -- */
 
 const std::vector<Move>& Game::getCurrentPseudoLegals() {
-    // If the board position has changed, update pseudo-legal moves.
-    if (board_position_changed) {
+    if (update_flags & PSEUDO_LEGALS) {
         current_pseudo_legals = move_generator.generatePseudoLegals(
             current_player, board,
             en_passant, castling_rights
         );
 
-        std::cout << fen() << '\n';
-
-        board_position_changed = false;
+        update_flags ^= PSEUDO_LEGALS;
     }
 
     return current_pseudo_legals;
 }
 
-const std::vector<Move> Game::getCurrentLegals() {
-    return move_generator.filterPseudoLegals(
-        current_player, board,
-        getCurrentPseudoLegals()
-    );
+const std::vector<Move>& Game::getCurrentLegals() {
+    if (update_flags & LEGALS) {
+        current_legals = move_generator.filterPseudoLegals(
+            current_player, board,
+            getCurrentPseudoLegals()
+        );
+
+        update_flags ^= LEGALS;
+    }
+
+    return current_legals;
 }
+
+bool Game::isCurrentlyInCheck() {
+    if (update_flags & IS_IN_CHECK) {
+        is_current_player_in_check = board_analysis.isInCheck(current_player, board);
+
+        update_flags ^= IS_IN_CHECK;
+    }
+
+    return is_current_player_in_check;
+}
+
+GameState Game::getGameState() {
+    if (update_flags & GAME_STATE) {
+        if (getCurrentLegals().size() == 0) {
+            game_state = isCurrentlyInCheck() ? GameState::CHECKMATE : GameState::STALEMATE;
+        } else {
+            game_state = GameState::INGAME;
+        }
+
+        update_flags ^= GAME_STATE;
+    }
+
+    return game_state;
+}
+
+
+/* -- (Un)doing moves -- */
 
 UnmakeMove Game::makeMoveOnBoard(const Move move) {
     /* Initialize UnmakeMove */
@@ -201,8 +231,8 @@ bool Game::move(const Move move) {
         // If valid, add the UnmakeMove to the history stack.
         unmake_move_list.push(unmake_move);
 
-        // Set board changed flag to update list of pseudo-legal moves.
-        board_position_changed = true;
+        // Set update flags to update data.
+        update_flags = ALL;
     }
 
     return !is_invalid_move;
@@ -217,8 +247,8 @@ std::optional<Move> Game::undoLastMove() {
 
         unmakeMoveOnBoard(unmake_move);
 
-        // Set board changed flag to update list of pseudo-legal moves.
-        board_position_changed = true;
+        // Set update flags to update data.
+        update_flags = ALL;
 
         return unmake_move.move;
     }
