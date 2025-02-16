@@ -24,7 +24,6 @@ MinimaxAI::MinimaxAI(int depth) : searchDepth(depth) {
 }
 
 Move MinimaxAI::getMove(Board& board) {
-Move MinimaxAI::getMove(Board& board) {
     Movelist moves;
     movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
 
@@ -154,7 +153,7 @@ int leastSignificantBitIndex(uint64_t n) {
 };
 
 int MinimaxAI::pieceSquareHeuristic(const Board& board){
-    int score = 0;There are many different types of pawns, but a backward pawn is one that has no support from other pawns
+    int score = 0;
     auto color = board.sideToMove();
 
     for (auto pt : {PieceType::PAWN, PieceType::KNIGHT, PieceType::BISHOP, PieceType::ROOK, PieceType::QUEEN,PieceType::KING}) {
@@ -288,6 +287,21 @@ uint64_t wPawnWestAttacks(uint64_t wpawns) {
     return westOne(wpawns) << 8; // Shift west, then one rank up
 }
 
+// pawns with at least one pawn in front on the same file
+uint64_t wPawnsBehindOwn(uint64_t wpawns) {
+    // https://www.chessprogramming.org/Double_and_Triple_(Bitboards)
+    return wpawns & wRearSpans(wpawns);
+}
+
+// Pawns with at least one pawn behind on the same file
+uint64_t wPawnsInfrontOwn(uint64_t wpawns) {
+    return wpawns & wFrontSpans(wpawns);
+}
+
+uint64_t wPawnsInfrontAndBehindOwn (uint64_t wpawns) {
+    return wPawnsInfrontOwn(wpawns) &  wPawnsBehindOwn(wpawns);
+}
+
 
 // uint64_t wStop(uint64_t wpawns) {
 //     return northOne(wpawns);
@@ -298,6 +312,7 @@ uint64_t wPawnWestAttacks(uint64_t wpawns) {
 // }
 
 int MinimaxAI::pawnPatternHeuristic(const Board& board){
+    // https://github.com/mcostalba/Stockfish/blob/master/src/pawns.cpp
     int score = 0;
 
     // Flags
@@ -305,13 +320,14 @@ int MinimaxAI::pawnPatternHeuristic(const Board& board){
     uint64_t passed_flag;
     uint64_t backward_flag;
     uint64_t double_triple_flag;
-    uint64_t defended_flag;
 
     auto color = board.sideToMove();
     uint64_t pawnBitboard = board.pieces(PieceType::PAWN, color).getBits();
     uint64_t oppPawnBitboard = board.pieces(PieceType::PAWN, ~ color).getBits();
 
     // Isolated pawns
+    int pawnValues[8] = {-12, -14, -16, -20, -20, -16, -14, -12};     // https://beginchess.com/2010/08/15/think-like-a-chess-engine
+
     while (pawnBitboard) {
         int sq = leastSignificantBitIndex(pawnBitboard);  // Get least significant set bit
         pawnBitboard &= pawnBitboard - 1;  // Clear that bit
@@ -319,12 +335,14 @@ int MinimaxAI::pawnPatternHeuristic(const Board& board){
         int file = sq & 7;
         if(arrNeighborFiles[file] & pawnBitboard){
             isolated_flag = 1;
-            break;
+            score += pawnValues[file];
+
         }
     }
 
     // Passed pawns
     uint64_t allFrontSpans;
+    const int candidatePassedMidgame[] = { 0, 6, 6, 14, 34, 83, 0, 0 }; // endgame : const int CandidatePassedEndgame[RANK_NB] = { 0, 13, 13, 29, 68, 166, 0, 0 }; source reddit
     if (color == Color::WHITE)
         allFrontSpans = bFrontSpans(pawnBitboard);
     else
@@ -332,6 +350,18 @@ int MinimaxAI::pawnPatternHeuristic(const Board& board){
     
     allFrontSpans |= eastOne(allFrontSpans)  | westOne(allFrontSpans);
     passed_flag = pawnBitboard & ~allFrontSpans;
+
+    while (passed_flag) {
+        int square = leastSignificantBitIndex(passed_flag); // Get the least significant bit (pawn position)
+        passed_flag &= passed_flag - 1;
+        int rank = Square(square).rank(); // Convert square to rank (0-based)
+
+        if (color == Color::WHITE)
+            rank = rank + 1;
+        else
+            rank = 8 - rank;
+        score += candidatePassedMidgame[rank];
+    }
 
     // Backward pawns
     uint64_t stops = pawnBitboard << 8;
@@ -343,12 +373,18 @@ int MinimaxAI::pawnPatternHeuristic(const Board& board){
         uint64_t wAttacks = wPawnEastAttacks(oppPawnBitboard) | wPawnWestAttacks(oppPawnBitboard);
         backward_flag = (stops & wAttacks & ~AttackSpans) >> 8;
     }
+    int count = Bitboard(backward_flag).count();
+    score -= count * 9; // https://github.com/mcostalba/Stockfish/blob/master/src/pawns.cpp
+
 
     // Double and triple pawns
+    uint64_t doubledPawns = wPawnsInfrontOwn(pawnBitboard) ;
+    int count = Bitboard(doubledPawns).count();
+    score -= count * 12; // https://beginchess.com/2010/08/15/think-like-a-chess-engine/
 
-    // Defended pawns
 
-    // Scores according to flags 
+    // Score if black's turn
+    if(color ==  Color::BLACK) score = - score;
 
     return score;
 }
