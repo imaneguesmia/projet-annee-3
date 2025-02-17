@@ -68,11 +68,11 @@ void MoveOrdering::scoreMoves(Movelist& moves, const Board& board, int ply, Move
 
 //         1. High score for PV move
         if (mv == pvMove) {
-            score += 100000;
+            score += 10000;
         }
 
         // 2. Capture scoring (MVV-LVA)
-        if (board.isCapture(mv)) {
+        else if (board.isCapture(mv)) {
             Piece attacker = board.at(mv.from());
             Piece victim   = board.at(mv.to());
             score += 1000 + (int)victim.type() * 10 - (int)attacker.type();
