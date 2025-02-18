@@ -12,7 +12,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 class scene_MainMenu(Scene):
-    def __create_play_button(self, window_rect: pygame.Rect) -> Button:
+    def _create_play_button(self, window_rect: pygame.Rect) -> Button:
         """Creates and returns the play button."""
         button_rect = pygame.Rect(window_rect.centerx - 100, window_rect.centery - 40, 200, 80)
 
@@ -30,7 +30,7 @@ class scene_MainMenu(Scene):
 
         return play_button
     
-    def __create_quit_button(self, window_rect: pygame.Rect) -> Button:
+    def _create_quit_button(self, window_rect: pygame.Rect) -> Button:
         """Creates and returns the quit button."""
         button_rect = pygame.Rect(window_rect.centerx - 100, window_rect.centery + 60, 200, 80)
 
@@ -57,7 +57,7 @@ class scene_MainMenu(Scene):
         title.font = pygame.font.Font(None, 80)
 
         self.elements.extend([
-            self.__create_play_button(window_rect),
-            self.__create_quit_button(window_rect),
+            self._create_play_button(window_rect),
+            self._create_quit_button(window_rect),
             title
         ])

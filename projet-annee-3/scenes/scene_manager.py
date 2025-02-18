@@ -10,7 +10,7 @@ from typing import override
 
 class SceneManager:
     @staticmethod
-    def __id_to_scene_type(id: SceneId) -> type[Scene]:
+    def _id_to_scene_type(id: SceneId) -> type[Scene]:
         """"""
         match id:
             case SceneId.TEST: return scene_Test
@@ -19,24 +19,24 @@ class SceneManager:
     def __init__(self, window: pygame.Surface, initial_scene: SceneId, **kwargs: dict[str]):
         super().__init__()
 
-        self.__window = window
+        self._window = window
 
-        self.__current_scene: Scene = None
+        self._current_scene: Scene = None
 
         self.switch_scene(initial_scene, **kwargs)
     
     @override
     def switch_scene(self, scene_id: SceneId, **kwargs: dict[str]) -> None:
         """"""
-        scene_type = self.__id_to_scene_type(scene_id)
-        self.__current_scene = scene_type(self.__window.get_rect(), **kwargs)
+        scene_type = self._id_to_scene_type(scene_id)
+        self._current_scene = scene_type(self._window.get_rect(), **kwargs)
     
     def update_loop(self) -> bool:
         """Handles the update loop. Returns `False` if the game is closed."""
         running  = True
 
-        self.__current_scene.update()
-        self.__current_scene.draw(self.__window)
+        self._current_scene.update()
+        self._current_scene.draw(self._window)
 
         pygame.display.flip()
 
@@ -44,9 +44,9 @@ class SceneManager:
             if event.type == pygame.QUIT:
                 running = False
             else:
-                self.__current_scene.handle_event(event)
+                self._current_scene.handle_event(event)
         
-        scene_change = self.__current_scene.requested_scene_change()
+        scene_change = self._current_scene.requested_scene_change()
 
         if running and scene_change is not None:
             if scene_change.scene_id == SceneId.QUIT:

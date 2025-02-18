@@ -12,14 +12,14 @@ class UIElement(AttributeWatcher, ABC):
         # The `Rect` occupied by this `UIElement` in relative coordinates (to the destination surface).
         self.dest_rect = rect if rect is not None else pygame.Rect(0, 0, 0, 0)
 
-        self.__surface = pygame.Surface(self.dest_rect.size, pygame.SRCALPHA)
+        self._surface = pygame.Surface(self.dest_rect.size, pygame.SRCALPHA)
 
-        self.__children: list[UIElement] = []
-        self.__parent: UIElement | None = None
+        self._children: list[UIElement] = []
+        self._parent: UIElement | None = None
 
-        self.__hover = False
+        self._hover = False
 
-        self.watch("dest_rect", "_UIElement__hover")
+        self.watch("dest_rect", "_hover")
     
     @property
     def area(self) -> pygame.Rect:
@@ -29,8 +29,8 @@ class UIElement(AttributeWatcher, ABC):
     @property
     def absolute_rect(self) -> pygame.Rect:
         """The `Rect` occupied by this `UIElement` in absolute coordinates."""
-        if self.__parent is not None:
-            return self.dest_rect.move(self.__parent.absolute_rect.topleft)
+        if self._parent is not None:
+            return self.dest_rect.move(self._parent.absolute_rect.topleft)
         else:
             return self.dest_rect
     
@@ -40,7 +40,7 @@ class UIElement(AttributeWatcher, ABC):
     
     def add_child(self, child: "UIElement") -> None:
         """Adds the given `UIElement` as a child of this one."""
-        self.__children.append(child)
+        self._children.append(child)
         child.__parent = self
     
     # -- Event handling -- #
@@ -89,17 +89,17 @@ class UIElement(AttributeWatcher, ABC):
         """
         return False
 
-    def __will_accept_event(self, event: pygame.event.Event) -> bool:
+    def _will_accept_event(self, event: pygame.event.Event) -> bool:
         """Returns `True` if the event will be accepted by this element."""
         match event.type:
             case pygame.MOUSEBUTTONDOWN:
                 accept = self.absolute_rect.collidepoint(event.pos)
 
             case pygame.MOUSEMOTION:
-                self.__hover = self.absolute_rect.collidepoint(event.pos)
+                self._hover = self.absolute_rect.collidepoint(event.pos)
 
                 # Accept the event if being hovered on OR if hover state changes.
-                accept = self.__hover or self.is_changed("_UIElement__hover")
+                accept = self._hover or self.is_changed("_hover")
             
             case _:
                 accept = False
@@ -116,10 +116,10 @@ class UIElement(AttributeWatcher, ABC):
         Returns:
             bool: `True` if the event was consumed and should no longer be propagated.
         """
-        if not self.__will_accept_event(event): return False
+        if not self._will_accept_event(event): return False
 
         # Children handle the event first
-        consumed = any(el.handle_event(event) for el in self.__children)
+        consumed = any(el.handle_event(event) for el in self._children)
 
         if not consumed:
             match event.type:
@@ -127,8 +127,8 @@ class UIElement(AttributeWatcher, ABC):
                     consumed = self.on_click(event.pos)
                 
                 case pygame.MOUSEMOTION:
-                    if self.is_changed("_UIElement__hover"):
-                        if self.__hover:
+                    if self.is_changed("_hover"):
+                        if self._hover:
                             consumed = self.on_mouseenter(event.pos)
                         else:
                             consumed = self.on_mouseleave(event.pos)
@@ -143,7 +143,7 @@ class UIElement(AttributeWatcher, ABC):
     
     @property
     def is_hovered(self) -> bool:
-        return self.__hover
+        return self._hover
     
     # -- Updating and drawing -- #
 
@@ -154,9 +154,9 @@ class UIElement(AttributeWatcher, ABC):
 
         # Resize surface if size changed
         if self.is_changed("dest_rect"):
-            self.__surface = pygame.Surface(self.dest_rect.size, pygame.SRCALPHA)
+            self._surface = pygame.Surface(self.dest_rect.size, pygame.SRCALPHA)
 
-        for child in self.__children:
+        for child in self._children:
             child._recursive_update()
         
         self.reset_changed()
@@ -165,14 +165,14 @@ class UIElement(AttributeWatcher, ABC):
     def _recursive_draw(self, dest: pygame.Surface) -> None:
         """"""
         # Clear surface
-        self.__surface.fill((255, 255, 255, 0))
+        self._surface.fill((255, 255, 255, 0))
 
-        self.draw(self.__surface)
+        self.draw(self._surface)
 
-        for child in self.__children:
-            child._recursive_draw(self.__surface)
+        for child in self._children:
+            child._recursive_draw(self._surface)
         
-        dest.blit(self.__surface, self.dest_rect)
+        dest.blit(self._surface, self.dest_rect)
 
     @abstractmethod
     def update(self) -> None: ...

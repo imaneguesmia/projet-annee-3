@@ -16,9 +16,9 @@ class Scene(ABC):
 
         self.bg_color = (0, 0, 0)
 
-        self.__surface = pygame.Surface(window_rect.size, flags=pygame.SRCALPHA)
+        self._surface = pygame.Surface(window_rect.size, flags=pygame.SRCALPHA)
 
-        self.__scene_change: SceneChange | None = None
+        self._scene_change: SceneChange | None = None
     
     @final
     def handle_event(self, event: Event) -> None:
@@ -39,19 +39,19 @@ class Scene(ABC):
     @final
     def draw(self, dest: pygame.Surface) -> None:
         """Draws all UI elements."""
-        self.__surface.fill(self.bg_color)
+        self._surface.fill(self.bg_color)
 
         for el in self.elements:
-            el._recursive_draw(self.__surface)
+            el._recursive_draw(self._surface)
         
-        dest.blit(self.__surface, dest.get_rect())
+        dest.blit(self._surface, dest.get_rect())
 
     @final
     def request_scene_change(self, scene_id: SceneId, kwargs: dict[str]) -> None:
-        self.__scene_change = SceneChange(scene_id, kwargs)
+        self._scene_change = SceneChange(scene_id, kwargs)
     @final
     def request_quit(self) -> None:
-        self.__scene_change = SceneChange(SceneId.QUIT, {})
+        self._scene_change = SceneChange(SceneId.QUIT, {})
     @final
     def requested_scene_change(self) -> SceneChange | None:
-        return self.__scene_change
+        return self._scene_change

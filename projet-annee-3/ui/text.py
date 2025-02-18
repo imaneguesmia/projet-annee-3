@@ -21,29 +21,29 @@ class Text(UIElement):
 
         self.center = center
 
-        self.__update_surfaces()
+        self._update_surfaces()
 
         self.watch("text", "font", "color", "bg_color")
     
-    def __update_surfaces(self) -> None:
-        self.__alpha_surface = pygame.Surface(self.area.size, pygame.SRCALPHA)
-        self.__alpha_surface.fill(self.bg_color)
+    def _update_surfaces(self) -> None:
+        self._alpha_surface = pygame.Surface(self.area.size, pygame.SRCALPHA)
+        self._alpha_surface.fill(self.bg_color)
 
         text = self.font.render(self.text, True, self.color)
 
         self.dest_rect = text.get_rect(center=self.center)
 
-        self.__text_surface = pygame.Surface(self.area.size, pygame.SRCALPHA)
+        self._text_surface = pygame.Surface(self.area.size, pygame.SRCALPHA)
 
-        self.__text_surface.blit(self.__alpha_surface, (0, 0))
-        self.__text_surface.blit(text, (0, 0))
+        self._text_surface.blit(self._alpha_surface, (0, 0))
+        self._text_surface.blit(text, (0, 0))
 
     @override
     def update(self) -> None:
         if self.is_changed("text") or self.is_changed("font") or \
            self.is_changed("color") or self.is_changed("bg_color"):
-            self.__update_surfaces()
+            self._update_surfaces()
     
     @override
     def draw(self, dest: pygame.Surface) -> None:
-        dest.blit(self.__text_surface, (0, 0))
+        dest.blit(self._text_surface, (0, 0))

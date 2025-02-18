@@ -29,7 +29,7 @@ if __name__ == "__main__":
         def a(self):
             return 10
         
-        def __setattr__(self, name, value):
+        def _setattr__(self, name, value):
             print(f"{name} set to {value}")
             super().__setattr__(name, value)
     
