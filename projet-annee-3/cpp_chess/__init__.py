@@ -6,5 +6,5 @@ __all__ = [
     "Square", "Position",
     "PType", "Piece",
     "Move",
-    "Game",
+    "GameState", "Game",
 ]

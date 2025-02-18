@@ -11,10 +11,6 @@ class ChessBoard:
 
         self.chess_game = chess_game
         self.legal_moves = self.chess_game.get_current_pseudo_legals()
-
-        self.move_surface = pygame.Surface((self.square_size, self.square_size))
-        self.move_surface.set_alpha(self.transparency)
-        self.move_surface.fill(self.move_color)
         
         # Chargement des images des pièces
         self.images = ImageLoader(self.square_size)
