@@ -3,6 +3,7 @@ from .scene_change import SceneId
 
 from .scenes.scene_test import scene_Test
 from .scenes.scene_main_menu import scene_MainMenu
+from .scenes.scene_game import scene_ChessGame
 
 import pygame
 
@@ -15,6 +16,7 @@ class SceneManager:
         match id:
             case SceneId.TEST: return scene_Test
             case SceneId.MAINMENU: return scene_MainMenu
+            case SceneId.GAME: return scene_ChessGame
 
     def __init__(self, window: pygame.Surface, initial_scene: SceneId, **kwargs: dict[str]):
         super().__init__()

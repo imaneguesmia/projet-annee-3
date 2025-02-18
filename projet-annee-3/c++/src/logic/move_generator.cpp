@@ -124,8 +124,6 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                 default: break;
             }
 
-            BB::out(std::cout, castle);
-
             /* Extract moves from pseudo-legal bitboard */
 
             while (pseudo_legals) {
