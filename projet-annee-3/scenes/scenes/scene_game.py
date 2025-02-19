@@ -22,8 +22,8 @@ class scene_ChessGame(Scene, ChessModel):
 
         self._chess_game = cm.Game() if initial_state is None else cm.Game(initial_state)
 
-        self.selected_square: cm.Position | None = None
-        self.selected_moves: list[cm.Move] = []
+        self._selected_square: cm.Position | None = None
+        self._selected_moves: list[cm.Move] = []
 
         self._promotion: cm.Move | None = None
 
@@ -38,6 +38,14 @@ class scene_ChessGame(Scene, ChessModel):
 
         self.elements.append(self._board)
         self.elements.append(self._promotion_panel)
+    
+    @property
+    def selected_square(self) -> cm.Position | None: 
+        return self._selected_square
+    
+    @property
+    def selected_moves(self) -> list[cm.Move]:
+        return self._selected_moves
 
     # -- Game model methods -- #
     
@@ -58,14 +66,14 @@ class scene_ChessGame(Scene, ChessModel):
 
         # Select the clicked piece if it belongs to the current player
         if not piece_on_square.is_none() and piece_on_square.get_player() == current_player:
-            self.selected_square = square
-            self.selected_moves = self.get_legal_moves_from_square(square)
+            self._selected_square = square
+            self._selected_moves = self.get_legal_moves_from_square(square)
 
             print(f"Selected piece : {piece_on_square.get_type()} ({piece_on_square.get_player()})") #  debug selection
 
         # Do a move if a piece is already selected and a valid target was clicked
-        elif self.selected_square and any(cm.Position(move.target) == square for move in self.selected_moves):
-            move_to_do = next((move for move in self.selected_moves if cm.Position(move.target) == square), None)
+        elif self._selected_square and any(cm.Position(move.target) == square for move in self._selected_moves):
+            move_to_do = next((move for move in self._selected_moves if cm.Position(move.target) == square), None)
 
             if move_to_do:
                 if move_to_do.promotion != cm.PType.NoneType:
@@ -74,12 +82,12 @@ class scene_ChessGame(Scene, ChessModel):
                     self._chess_game.move(move_to_do)
 
                     # Update data after move
-                    self.selected_square = None
-                    self.selected_moves = []
+                    self._selected_square = None
+                    self._selected_moves = []
 
         else:
-            self.selected_square = None
-            self.selected_moves = []
+            self._selected_square = None
+            self._selected_moves = []
     
     def get_legal_moves_from_square(self, square: cm.Position) -> list[cm.Move]:
         filtered_moves = []
@@ -115,7 +123,7 @@ class scene_ChessGame(Scene, ChessModel):
             self._chess_game.move(self._promotion)
 
             # Update data after move
-            self.selected_square = None
-            self.selected_moves = []
+            self._selected_square = None
+            self._selected_moves = []
 
 
