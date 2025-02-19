@@ -4,6 +4,8 @@
 #include "logic/move.hpp"
 #include "logic/game.hpp"
 
+#include "view/board_view.hpp"
+
 #include <nanobind/nanobind.h>
 
 #include <nanobind/stl/string.h>
@@ -98,6 +100,11 @@ void export_move(nb::module_& m) {
         });
 }
 
+void export_board_view(nb::module_& m) {
+    nb::class_<BoardView>(m, "BoardView")
+        .def("piece_at", &BoardView::pieceAt);
+}
+
 void export_game(nb::module_& m) {
     nb::enum_<GameState>(m, "GameState")
         .value("INGAME", GameState::INGAME)
@@ -122,6 +129,7 @@ void export_game(nb::module_& m) {
         .def("undo_last_move", &Game::undoLastMove)
 
         .def("get_piece_at", &Game::getPieceAt)
+        .def("board_view", &Game::boardView)
 
         .def_prop_ro("fen", &Game::fen)
 
@@ -133,5 +141,6 @@ NB_MODULE(chess_module, m) {
     export_position(m);
     export_piece(m);
     export_move(m);
+    export_board_view(m);
     export_game(m);
 }

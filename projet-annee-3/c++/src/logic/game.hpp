@@ -8,6 +8,8 @@
 #include "piece.hpp"
 #include "attack_tables.hpp"
 
+#include "../view/board_view.hpp"
+
 #include <memory>
 #include <string>
 #include <iostream>
@@ -222,6 +224,8 @@ public:
     Piece getPieceAt(const Position& position) const {
         return board.pieceAt(position);
     }
+
+    BoardView boardView() const { return BoardView(board); };
 
     /* -- String representation -- */
 

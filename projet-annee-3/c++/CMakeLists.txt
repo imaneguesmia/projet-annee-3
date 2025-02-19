@@ -15,6 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Directories
 set(LOGIC "logic")
 set(MISC "misc")
+set(VIEW "view")
 
 # Compiler options (add -stdlib=libc++ for macOS)
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -24,6 +25,7 @@ endif()
 
 # ---- Libraries ---- #
 
+# Library for all game logic functionality
 add_library(
     logic STATIC 
     "src/${LOGIC}/bitboard.cpp" "src/${LOGIC}/bitboard.hpp"
@@ -38,6 +40,13 @@ add_library(
     "src/${LOGIC}/game.cpp" "src/${LOGIC}/game.hpp"
 )
 target_compile_options(logic PRIVATE -Wall -Wextra -Wpedantic)
+
+# Library for all "view" functionality, i.e. data access for display purposes.
+add_library(
+    view STATIC 
+    "src/${VIEW}/board_view.cpp" "src/${VIEW}/board_view.hpp"
+)
+target_compile_options(view PRIVATE -Wall -Wextra -Wpedantic)
 
 add_library(
     misc INTERFACE
@@ -65,7 +74,7 @@ find_package(nanobind REQUIRED)
 
 # Create the nanobind module
 nanobind_add_module(chess_module "src/export.cpp")
-target_link_libraries(chess_module PRIVATE logic misc)
+target_link_libraries(chess_module PRIVATE logic misc view)
 
 # Python typing
 nanobind_add_stub(
@@ -85,7 +94,6 @@ install(FILES "build/chess_module.pyi" DESTINATION cpp_chess)
 
 # Comment out the next lines if you don't want to build the testing executable
 add_executable(testing "src/testing.cpp")
-target_link_libraries(testing PRIVATE logic)
-target_link_libraries(testing PRIVATE misc)
+target_link_libraries(testing PRIVATE logic misc view)
 
 
