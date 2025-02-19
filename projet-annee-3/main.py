@@ -13,6 +13,10 @@ pygame.display.set_caption("Aqua Chess")
 # chess_board = ChessBoard(fenetre, window_size, chess_game)
 
 from scenes import SceneManager, SceneId
+import image_loader as img
+
+# Load images globally
+img.IMAGES = img.ImageLoader(window_size // 8)
 
 # Boucle principale
 running = True

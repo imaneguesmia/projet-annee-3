@@ -50,5 +50,6 @@ class ImageLoader:
     def attacked_sprite(self, tile_index: int, is_capture: bool) -> pygame.Surface:
         return self._select[tile_index][2 if is_capture else 1]
 
+IMAGES: ImageLoader
 
 __all__ = ["ImageLoader"]

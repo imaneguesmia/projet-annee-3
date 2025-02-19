@@ -1,18 +1,21 @@
 from .chess_model import ChessModel
 
-import cpp_chess as cm
+import image_loader as img
 
-from ui import Button, Panel
+from ui import Button, Panel, Image
 from ui.colors import *
+
+import cpp_chess as cm
 
 import pygame
 
 from typing import override
 
 PROMOTION_PANEL_WIDTH = 400
-PROMOTION_PANEL_HEIGHT = 200
+PROMOTION_PANEL_HEIGHT = 100
+PROMOTION_PANEL_PADDING = 8
 
-PROMOTION_BUTTON_PADDING = 10
+PROMOTION_BUTTON_PADDING = 8
 PROMOTION_BUTTON_SIZE = PROMOTION_PANEL_WIDTH/4 - PROMOTION_BUTTON_PADDING*2
 
 class PromotionButton(Button):
@@ -20,14 +23,19 @@ class PromotionButton(Button):
         button_rect = pygame.Rect(position, (PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE))
         piece = cm.Piece(p_type, cm.Player.White)
 
-        super().__init__(button_rect, piece.fen())
+        super().__init__(button_rect, "")
 
         self._piece = piece
+        self._model = model
 
         self.color = (0, 0, 0, 0)
         self.hover_color = (255, 255, 255, 100)
 
-        self._model = model
+        image_rect = button_rect.copy()
+        image_rect.topleft = (0, 0)
+        self._image = Image(image_rect, img.IMAGES.piece_sprite(self._piece))
+
+        self.add_child(self._image)
     
     @override
     def on_click(self, _) -> bool:
@@ -41,14 +49,17 @@ class PromotionButton(Button):
         """"""
         self._piece = cm.Piece(self._piece.get_type(), player)
 
-        self._text.text = self._piece.fen()
+        self._image.image = img.IMAGES.piece_sprite(self._piece)
+
+        # self._text.text = self._piece.fen()
 
 class PromotionPanel(Panel):
     def __init__(self, window_rect: pygame.Rect, model: ChessModel):
         panel_rect = pygame.Rect(
-            window_rect.centerx - PROMOTION_PANEL_WIDTH/2,
-            window_rect.centery - PROMOTION_PANEL_HEIGHT/2, 
-            PROMOTION_PANEL_WIDTH, PROMOTION_PANEL_HEIGHT
+            window_rect.centerx - PROMOTION_PANEL_WIDTH/2 - PROMOTION_PANEL_PADDING,
+            window_rect.centery - PROMOTION_PANEL_HEIGHT/2 - PROMOTION_PANEL_PADDING, 
+            PROMOTION_PANEL_WIDTH + PROMOTION_PANEL_PADDING*2,
+            PROMOTION_PANEL_HEIGHT + PROMOTION_PANEL_PADDING*2
         )
 
         super().__init__(panel_rect, SAND_COLOR)
@@ -57,8 +68,8 @@ class PromotionPanel(Panel):
 
         for i, p_type in enumerate([cm.PType.Knight, cm.PType.Bishop, cm.PType.Rook, cm.PType.Queen]):
             position = (
-                PROMOTION_BUTTON_PADDING + (PROMOTION_BUTTON_SIZE+PROMOTION_BUTTON_PADDING*2)*i,
-                PROMOTION_PANEL_HEIGHT/2 + PROMOTION_BUTTON_PADDING
+                PROMOTION_PANEL_PADDING + PROMOTION_BUTTON_PADDING + (PROMOTION_BUTTON_SIZE+PROMOTION_BUTTON_PADDING*2)*i,
+                PROMOTION_PANEL_PADDING + PROMOTION_BUTTON_PADDING
             )
             button = PromotionButton(position, p_type, model)
 
