@@ -2,7 +2,7 @@ from .chess_model import ChessModel
 
 import image_loader as img
 
-from ui import Button, Panel, Image
+from ui import Button, NinepatchPanel, Image
 from ui.colors import *
 
 import cpp_chess as cm
@@ -53,7 +53,7 @@ class PromotionButton(Button):
 
         # self._text.text = self._piece.fen()
 
-class PromotionPanel(Panel):
+class PromotionPanel(NinepatchPanel):
     def __init__(self, window_rect: pygame.Rect, model: ChessModel):
         panel_rect = pygame.Rect(
             window_rect.centerx - PROMOTION_PANEL_WIDTH/2 - PROMOTION_PANEL_PADDING,
@@ -62,7 +62,7 @@ class PromotionPanel(Panel):
             PROMOTION_PANEL_HEIGHT + PROMOTION_PANEL_PADDING*2
         )
 
-        super().__init__(panel_rect, SAND_COLOR)
+        super().__init__(panel_rect, img.IMAGES.panel(img.PanelTheme.TEST), 31)
 
         self._buttons: list[PromotionButton] = []
 

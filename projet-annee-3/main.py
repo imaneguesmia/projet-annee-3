@@ -21,6 +21,7 @@ img.IMAGES = img.ImageLoader(window_size // 8)
 # Boucle principale
 running = True
 scene_manager = SceneManager(fenetre, SceneId.GAME, initial_state="3k4/6P1/8/8/8/8/5p2/3K4 w - - 0 1")
+# scene_manager = SceneManager(fenetre, SceneId.TEST)
 
 while running:
     running = scene_manager.update_loop()

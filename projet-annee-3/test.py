@@ -2,7 +2,10 @@ from cpp_chess import *
 
 from misc import AttributeWatcher
 
+import pygame
+
 if __name__ == "__main__":
+    pass
     # a = WatchedValue(1)
 
     # print(a)
@@ -14,29 +17,29 @@ if __name__ == "__main__":
     #     def lmao(self):
     #         return self.lmao
 
-    class a(AttributeWatcher):
-        def __init__(self):
-            super().__init__()
+    # class a(AttributeWatcher):
+    #     def __init__(self):
+    #         super().__init__()
 
-            self.text = "lmao"
-            self.other = 3
+    #         self.text = "lmao"
+    #         self.other = 3
 
-            self.r = [1, 2, 3]
+    #         self.r = [1, 2, 3]
 
-            self.watch("text", "r")
+    #         self.watch("text", "r")
         
-        @property
-        def a(self):
-            return 10
+    #     @property
+    #     def a(self):
+    #         return 10
         
-        def _setattr__(self, name, value):
-            print(f"{name} set to {value}")
-            super().__setattr__(name, value)
+    #     def _setattr__(self, name, value):
+    #         print(f"{name} set to {value}")
+    #         super().__setattr__(name, value)
     
-    i = a()
-    i.text = "hello"
-    i.r.append("333")
-    print(i.text, i.r, i.all_changed())
+    # i = a()
+    # i.text = "hello"
+    # i.r.append("333")
+    # print(i.text, i.r, i.all_changed())
 
     # print(getattr(i, "a"))
 

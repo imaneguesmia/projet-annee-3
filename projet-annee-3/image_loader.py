@@ -2,7 +2,12 @@ import cpp_chess as cm
 
 import pygame
 
+from enum import Enum
+
 IMG_DIR = "projet-annee-3/images/"
+
+class PanelTheme(Enum):
+    TEST = 0
 
 class ImageLoader:
     def __init__(self, square_size: float):
@@ -11,10 +16,12 @@ class ImageLoader:
         self._pieces: dict[str, pygame.Surface] = {}
         self._tiles: list[pygame.Surface] = []
         self._select: list[list[pygame.Surface]] = []
+        self._panels: list[pygame.Surface] = []
 
         self._load_pieces()
         self._load_tiles()
         self._load_select()
+        self._load_panels()
 
     def _load_square_image(self, path: str) -> pygame.Surface:
         img = pygame.image.load(f"{IMG_DIR}{path}")
@@ -36,6 +43,10 @@ class ImageLoader:
             for j in range(3):
                 self._select[i].append(self._load_square_image(f"select{i}{j}.png"))
     
+    def _load_panels(self) -> None:
+        for i in range(1):
+            self._panels.append(pygame.image.load(f"{IMG_DIR}panels{i}.png"))
+    
     # -- Get specific sprites -- #
 
     def piece_sprite(self, piece: cm.Piece) -> pygame.Surface:
@@ -50,6 +61,7 @@ class ImageLoader:
     def attacked_sprite(self, tile_index: int, is_capture: bool) -> pygame.Surface:
         return self._select[tile_index][2 if is_capture else 1]
 
-IMAGES: ImageLoader
+    def panel(self, theme: PanelTheme) -> pygame.Surface:
+        return self._panels[theme.value]
 
-__all__ = ["ImageLoader"]
+IMAGES: ImageLoader

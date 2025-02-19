@@ -1,7 +1,9 @@
 from ..scene import Scene
 from ..scene_change import SceneId
 
-from ui import Text, Button
+from ui import Text, Button, NinepatchPanel
+
+import image_loader as img
 
 import pygame
 
@@ -45,3 +47,6 @@ class scene_Test(Scene):
         # button.add_child(child)
 
         self.elements.append(button)
+
+        panel = NinepatchPanel(pygame.Rect(100, 100, 256, 128), img.IMAGES.panel(img.PanelTheme.TEST), 25)
+        self.elements.append(panel)
