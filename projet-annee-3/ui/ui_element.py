@@ -19,6 +19,13 @@ class UIElement(AttributeWatcher, ABC):
 
         self._hover = False
 
+        # If `True`, then this UI element will be drawn. If not, its drawing will be skipped.
+        # This also hides child elements.
+        self.is_visible = True
+        # If `True`, then this UI element can accept events. If not, all events will be blocked.
+        # This also prevents propagation to child elements.
+        self.can_accept_events = True
+
         self.watch("dest_rect", "_hover")
     
     @property
@@ -41,7 +48,7 @@ class UIElement(AttributeWatcher, ABC):
     def add_child(self, child: "UIElement") -> None:
         """Adds the given `UIElement` as a child of this one."""
         self._children.append(child)
-        child.__parent = self
+        child._parent = self
     
     # -- Event handling -- #
     
@@ -91,6 +98,8 @@ class UIElement(AttributeWatcher, ABC):
 
     def _will_accept_event(self, event: pygame.event.Event) -> bool:
         """Returns `True` if the event will be accepted by this element."""
+        if not self.can_accept_events: return False
+
         match event.type:
             case pygame.MOUSEBUTTONDOWN:
                 accept = self.absolute_rect.collidepoint(event.pos)
@@ -164,6 +173,8 @@ class UIElement(AttributeWatcher, ABC):
     @final
     def _recursive_draw(self, dest: pygame.Surface) -> None:
         """"""
+        if not self.is_visible: return
+
         # Clear surface
         self._surface.fill((255, 255, 255, 0))
 

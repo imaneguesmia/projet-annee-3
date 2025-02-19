@@ -5,9 +5,70 @@ from .chess_model import ChessModel
 
 import cpp_chess as cm
 
+from ui import Button, Panel
+from ui.colors import *
+
 import pygame
 
+from typing import override
+
+PROMOTION_PANEL_WIDTH = 400
+PROMOTION_PANEL_HEIGHT = 200
+
+PROMOTION_BUTTON_PADDING = 10
+PROMOTION_BUTTON_SIZE = PROMOTION_PANEL_WIDTH/4 - PROMOTION_BUTTON_PADDING*2
+
+class PromotionButton(Button):
+    def __init__(self, position: tuple[int, int], p_type: cm.PType):
+        button_rect = pygame.Rect(position, (PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE))
+        piece = cm.Piece(p_type, cm.Player.White)
+
+        super().__init__(button_rect, piece.fen())
+
+        self._piece = piece
+
+        self.color = (0, 0, 0, 0)
+        self.hover_color = (255, 255, 255, 100)
+    
+    @override
+    def on_click(self, point):
+        print(self._piece.fen())
+    
+    def set_player(self, player: cm.Player) -> None:
+        """"""
+        self._piece = cm.Piece(self._piece.get_type(), player)
+
+        self._text.text = self._piece.fen()
+
+class PromotionPanel(Panel):
+    def __init__(self, window_rect: pygame.Rect):
+        panel_rect = pygame.Rect(
+            window_rect.centerx - PROMOTION_PANEL_WIDTH/2,
+            window_rect.centery - PROMOTION_PANEL_HEIGHT/2, 
+            PROMOTION_PANEL_WIDTH, PROMOTION_PANEL_HEIGHT
+        )
+
+        super().__init__(panel_rect, SAND_COLOR)
+
+        self._buttons: list[PromotionButton] = []
+
+        for i, p_type in enumerate([cm.PType.Knight, cm.PType.Bishop, cm.PType.Rook, cm.PType.Queen]):
+            position = (
+                PROMOTION_BUTTON_PADDING + (PROMOTION_BUTTON_SIZE+PROMOTION_BUTTON_PADDING*2)*i,
+                PROMOTION_PANEL_HEIGHT/2 + PROMOTION_BUTTON_PADDING
+            )
+            button = PromotionButton(position, p_type)
+
+            self.add_child(button)
+            self._buttons.append(button)
+    
+    def set_player(self, player: cm.Player) -> None:
+        """"""
+        for b in self._buttons:
+            b.set_player(player)
+
 class scene_ChessGame(Scene, ChessModel):
+
     def __init__(self, window_rect: pygame.Rect, initial_state: str | None = None):
         super().__init__(window_rect)
 
@@ -18,18 +79,27 @@ class scene_ChessGame(Scene, ChessModel):
         self.selected_square: cm.Position | None = None
         self.selected_moves: list[cm.Move] = []
 
+        self.promotion: cm.Move | None = None
+
         self._board = ChessBoard(
             pygame.Rect(0, 0, window_rect.height, window_rect.height),
             self
         )
+        self._board.can_accept_events = False
+
+        self._promotion_panel = PromotionPanel(window_rect)
+        # self._promotion_panel.is_visible = False
+        # self._promotion_panel.can_accept_events = False
 
         self.elements.append(self._board)
+        self.elements.append(self._promotion_panel)
 
     # -- Game model methods -- #
     
     def board_view(self) -> cm.BoardView:
         return self._chess_game.board_view()
     
+    @override
     def piece_at(self, square: cm.Position) -> cm.Piece:
         return self._chess_game.get_piece_at(square)
 
@@ -74,3 +144,17 @@ class scene_ChessGame(Scene, ChessModel):
                 filtered_moves.append(move)
 
         return filtered_moves
+
+    @override
+    def prompt_promotion(self, move: cm.Move) -> None:
+        self.promotion = move
+
+        self._promotion_panel.is_visible = True
+        self._promotion_panel.can_accept_events = True
+    
+    def do_current_promotion(self, to_piece: cm.PType) -> None:
+        if self.promotion is not None:
+            self._promotion_panel.is_visible = False
+            self._promotion_panel.can_accept_events = False
+
+

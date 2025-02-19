@@ -2,19 +2,21 @@ from ..scene import Scene
 from ..scene_change import SceneId
 
 from ui import Text, Button
+from ui.colors import *
 
 import pygame
 
-AQUA_BLUE = (173, 216, 230)  
-SAND_COLOR = (237, 201, 175)  
-SAND_HOVER = (255, 228, 196) 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+MENU_BUTTON_WIDTH = 200
+MENU_BUTTON_HEIGHT = 80
 
 class scene_MainMenu(Scene):
     def _create_play_button(self, window_rect: pygame.Rect) -> Button:
         """Creates and returns the play button."""
-        button_rect = pygame.Rect(window_rect.centerx - 100, window_rect.centery - 40, 200, 80)
+        button_rect = pygame.Rect(
+            window_rect.centerx - MENU_BUTTON_WIDTH/2, 
+            window_rect.centery - MENU_BUTTON_HEIGHT/2, 
+            MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT
+        )
 
         play_button = Button(button_rect, "Play")
         play_button.color = SAND_COLOR
@@ -23,7 +25,7 @@ class scene_MainMenu(Scene):
         play_button.text_font = pygame.font.Font(None, 60)
 
         def oc(point: tuple[int, int]) -> bool:
-            self.request_scene_change(SceneId.TEST, {})
+            self.request_scene_change(SceneId.GAME, {})
             return True
 
         play_button.on_click = oc
@@ -32,7 +34,11 @@ class scene_MainMenu(Scene):
     
     def _create_quit_button(self, window_rect: pygame.Rect) -> Button:
         """Creates and returns the quit button."""
-        button_rect = pygame.Rect(window_rect.centerx - 100, window_rect.centery + 60, 200, 80)
+        button_rect = pygame.Rect(
+            window_rect.centerx - MENU_BUTTON_WIDTH/2, 
+            window_rect.centery - MENU_BUTTON_HEIGHT/2 + 100, 
+            MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT
+        )
 
         quit_button = Button(button_rect, "Quit")
         quit_button.color = SAND_COLOR
