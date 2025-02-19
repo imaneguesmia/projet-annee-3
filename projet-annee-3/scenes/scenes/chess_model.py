@@ -10,3 +10,6 @@ class ChessModel(ABC):
 
     @abstractmethod
     def prompt_promotion(self, move: cm.Move) -> None: ...
+
+    @abstractmethod
+    def do_current_promotion(self, to_piece: cm.PType) -> None: ...

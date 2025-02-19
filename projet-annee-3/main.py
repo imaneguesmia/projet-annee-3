@@ -16,7 +16,7 @@ from scenes import SceneManager, SceneId
 
 # Boucle principale
 running = True
-scene_manager = SceneManager(fenetre, SceneId.MAINMENU)
+scene_manager = SceneManager(fenetre, SceneId.GAME, initial_state="3k4/6P1/8/8/8/8/5p2/3K4 w - - 0 1")
 
 while running:
     running = scene_manager.update_loop()

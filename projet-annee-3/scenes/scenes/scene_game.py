@@ -19,7 +19,7 @@ PROMOTION_BUTTON_PADDING = 10
 PROMOTION_BUTTON_SIZE = PROMOTION_PANEL_WIDTH/4 - PROMOTION_BUTTON_PADDING*2
 
 class PromotionButton(Button):
-    def __init__(self, position: tuple[int, int], p_type: cm.PType):
+    def __init__(self, position: tuple[int, int], p_type: cm.PType, model: ChessModel):
         button_rect = pygame.Rect(position, (PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE))
         piece = cm.Piece(p_type, cm.Player.White)
 
@@ -29,10 +29,16 @@ class PromotionButton(Button):
 
         self.color = (0, 0, 0, 0)
         self.hover_color = (255, 255, 255, 100)
+
+        self._model = model
     
     @override
-    def on_click(self, point):
+    def on_click(self, _) -> bool:
         print(self._piece.fen())
+
+        self._model.do_current_promotion(self._piece.get_type())
+
+        return True
     
     def set_player(self, player: cm.Player) -> None:
         """"""
@@ -41,7 +47,7 @@ class PromotionButton(Button):
         self._text.text = self._piece.fen()
 
 class PromotionPanel(Panel):
-    def __init__(self, window_rect: pygame.Rect):
+    def __init__(self, window_rect: pygame.Rect, model: ChessModel):
         panel_rect = pygame.Rect(
             window_rect.centerx - PROMOTION_PANEL_WIDTH/2,
             window_rect.centery - PROMOTION_PANEL_HEIGHT/2, 
@@ -57,7 +63,7 @@ class PromotionPanel(Panel):
                 PROMOTION_BUTTON_PADDING + (PROMOTION_BUTTON_SIZE+PROMOTION_BUTTON_PADDING*2)*i,
                 PROMOTION_PANEL_HEIGHT/2 + PROMOTION_BUTTON_PADDING
             )
-            button = PromotionButton(position, p_type)
+            button = PromotionButton(position, p_type, model)
 
             self.add_child(button)
             self._buttons.append(button)
@@ -79,17 +85,16 @@ class scene_ChessGame(Scene, ChessModel):
         self.selected_square: cm.Position | None = None
         self.selected_moves: list[cm.Move] = []
 
-        self.promotion: cm.Move | None = None
+        self._promotion: cm.Move | None = None
 
         self._board = ChessBoard(
             pygame.Rect(0, 0, window_rect.height, window_rect.height),
             self
         )
-        self._board.can_accept_events = False
 
-        self._promotion_panel = PromotionPanel(window_rect)
-        # self._promotion_panel.is_visible = False
-        # self._promotion_panel.can_accept_events = False
+        self._promotion_panel = PromotionPanel(window_rect, self)
+        self._promotion_panel.is_visible = False
+        self._promotion_panel.can_accept_events = False
 
         self.elements.append(self._board)
         self.elements.append(self._promotion_panel)
@@ -123,12 +128,14 @@ class scene_ChessGame(Scene, ChessModel):
             move_to_do = next((move for move in self.selected_moves if cm.Position(move.target) == square), None)
 
             if move_to_do:
-                self._chess_game.move(move_to_do)
-                print("Moved the piece")
+                if move_to_do.promotion != cm.PType.NoneType:
+                    self.prompt_promotion(move_to_do)
+                else:
+                    self._chess_game.move(move_to_do)
 
-                # Update data after move
-                self.selected_square = None
-                self.selected_moves = []
+                    # Update data after move
+                    self.selected_square = None
+                    self.selected_moves = []
 
         else:
             self.selected_square = None
@@ -147,14 +154,28 @@ class scene_ChessGame(Scene, ChessModel):
 
     @override
     def prompt_promotion(self, move: cm.Move) -> None:
-        self.promotion = move
+        self._promotion = move
+
+        self._promotion_panel.set_player(move.player)
 
         self._promotion_panel.is_visible = True
         self._promotion_panel.can_accept_events = True
+
+        self._board.can_accept_events = False
     
+    @override
     def do_current_promotion(self, to_piece: cm.PType) -> None:
-        if self.promotion is not None:
+        if self._promotion is not None:
             self._promotion_panel.is_visible = False
             self._promotion_panel.can_accept_events = False
+
+            self._board.can_accept_events = True
+
+            self._promotion.promotion = to_piece
+            self._chess_game.move(self._promotion)
+
+            # Update data after move
+            self.selected_square = None
+            self.selected_moves = []
 
 
