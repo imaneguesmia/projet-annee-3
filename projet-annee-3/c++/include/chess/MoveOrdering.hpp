@@ -74,7 +74,23 @@ public:
      * @param ply Current search depth.
      * @param pvMove Principal variation move from the transposition table.
      */
-    void orderMoves(Movelist& moves, const Board& board, int ply, Move pvMove);
+//    void orderMoves(Movelist& moves, const Board& board, int ply, Move pvMove);
+
+    /**
+     * @brief Assigns a numerical score to each move.
+     * @param moves  List of moves to be scored.
+     * @param board  Current board state.
+     * @param ply    Current search depth.
+     * @param pvMove Transposition table's best move, to be heavily rewarded.
+     */
+    void scoreMoves(Movelist& moves, const Board& board, int ply, Move pvMove);
+
+    /**
+     * @brief Select the best move from [startIndex..end] in 'moves' and swap it to 'startIndex'.
+     * @param moves  List of moves already scored with scoreMoves().
+     * @param startIndex  The index from which to pick the best move.
+     */
+    void pickNextMove(Movelist& moves, int startIndex);
 
     /**
      * @brief Reduces all history heuristic values over time.

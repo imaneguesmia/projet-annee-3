@@ -16,7 +16,7 @@ int main() {
      chess::MinimaxAI badai(3);
      chess::MinimaxAI ai(5);
 
-    chess::GameManager game(&theBest, &theBest);
+    chess::GameManager game(&theBest, &betterai);  //White: 238.148 ms per move, Black: 435.13 ms per move
     game.playGame();
 
     return 0;

@@ -12,7 +12,7 @@ namespace chess {
 
     void GameManager::playGame() {
         while (board.isGameOver().first == GameResultReason::NONE) {
-//            board.displayBoard();
+            board.displayBoard();
             Player* currentPlayer = (board.sideToMove() == Color::WHITE) ? white : black;
 
             // Measure move selection time
