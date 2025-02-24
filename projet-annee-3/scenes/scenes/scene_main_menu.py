@@ -8,6 +8,7 @@ import pygame
 
 MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80
+bg_image_path = "./projet-annee-3/images/bg.png"
 
 class scene_MainMenu(Scene):
     def _create_play_button(self, window_rect: pygame.Rect) -> Button:
@@ -25,7 +26,7 @@ class scene_MainMenu(Scene):
         play_button.text_font = pygame.font.Font(None, 60)
 
         def oc(point: tuple[int, int]) -> bool:
-            self.request_scene_change(SceneId.GAME, {})
+            self.request_scene_change(SceneId.DIFFICULTY, {})
             return True
 
         play_button.on_click = oc
@@ -55,11 +56,11 @@ class scene_MainMenu(Scene):
         return quit_button
 
     def __init__(self, window_rect: pygame.Rect):
-        super().__init__(window_rect)
+        super().__init__(window_rect, bg_image_path)
 
         self.bg_color = AQUA_BLUE
 
-        title = Text("Aquachess", (window_rect.centerx, 150), color=BLACK)
+        title = Text("AQUACHESS", (window_rect.centerx, 150), color=BLACK)
         title.font = pygame.font.Font(None, 80)
 
         self.elements.extend([

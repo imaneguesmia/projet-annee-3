@@ -3,6 +3,7 @@
 #include "logic/piece.hpp"
 #include "logic/move.hpp"
 #include "logic/game.hpp"
+#include "view/board_view.hpp"
 
 #include "view/board_view.hpp"
 

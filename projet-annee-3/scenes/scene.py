@@ -11,7 +11,9 @@ from typing import final
 
 class Scene(ABC):
     @abstractmethod
-    def __init__(self, window_rect: pygame.Rect):
+    def __init__(self, window_rect: pygame.Rect, bg_image_path: str=None):
+        self.window_rect = window_rect
+
         self.elements: list[UIElement] = []
 
         self.bg_color = (0, 0, 0)
@@ -19,6 +21,9 @@ class Scene(ABC):
         self._surface = pygame.Surface(window_rect.size, flags=pygame.SRCALPHA)
 
         self._scene_change: SceneChange | None = None
+
+        self._bg_image = pygame.image.load(bg_image_path).convert() if bg_image_path else None
+
     
     @final
     def handle_event(self, event: Event) -> None:
@@ -38,8 +43,14 @@ class Scene(ABC):
     
     @final
     def draw(self, dest: pygame.Surface) -> None:
+
+        """Draw background."""
+        if self._bg_image:
+            dest.blit(self._bg_image, (0,0))  
+        else:
+            self._surface.fill(self.bg_color)  
+
         """Draws all UI elements."""
-        self._surface.fill(self.bg_color)
 
         for el in self.elements:
             el._recursive_draw(self._surface)

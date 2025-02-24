@@ -8,6 +8,8 @@ class SceneId(Enum):
     TEST = auto()
     MAINMENU = auto()
     GAME = auto()
+    DIFFICULTY = auto()
+    CUSTOM = auto()
 
 @dataclass
 class SceneChange:
