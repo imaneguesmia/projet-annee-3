@@ -1,0 +1,9 @@
+data
+trainer/nn
+trainer/runs
+/target
+libparse.dylib
+libparse.dll
+libparse.so
+__pycache__
+venv

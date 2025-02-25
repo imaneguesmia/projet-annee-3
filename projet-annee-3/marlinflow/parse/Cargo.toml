@@ -1,0 +1,15 @@
+[package]
+name = "parse"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+cozy-chess = "0.2.1"
+cozy-syzygy = { git = "https://github.com/MinusKelvin/cozy-syzygy" }
+rayon = "1.5.0"
+marlinformat = { path = "../marlinformat" }
+bytemuck = "1.10.0"
