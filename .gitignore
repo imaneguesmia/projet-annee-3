@@ -9,5 +9,19 @@ venv/
 
 # Fichiers Python
 __pycache__/
-*.pyc
-*.pyo
+
+# Ignorer les fichiers de cache Python
+__pycache__/
+*.py[cod]
+
+# Egg ???
+projet_annee_3.egg-info
+
+# uv lock file
+uv.lock
+
+# VSCode workspace files
+.vscode
+
+# Compiled Python bindings
+**/chess_module.*

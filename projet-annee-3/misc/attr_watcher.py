@@ -1,0 +1,49 @@
+class AttributeWatcher:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._changed: dict[str, bool] = {}
+
+    def __setattr__(self, name: str, value) -> None:
+        try:
+            changed = getattr(self, name) != value
+        except AttributeError:
+            changed = False
+
+        super().__setattr__(name, value)
+
+        if name in self._changed:
+            self._changed[name] = self._changed[name] or changed
+    
+    def is_changed(self, attr: str) -> bool:
+        """Checks if the given attribute changed.
+
+        Args:
+            attr (str): The name of the attribute to check.
+
+        Returns:
+            bool: `True` if the attribute changed.
+        """
+        return self._changed[attr]
+    
+    def all_changed(self) -> list[str]:
+        """Returns a list of the names of all attributes that changed."""
+        return [k for k in self._changed if self.is_changed(k)]
+
+    def reset_changed(self) -> None:
+        """Resets all attribute changed flags."""
+        for k in self._changed:
+            self._changed[k] = False
+    
+    def peek_changed(self, attr: str) -> bool:
+        return self._changed[attr]
+    
+    def watch(self, *attrs: str) -> None:
+        """Watch the given attributes on self."""
+        for k in attrs:
+            self._changed[k] = False
+    
+    @property
+    def watched_attrs(self) -> list[str]:
+        """List of watched attributes."""
+        return self._changed.keys()
