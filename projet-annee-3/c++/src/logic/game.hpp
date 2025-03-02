@@ -10,6 +10,8 @@
 
 #include "../view/board_view.hpp"
 
+#include "chess/ZobristHash.hpp"
+
 #include <memory>
 #include <string>
 #include <iostream>
@@ -42,6 +44,8 @@ struct UnmakeMove {
     uint8_t en_passant;             // Previous valid en passant target.
 
     size_t halfmoves;               // Halfmove clock before the move.
+
+    uint64_t board_hash;            // Zobrist hash of the previous position.
 };
 
 std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move);
@@ -54,7 +58,9 @@ std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move);
 
 // Current game state
 enum class GameState {
-    INGAME, CHECKMATE, STALEMATE,
+    INGAME,         // The game hasn't ended.
+    CHECKMATE,      // The current player is in checkmate (has lost).
+    STALEMATE,      // The current player is in stalemate (in a draw).
 
     OOB, FIRST = INGAME, LAST = STALEMATE
 };
@@ -62,6 +68,8 @@ enum class GameState {
 class Game {
     const BoardAnalysis board_analysis;
     const MoveGenerator move_generator;
+
+    const ZobristHash zobrist;
 
     Board board;
 
@@ -95,20 +103,22 @@ class Game {
     bool is_current_player_in_check;
     // Enum representing the win state of the game.
     GameState game_state {GameState::INGAME};
+    // Zobrist hash of the current board position.
+    uint64_t hash;
 
 
     // The above information will be updated if the relevant flag below is not set.
     enum LazyDataFlags {
-        PSEUDO_LEGALS   = 0b0001,
-        LEGALS          = 0b0010,
-        IS_IN_CHECK     = 0b0100,
-        GAME_STATE      = 0b1000,
-
-        ALL             = 0b1111
+        PSEUDO_LEGALS   = 0b00001,
+        LEGALS          = 0b00010,
+        IS_IN_CHECK     = 0b00100,
+        GAME_STATE      = 0b01000,
+        HASH            = 0b10000,
+        ALL             = 0b11111
     };
     uint8_t update_flags {ALL};
 
-    std::stack<UnmakeMove> unmake_move_list;
+    std::vector<UnmakeMove> unmake_move_list;
 
 
 private:
@@ -138,12 +148,6 @@ private:
     // Switches the current player.
     void switchPlayer() { current_player = otherPlayer(current_player); };
 
-    /**
-     * @brief Gets the castling rights bits.
-     * 
-     * @return Bitflags indicating castling rights: `0b[qkQK]`.
-     */
-    uint8_t getCastlingRights() const { return castling_rights; };
     /**
      * @brief Calculates castling rights bits according to the given string.
      * 
@@ -178,20 +182,38 @@ public:
     Player getCurrentPlayer() const { return current_player; };
     void setCurrentPlayer(const Player player) { current_player = player; };
 
+    /* -- Getting board data -- */
+
+    /**
+     * @brief Gets the castling rights bits.
+     * 
+     * @return Bitflags indicating castling rights: `0b[qkQK]`.
+     */
+    uint8_t getCastlingRights() const { return castling_rights; };
+
     // Gets the current valid en passant target.
     const Position& getEnPassantPosition() const { return en_passant; };
 
-    /* -- Getting board data -- */
-
     // Gets the list of pseudo-legal moves from the current board position.
-    const std::vector<Move>& getCurrentPseudoLegals();
+    const std::vector<Move>& getCurrentPseudoLegals(bool only_captures = false);
     // Gets the list of legal moves from the current board position.
-    const std::vector<Move>& getCurrentLegals();
+    const std::vector<Move>& getCurrentLegals(bool only_captures = false);
+    // Gets the zobrist hash of the current board position.
+    uint64_t getHash();
 
     // Returns `true` the current player's king is in check at the current board position.
     bool isCurrentlyInCheck();
-
+    // Gets the current game state.
     GameState getGameState();
+
+    Piece getPieceAt(const Position& position) const {
+        return board.pieceAt(position);
+    }
+
+    const Board& getBoard() const { return board; };
+
+    bool isRepetition(int count = 2);
+    bool isHalfMoveDraw() const { return halfmoves >= 100; };
 
     /* -- (Un)doing moves -- */
 
@@ -218,14 +240,6 @@ public:
      * @return The last made move, or `std::nullopt` if there are no moves to undo.
      */
     std::optional<Move> undoLastMove();
-
-    /* -- Board info -- */
-
-    Piece getPieceAt(const Position& position) const {
-        return board.pieceAt(position);
-    }
-
-    BoardView boardView() const { return BoardView(board); };
 
     /* -- String representation -- */
 

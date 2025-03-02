@@ -1,18 +1,16 @@
 #pragma once
 
-#include <cstdint>
-#include "Player.hpp"
 #include "TranspositionTable.hpp"
 #include "Evaluator.hpp"
 #include "MoveOrdering.hpp"
 
-namespace chess {
+#include "../logic/game.hpp"
 
 /**
  * @class Beluga
  * @brief Implements the NegaMax search with alpha-beta pruning and aspiration windows.
  */
-class Beluga : public Player {
+class Beluga {
 public:
     /**
      * @brief Constructor for the Beluga search engine.
@@ -25,7 +23,7 @@ public:
      * @param board The current chess board state.
      * @return The best move found.
      */
-    Move getMove(Board& board) override;
+    Move getMove(Game& board);
 
 private:
     /**
@@ -37,16 +35,15 @@ private:
      * @param ply Current search depth from the root.
      * @return Evaluation score for the position.
      */
-    int negamax(Board& board, int depth, int alpha, int beta, int ply);
+    int negamax(Game& board, int depth, int alpha, int beta, int ply);
 
     /**
      * @brief Evaluates a terminal game state (checkmate, stalemate, etc.).
-     * @param reason The reason for game termination.
-     * @param result The result of the game (win/loss/draw).
+     * @param end_state The game state at the end of the game.
      * @param ply Current depth in the search.
      * @return Evaluation score based on the game result.
      */
-    int evaluateTerminal(GameResultReason reason, GameResult result, int ply) const;
+    int evaluateTerminal(GameState end_state, int ply) const;
 
 private:
     int searchDepth;                 ///< Maximum search depth.
@@ -58,6 +55,3 @@ private:
     static constexpr int MATE_SCORE = 1000000; ///< Score for a checkmate position.
     static constexpr int ASP_WIN = 50;      ///< Aspiration window value.
 };
-
-} // namespace chess
-

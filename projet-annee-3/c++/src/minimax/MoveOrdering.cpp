@@ -1,8 +1,12 @@
 #include "chess/MoveOrdering.hpp"
-#include <algorithm>
-#include "chess.hpp"
 
-namespace chess {
+#include "../logic/move.hpp"
+#include "../logic/board.hpp"
+#include "../logic/player.hpp"
+#include "../misc/safely_to_enum_class.hpp"
+#include "../misc/increment_enum.hpp"
+
+#include <algorithm>
 
 MoveOrdering::MoveOrdering()
 {
@@ -19,25 +23,33 @@ void MoveOrdering::updateKillers(Move move, int ply)
     }
 }
 
-void MoveOrdering::updateHistory(const Board& board, Move move, int depth)
+void MoveOrdering::updateHistory(const Board& board, Move move, int depth, Player playerToMove)
 {
-    int from = move.from().index();
-    int to = move.to().index();
-    Color side = board.sideToMove();
+    Square from = safely_to_enum_class<Square>(move.source);
+    Square to = safely_to_enum_class<Square>(move.target);
+
     int updateValue = depth * (depth + 1) / 2; ///< more stable than depth * depth
-    historyHeuristic[side][from][to] += updateValue;
+    historyHeuristic[playerToMove][from][to] += updateValue;
     // Capping
-    if (historyHeuristic[side][from][to] > HISTORY_MAX) {
-        historyHeuristic[side][from][to] = HISTORY_MAX;
+    if (historyHeuristic[playerToMove][from][to] > HISTORY_MAX) {
+        historyHeuristic[playerToMove][from][to] = HISTORY_MAX;
     }
 }
 
 void MoveOrdering::decayHistory()
 {
-    for (int s = 0; s < 2; ++s) {
-        for (int f = 0; f < 64; ++f) {
-            for (int t = 0; t < 64; ++t) {
-                historyHeuristic[s][f][t] /= 2; // Slowly decreases old values
+    // for (int s = 0; s < 2; ++s) {
+    //     for (int f = 0; f < 64; ++f) {
+    //         for (int t = 0; t < 64; ++t) {
+    //             historyHeuristic[s][f][t] /= 2; // Slowly decreases old values
+    //         }
+    //     }
+    // }
+
+    for (Player player = Player::FIRST; player != Player::OOB; increment_enum(player)) {
+        for (Square from = Square::FIRST; from != Square::OOB; increment_enum(from)) {
+            for (Square to = Square::FIRST; to != Square::OOB; increment_enum(to)) {
+                historyHeuristic[player][from][to] /= 2; // Slowly decreases old values
             }
         }
     }
@@ -51,31 +63,30 @@ Move MoveOrdering::killerAt(int ply, int index) const
     return killerMoves[ply][index];
 }
 
-int MoveOrdering::historyScore(const Board& board, Move move) const
+int MoveOrdering::historyScore(const Board& board, Move move, Player playerToMove) const
 {
-    int from = move.from().index();
-    int to = move.to().index();
-    Color side = board.sideToMove();
+    Square from = safely_to_enum_class<Square>(move.source);
+    Square to = safely_to_enum_class<Square>(move.target);
 
     // Normalize to prevent history from overpowering other heuristics
-    return historyHeuristic[side][from][to] / 32;
+    return historyHeuristic[playerToMove][from][to] / 32;
 }
 
-void MoveOrdering::scoreMoves(Movelist& moves, const Board& board, int ply, Move pvMove)
+void MoveOrdering::scoreMoves(std::vector<Move>& moves, const Board& board, int ply, Move pvMove, Player playerToMove)
 {
     for (auto& mv : moves) {
         int score = 0;
 
-//         1. High score for PV move
+        // 1. High score for PV move
         if (mv == pvMove) {
             score += 10000;
         }
 
         // 2. Capture scoring (MVV-LVA)
-        else if (board.isCapture(mv)) {
-            Piece attacker = board.at(mv.from());
-            Piece victim   = board.at(mv.to());
-            score += 1000 + (int)victim.type() * 10 - (int)attacker.type();
+        else if (mv.capture) {
+            Piece attacker = board.pieceAt(mv.source);
+            Piece victim   = board.pieceAt(mv.target);
+            score += 1000 + (int)victim.getType() * 10 - (int)attacker.getType();
         }
         else {
             // 3. Killer moves
@@ -87,19 +98,20 @@ void MoveOrdering::scoreMoves(Movelist& moves, const Board& board, int ply, Move
             }
 
             // 4. History
-            score += historyScore(board, mv);
+            score += historyScore(board, mv, playerToMove);
         }
-        mv.setScore(score);
+
+        mv.score = score;
     }
 }
 
-void MoveOrdering::pickNextMove(Movelist& moves, int startIndex)
+void MoveOrdering::pickNextMove(std::vector<Move>& moves, int startIndex)
 {
     int bestIndex = startIndex;
-    int bestScore = moves[startIndex].score();
+    int bestScore = moves[startIndex].score;
 
     for (int i = startIndex + 1; i < moves.size(); i++) {
-        int s = moves[i].score();
+        int s = moves[i].score;
         if (s > bestScore) {
             bestScore  = s;
             bestIndex  = i;
@@ -158,5 +170,3 @@ void MoveOrdering::pickNextMove(Movelist& moves, int startIndex)
 //        moves.add(kv.first);
 //    }
 //}
-
-} // namespace chess

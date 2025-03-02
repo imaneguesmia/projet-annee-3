@@ -63,11 +63,13 @@ public:
      * @param board                 The current board state.
      * @param en_passant_position   The current valid en passant target.
      * @param castling_rights       Bitflags indicating castling rights.
+     * @param only_captures         Whether or not to only generate capture moves. Used for quiescence search.
      * @return A vector containing all found pseudo-legal moves.
      */
     std::vector<Move> generatePseudoLegals(
         const Player player, const Board& board,
-        const Position& en_passant_position, const uint8_t castling_rights
+        const Position& en_passant_position, const uint8_t castling_rights,
+        bool only_captures = false
     ) const;
 
     /**
@@ -94,7 +96,8 @@ public:
      */
     std::vector<Move> generateMoves(
         const Player player, const Board& board,
-        const Position& en_passant_position, const uint8_t castling_rights
+        const Position& en_passant_position, const uint8_t castling_rights,
+        bool only_captures = false
     ) const;
 
     void _test() {

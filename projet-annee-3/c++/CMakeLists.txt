@@ -16,6 +16,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(LOGIC "logic")
 set(MISC "misc")
 set(VIEW "view")
+set(MINIMAX "minimax")
 
 # Compiler options (add -stdlib=libc++ for macOS)
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -49,14 +50,34 @@ add_library(
 target_compile_options(view PRIVATE -Wall -Wextra -Wpedantic)
 
 add_library(
-    misc INTERFACE
+    misc STATIC
     "src/${MISC}/enum_array.hpp"
     "src/${MISC}/increment_enum.hpp"
     "src/${MISC}/safely_to_enum_class.hpp"
+    "src/${MISC}/random64.cpp" "src/${MISC}/random64.hpp"
 )
 
 # Comment out this line if you want to use the pregenerated magics
 # target_compile_definitions(logic PRIVATE FIND_NEW_MAGICS)
+
+# Library for all AI functionality
+include_directories(external/chess-library)
+include_directories(include)
+add_library(
+    minimax STATIC
+    "src/${MINIMAX}/MinimaxAI2.cpp"
+    "src/${MINIMAX}/MinimaxAI3.cpp"
+    "src/${MINIMAX}/HumanPlayer.cpp"
+    "src/${MINIMAX}/GameManager.cpp"                # TODO: integrate chess-logic code
+    "src/${MINIMAX}/Search.cpp"                     # TODO: integrate chess-logic code
+    "src/${MINIMAX}/TranspositionTable.cpp"
+    "src/${MINIMAX}/MoveOrdering.cpp"               # TODO: integrate chess-logic code
+    "src/${MINIMAX}/Evaluator.cpp"                  # TODO: integrate chess-logic code
+    "src/${MINIMAX}/QuiescenceSearch.cpp"           # TODO: integrate chess-logic code
+)
+
+add_executable(chess-engine "src/${MINIMAX}/main.cpp")
+target_link_libraries(chess-engine PRIVATE minimax)
 
 # ---- Create Python bindings ---- #
 
@@ -95,28 +116,3 @@ install(FILES "build/chess_module.pyi" DESTINATION cpp_chess)
 # Comment out the next lines if you don't want to build the testing executable
 add_executable(testing "src/testing.cpp")
 target_link_libraries(testing PRIVATE logic misc view)
-
-
-### test-heuristique ###
-
-include_directories(external/chess-library)
-
-include_directories(include)
-
-
-set(SOURCES
-        src/main.cpp
-        src/Player.cpp
-        src/MinimaxAI.cpp
-        src/MinimaxAI2.cpp
-        src/MinimaxAI3.cpp
-        src/HumanPlayer.cpp
-        src/GameManager.cpp
-        src/Search.cpp
-        src/TranspositionTable.cpp
-        src/MoveOrdering.cpp
-        src/Evaluator.cpp
-        src/QuiescenceSearch.cpp
-)
-
-add_executable(chess-engine ${SOURCES})

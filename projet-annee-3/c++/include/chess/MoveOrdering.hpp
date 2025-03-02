@@ -19,9 +19,6 @@
 
 #include <array>
 #include <vector>
-#include "chess.hpp"
-
-namespace chess {
 
 /**
  * @class MoveOrdering
@@ -48,8 +45,9 @@ public:
      * @param board The current board state.
      * @param move The move being played.
      * @param depth Search depth at which the move was played.
+     * @param playerToMove The player making the move.
      */
-    void updateHistory(const Board& board, Move move, int depth);
+    void updateHistory(const Board& board, Move move, int depth, Player playerToMove);
 
     /**
      * @brief Retrieves a killer move from the table.
@@ -63,9 +61,10 @@ public:
      * @brief Retrieves the history heuristic score for a move.
      * @param board The current board state.
      * @param move The move to evaluate.
+     * @param playerToMove The player making the move.
      * @return The history heuristic score.
      */
-    int historyScore(const Board& board, Move move) const;
+    int historyScore(const Board& board, Move move, Player playerToMove) const;
 
     /**
      * @brief Orders moves based on various heuristics (MVV-LVA, killers, history).
@@ -82,15 +81,16 @@ public:
      * @param board  Current board state.
      * @param ply    Current search depth.
      * @param pvMove Transposition table's best move, to be heavily rewarded.
+     * @param playerToMove The player making the move.
      */
-    void scoreMoves(Movelist& moves, const Board& board, int ply, Move pvMove);
+    void scoreMoves(std::vector<Move>& moves, const Board& board, int ply, Move pvMove, Player playerToMove);
 
     /**
      * @brief Select the best move from [startIndex..end] in 'moves' and swap it to 'startIndex'.
      * @param moves  List of moves already scored with scoreMoves().
      * @param startIndex  The index from which to pick the best move.
      */
-    void pickNextMove(Movelist& moves, int startIndex);
+    void pickNextMove(std::vector<Move>& moves, int startIndex);
 
     /**
      * @brief Reduces all history heuristic values over time.
@@ -108,9 +108,5 @@ private:
     static constexpr int HISTORY_MAX = 32768; ///< Capping history values
 
     Move killerMoves[MAX_PLY][2]; ///< Stores killer moves for each ply (max 2 per ply).
-    int historyHeuristic[2][64][64] = {}; ///< Stores history heuristic values
-
+    enum_array<Player, enum_array<Square, enum_array<Square, int>>> historyHeuristic; ///< Stores history heuristic values
 };
-
-} // namespace chess
-

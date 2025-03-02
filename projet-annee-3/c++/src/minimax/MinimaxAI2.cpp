@@ -19,9 +19,9 @@ Search optimisations done(may be improved):
  */
 namespace chess {
 
-static constexpr int INF       = 100000000;  // "infinite" bound for alpha/beta
-static constexpr int MATE_SCORE= 1000000;    // checkmate scoring base
-static constexpr int ASP_WIN   = 50;         // aspiration window half‐width
+static constexpr int INF        = 100000000;  // "infinite" bound for alpha/beta
+static constexpr int MATE_SCORE = 1000000;    // checkmate scoring base
+static constexpr int ASP_WIN    = 50;         // aspiration window half‐width
 
 // Bound Types for Transposition Table
 enum class Bound { EXACT, LOWER, UPPER };

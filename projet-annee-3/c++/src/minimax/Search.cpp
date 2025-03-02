@@ -3,14 +3,12 @@
 #include "chess/MoveOrdering.hpp"
 #include "chess/QuiescenceSearch.hpp"
 
-namespace chess {
-
 Beluga::Beluga(int depth)
     : searchDepth(depth)
 {
 }
 
-Move Beluga::getMove(Board& board)
+Move Beluga::getMove(Game& board)
 {
     /**
      * @brief Implements iterative deepening search up to the set depth.
@@ -39,7 +37,7 @@ Move Beluga::getMove(Board& board)
         bestScore = score;
 
         // Retrieve best move from transposition table
-        auto it = transpositionTable.lookup(board.hash());
+        auto it = transpositionTable.lookup(board.getHash());
         if (it.has_value()) {
             bestMove = it->bestMove;
         }
@@ -49,14 +47,14 @@ Move Beluga::getMove(Board& board)
     return bestMove;
 }
 
-int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
+int Beluga::negamax(Game& board, int depth, int alpha, int beta, int ply)
 {
     /**
      * @brief Executes the NegaMax algorithm with alpha-beta pruning.
      * Uses transposition tables and move ordering heuristics.
      */
 
-    const std::uint64_t zKey = board.hash();
+    const std::uint64_t zKey = board.getHash();
 
     // Check for repetition or 50-move rule
     if (ply > 0) {
@@ -86,9 +84,13 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
     }
 
     // Check if game is over (checkmate, stalemate, etc.)
-    auto [gameResultReason, gameResult] = board.isGameOver();
-    if (gameResultReason != GameResultReason::NONE) {
-        return evaluateTerminal(gameResultReason, gameResult, ply);
+    // auto [gameResultReason, gameResult] = board.isGameOver();
+    // if (gameResultReason != GameResultReason::NONE) {
+    //     return evaluateTerminal(gameResultReason, gameResult, ply);
+    // }
+    GameState current_state = board.getGameState();
+    if (current_state != GameState::INGAME) {
+        return evaluateTerminal(current_state, ply);
     }
 
     // Quiescence search if depth is zero or negative
@@ -97,11 +99,10 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
     }
 
     // Generate all legal moves
-    Movelist moves;
-    movegen::legalmoves<movegen::MoveGenType::ALL>(moves, board);
+    std::vector<Move> moves = board.getCurrentLegals();
 
     if (moves.empty()) {
-        return evaluator.evaluate(board);
+        return evaluator.evaluate(board.getBoard(), board.getCurrentPlayer());
     }
 
     // Retrieve a potential best move from transposition table
@@ -111,7 +112,7 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
     }
 
     // Assign a score to moves based on heuristics (MVV-LVA, killer moves, history..)
-    moveOrdering.scoreMoves(moves, board, ply, ttBestMove);
+    moveOrdering.scoreMoves(moves, board.getBoard(), ply, ttBestMove, board.getCurrentPlayer());
 
     int bestValue = -INF;
     int alphaOrig = alpha;
@@ -121,9 +122,9 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
         moveOrdering.pickNextMove(moves, moveIndex);  // Bring the best move to index 'moveIndex'
         Move move = moves[moveIndex];
 
-        board.makeMove(move);
+        board.move(move);
         int val = -negamax(board, depth - 1, -beta, -alpha, ply + 1);
-        board.unmakeMove(move);
+        board.undoLastMove();
 
         if (val > bestValue) {
             bestValue = val;
@@ -133,9 +134,9 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
             alpha = bestValue;
         }
         if (alpha >= beta) {
-            if (!board.isCapture(move)) {
+            if (!move.capture) {
                 moveOrdering.updateKillers(move, ply);
-                moveOrdering.updateHistory(board, move, depth);
+                moveOrdering.updateHistory(board.getBoard(), move, depth, board.getCurrentPlayer());
             }
             break;
         }
@@ -157,16 +158,18 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply)
     return bestValue;
 }
 
-int Beluga::evaluateTerminal(GameResultReason reason, GameResult result, int ply) const
+int Beluga::evaluateTerminal(GameState end_state, int ply) const
 {
     /**
      * @brief Evaluates the score for terminal game states.
      * @return MATE_SCORE adjusted for depth, or 0 for stalemate.
      */
-    if (reason == GameResultReason::CHECKMATE) {
-        return (result == GameResult::WIN) ? +MATE_SCORE - ply : -MATE_SCORE + ply;
+    if (end_state == GameState::CHECKMATE) {
+        // NOTE: In the old version GameResult can never be WIN here anyway since 
+        // we're checking the state for the current player, so no need to check that.
+
+        // return (result == GameResult::WIN) ? +MATE_SCORE - ply : -MATE_SCORE + ply;
+        return -MATE_SCORE + ply;
     }
     return 0;
 }
-
-} // namespace chess

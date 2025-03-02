@@ -97,11 +97,12 @@ uint8_t Game::castlingRightsFromString(const std::string& castling_indicators) c
 
 /* -- Getting board data -- */
 
-const std::vector<Move>& Game::getCurrentPseudoLegals() {
+const std::vector<Move>& Game::getCurrentPseudoLegals(bool only_captures) {
     if (update_flags & PSEUDO_LEGALS) {
         current_pseudo_legals = move_generator.generatePseudoLegals(
             current_player, board,
-            en_passant, castling_rights
+            en_passant, castling_rights,
+            only_captures
         );
 
         update_flags ^= PSEUDO_LEGALS;
@@ -110,11 +111,11 @@ const std::vector<Move>& Game::getCurrentPseudoLegals() {
     return current_pseudo_legals;
 }
 
-const std::vector<Move>& Game::getCurrentLegals() {
+const std::vector<Move>& Game::getCurrentLegals(bool only_captures) {
     if (update_flags & LEGALS) {
         current_legals = move_generator.filterPseudoLegals(
             current_player, board,
-            getCurrentPseudoLegals()
+            getCurrentPseudoLegals(only_captures)
         );
 
         update_flags ^= LEGALS;
@@ -147,6 +148,29 @@ GameState Game::getGameState() {
     return game_state;
 }
 
+uint64_t Game::getHash() {
+    if (update_flags & HASH) {
+        hash = zobrist.hash(*this);
+
+        update_flags ^= HASH;
+    }
+
+    return hash;
+}
+
+bool Game::isRepetition(int count) {
+    uint8_t c = 0;
+
+    const int size = unmake_move_list.size();
+
+    for (int i = size - 2; i >= 0 && i >= size - halfmoves; i -= 2) {
+        if (unmake_move_list[i].board_hash == getHash()) c++;
+        if (c == count) return true;
+    }
+
+    return false;
+}
+
 
 /* -- (Un)doing moves -- */
 
@@ -159,6 +183,7 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
     unmake_move.castling_rights = castling_rights;
     unmake_move.en_passant = en_passant;
     unmake_move.halfmoves = halfmoves;
+    unmake_move.board_hash = getHash();
 
     /* Move the piece(s) on the board */
     
@@ -203,6 +228,8 @@ void Game::unmakeMoveOnBoard(const UnmakeMove unmake_move) {
     fullmoves -= static_cast<int>(unmake_move.move.player);
     
     current_player = unmake_move.move.player;
+
+    // NOTE: no need to update the zobrist hash here, it will be done lazily.
 }
 
 bool Game::move(const Position& from, const Position& to, const PType promoted_to) {
@@ -229,7 +256,7 @@ bool Game::move(const Move move) {
         unmakeMoveOnBoard(unmake_move);
     } else {
         // If valid, add the UnmakeMove to the history stack.
-        unmake_move_list.push(unmake_move);
+        unmake_move_list.push_back(unmake_move);
 
         // Set update flags to update data.
         update_flags = ALL;
@@ -242,8 +269,8 @@ std::optional<Move> Game::undoLastMove() {
     if (unmake_move_list.empty()) {
         return std::nullopt;
     } else {
-        const UnmakeMove& unmake_move = unmake_move_list.top();
-        unmake_move_list.pop();
+        const UnmakeMove& unmake_move = unmake_move_list.back();
+        unmake_move_list.pop_back();
 
         unmakeMoveOnBoard(unmake_move);
 

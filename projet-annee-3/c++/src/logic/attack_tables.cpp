@@ -4,26 +4,12 @@
 
 #ifndef FIND_NEW_MAGICS
 #include "magic_numbers.hpp"
+#include "../misc/random64.hpp"
 #endif
 
 #include <iostream>
 #include <ctime>
 #include <random>
-
-/* ---- Helpers ---- */
-
-// Generate a pseudo-random uint64_t by generating 4 random uint16_t and concatenating them.
-// Note that RAND_MAX is not guaranteed to be greater than or equal to MAX(uint16_t),
-// but that case is irrelevant to this project as it only concerns machines made several
-// decades ago.
-inline uint64_t random64() {
-    return (
-        uint64_t(0xffff & std::rand()) |
-        uint64_t(0xffff & std::rand()) << 16 |
-        uint64_t(0xffff & std::rand()) << 32 |
-        uint64_t(0xffff & std::rand()) << 48
-    );
-}
 
 /* ---- DEFINE class AttackTables ---- */
 
