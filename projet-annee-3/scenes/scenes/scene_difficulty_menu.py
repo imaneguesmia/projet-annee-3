@@ -10,7 +10,7 @@ MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80
 
 
-bg_image_path = "./projet-annee-3/images/bg.png"
+bg_image_path = "./projet-annee-3/images/background.jpeg"
 
 class scene_DifficultyMenu(Scene):
     def _create_difficulty_button(self, window_rect: pygame.Rect, label: str, y_offset: int, scene_id: SceneId) -> Button:
