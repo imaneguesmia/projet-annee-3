@@ -43,21 +43,21 @@ class AttackTables {
      * @param position  The position to generate attacks from.
      * @return A bitboard indicating all attack positions.
      */
-    BB::BitBoard generatePawnAttacks(Player player, const Position& position);
+    BB::BitBoard generatePawnAttacksFromPosition(Player player, const Position& position);
     /**
      * @brief Generates all possible knight attacks from the given position.
      * 
      * @param position  The position to generate attacks from.
      * @return A bitboard indicating all attack positions.
      */
-    BB::BitBoard generateKnightAttacks(const Position& position);
+    BB::BitBoard generateKnightAttacksFromPosition(const Position& position);
     /**
      * @brief Generates all possible king attacks from the given position.
      * 
      * @param position  The position to generate attacks from.
      * @return A bitboard indicating all attack positions.
      */
-    BB::BitBoard generateKingAttacks(const Position& position);
+    BB::BitBoard generateKingAttacksFromPosition(const Position& position);
 
     // Generates attacks for each leaper piece type and stores them in the relevant lookup tables.
     void generateLeapingAttacks();
@@ -310,6 +310,50 @@ public:
             getBishopAttackBitboard(position, occupancy) |
             getRookAttackBitboard(position, occupancy)
         );
+    }
+
+    /* -- Set-wise attack table generation -- */
+
+    uint64_t generateSetwiseKnightAttacks(uint64_t knights) {
+        uint64_t attack = 0;
+        attack |= (knights & not_col_A) >> 15;
+        attack |= (knights & not_col_H) >> 17;
+        attack |= (knights & not_col_AB) >> 6;
+        attack |= (knights & not_col_GH) >> 10;
+        attack |= (knights & not_col_A) << 17;
+        attack |= (knights & not_col_H) << 15;
+        attack |= (knights & not_col_AB) << 10;
+        attack |= (knights & not_col_GH) << 6;
+        return attack;
+    }
+
+    uint64_t generateSetwiseSliderAttacks(uint64_t pieces, uint64_t occupied, const int directions[4]) {
+        uint64_t attacks = 0;
+        for (int i = 0; i < 4; i++) {
+            int dir = directions[i];
+
+            uint64_t pos = pieces;
+            while (pos) {
+                pos = (dir > 0) ? (pos << dir) : (pos >> -dir);
+                if (pos & occupied) break;
+                attacks |= pos;
+            }
+        }
+        return attacks;
+    }
+    
+    uint64_t generateSetwiseBishopAttacks(uint64_t bishops, uint64_t occupied) {
+        static const int bishop_directions[] = {9, 7, -9, -7};
+        return generateSetwiseSliderAttacks(bishops, occupied, bishop_directions);
+    }
+    
+    uint64_t generateSetwiseRookAttacks(uint64_t rooks, uint64_t occupied) {
+        static const int rook_directions[] = {8, -8, 1, -1};
+        return generateSetwiseSliderAttacks(rooks, occupied, rook_directions);
+    }
+    
+    uint64_t generateSetwiseQueenAttacks(uint64_t queens, uint64_t occupied) {
+        return generateSetwiseBishopAttacks(queens, occupied) | generateSetwiseRookAttacks(queens, occupied);
     }
 };
 

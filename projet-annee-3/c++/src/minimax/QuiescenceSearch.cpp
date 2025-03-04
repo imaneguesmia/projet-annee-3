@@ -1,16 +1,14 @@
-#include "chess/QuiescenceSearch.hpp"
+#include "QuiescenceSearch.hpp"
 // #include "chess.hpp"
 
-#include "chess/MoveOrdering.hpp"
-#include "chess/Evaluator.hpp"
-
-#include "../logic/game.hpp"
+#include "MoveOrdering.hpp"
+#include "Evaluator.hpp"
 
 
 /**
  * @brief Performs a quiescence search to evaluate only capture moves, preventing horizon effects.
  */
-int quiescenceSearch(Game& game,
+int quiescenceSearch(ExtendedGameData& game,
                         int alpha,
                         int beta,
                         int ply,

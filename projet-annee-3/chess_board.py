@@ -10,7 +10,7 @@ class ChessBoard:
         self.square_size = board_size // 8
 
         self.chess_game = chess_game
-        self.legal_moves = self.chess_game.get_current_pseudo_legals()
+        # self.legal_moves = self.chess_game.get_current_pseudo_legals()
         
         # Chargement des images des pièces
         self.images = ImageLoader(self.square_size)

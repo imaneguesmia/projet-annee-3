@@ -1,14 +1,16 @@
-#include "chess/Search.hpp"
+#include "Search.hpp"
+
+#include "MoveOrdering.hpp"
+#include "QuiescenceSearch.hpp"
+
 #include <algorithm> // std::max
-#include "chess/MoveOrdering.hpp"
-#include "chess/QuiescenceSearch.hpp"
 
-Beluga::Beluga(int depth)
+Beluga::Beluga(int depth, std::shared_ptr<AttackTables> at)
     : searchDepth(depth)
-{
-}
+    , evaluator(std::move(at))
+{}
 
-Move Beluga::getMove(Game& board)
+Move Beluga::getMove(ExtendedGameData& board)
 {
     /**
      * @brief Implements iterative deepening search up to the set depth.
@@ -47,7 +49,7 @@ Move Beluga::getMove(Game& board)
     return bestMove;
 }
 
-int Beluga::negamax(Game& board, int depth, int alpha, int beta, int ply)
+int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int ply)
 {
     /**
      * @brief Executes the NegaMax algorithm with alpha-beta pruning.

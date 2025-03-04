@@ -4,7 +4,10 @@
 #include "Evaluator.hpp"
 #include "MoveOrdering.hpp"
 
-#include "../logic/game.hpp"
+#include "../logic/game_data.hpp"
+#include "../logic/attack_tables.hpp"
+
+#include <memory>
 
 /**
  * @class Beluga
@@ -16,14 +19,14 @@ public:
      * @brief Constructor for the Beluga search engine.
      * @param depth Maximum search depth.
      */
-    explicit Beluga(int depth);
+    explicit Beluga(int depth, std::shared_ptr<AttackTables> at);
 
     /**
      * @brief Determines the best move for the current board position.
      * @param board The current chess board state.
      * @return The best move found.
      */
-    Move getMove(Game& board);
+    Move getMove(ExtendedGameData& board);
 
 private:
     /**
@@ -35,7 +38,7 @@ private:
      * @param ply Current search depth from the root.
      * @return Evaluation score for the position.
      */
-    int negamax(Game& board, int depth, int alpha, int beta, int ply);
+    int negamax(ExtendedGameData& board, int depth, int alpha, int beta, int ply);
 
     /**
      * @brief Evaluates a terminal game state (checkmate, stalemate, etc.).

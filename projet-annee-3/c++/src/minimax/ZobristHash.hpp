@@ -5,12 +5,13 @@
 #include "../logic/position.hpp"
 #include "../logic/player.hpp"
 #include "../logic/piece.hpp"
-#include "../logic/game.hpp"
 
 #include <cstdint>
 #include <array>
 
 /* ---- DECLARE class ZobristHash ---- */
+
+class Game;
 
 class ZobristHash {
     static constexpr int SEED {1};

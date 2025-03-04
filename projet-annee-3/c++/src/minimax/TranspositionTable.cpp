@@ -1,4 +1,4 @@
-#include "chess/TranspositionTable.hpp"
+#include "TranspositionTable.hpp"
 
 std::optional<TTEntry> TranspositionTable::lookup(std::uint64_t key) const
 {

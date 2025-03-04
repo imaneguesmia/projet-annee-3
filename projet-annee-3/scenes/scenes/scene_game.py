@@ -1,9 +1,12 @@
 from ..scene import Scene
 
+from ..data_transfer.player_type import PlayerType
+
 from .chess_board import ChessBoard
 from .chess_model import ChessModel
 
 from .promotion_panel import PromotionPanel
+
 
 import cpp_chess as cm
 
@@ -15,12 +18,16 @@ from typing import override
 
 class scene_ChessGame(Scene, ChessModel):
 
-    def __init__(self, window_rect: pygame.Rect, initial_state: str | None = None):
+    def __init__(self, 
+        window_rect: pygame.Rect, 
+        initial_state: str | None = None,
+        white_player: PlayerType = PlayerType.HUMAN,
+        black_player: PlayerType = PlayerType.HUMAN
+    ):
         super().__init__(window_rect)
 
-        # self._model = ChessModel(initial_state)
-
-        self._chess_game = cm.Game() if initial_state is None else cm.Game(initial_state)
+        self._chess_game = cm.GameManager() if initial_state is None else cm.GameManager(initial_state)
+        self._move_prompter: cm.MovePrompter = None
 
         self._selected_square: cm.Position | None = None
         self._selected_moves: list[cm.Move] = []
@@ -38,6 +45,13 @@ class scene_ChessGame(Scene, ChessModel):
 
         self.elements.append(self._board)
         self.elements.append(self._promotion_panel)
+
+        # Initialize AI engines
+
+        if PlayerType.MINIMAX in [white_player, black_player]:
+            self._minimax_engine = ...
+        if PlayerType.NEURAL_NET in [white_player, black_player]:
+            self._neural_net_engine = ...
     
     @property
     def selected_square(self) -> cm.Position | None: 
@@ -46,11 +60,19 @@ class scene_ChessGame(Scene, ChessModel):
     @property
     def selected_moves(self) -> list[cm.Move]:
         return self._selected_moves
+    
+    # -- Game loop -- #
+
+    def start_game(self) -> None:
+        """"""
+        self._move_prompter = self._chess_game.prompt_next_move()
+
+        
 
     # -- Game model methods -- #
     
-    def board_view(self) -> cm.BoardView:
-        return self._chess_game.board_view()
+    # def board_view(self) -> cm.BoardView:
+    #     return self._chess_game.board_view()
     
     @override
     def piece_at(self, square: cm.Position) -> cm.Piece:
@@ -62,7 +84,7 @@ class scene_ChessGame(Scene, ChessModel):
         current_player = self._chess_game.current_player
 
         # Update legal moves
-        self._legal_moves = self._chess_game.get_current_legals()
+        self._legal_moves = self._chess_game.get_current_legals(False)
 
         # Select the clicked piece if it belongs to the current player
         if not piece_on_square.is_none() and piece_on_square.get_player() == current_player:

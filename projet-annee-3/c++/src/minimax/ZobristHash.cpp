@@ -1,5 +1,7 @@
 #include "ZobristHash.hpp"
 
+#include "../logic/game.hpp"
+
 #include "../misc/increment_enum.hpp"
 #include "../misc/random64.hpp"
 

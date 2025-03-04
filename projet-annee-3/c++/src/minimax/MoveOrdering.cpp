@@ -1,8 +1,5 @@
-#include "chess/MoveOrdering.hpp"
+#include "MoveOrdering.hpp"
 
-#include "../logic/move.hpp"
-#include "../logic/board.hpp"
-#include "../logic/player.hpp"
 #include "../misc/safely_to_enum_class.hpp"
 #include "../misc/increment_enum.hpp"
 

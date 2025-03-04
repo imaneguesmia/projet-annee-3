@@ -1,8 +1,8 @@
 #ifndef MINIMAXAI2_HPP
 #define MINIMAXAI2_HPP
 
-#include "Player.hpp"
-#include "chess.hpp"
+#include "logic/Player.hpp"
+
 #include <unordered_map>
 #include <vector>
 #include <cstdint> // Pour std::uint64_t

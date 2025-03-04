@@ -5,6 +5,7 @@
 #include "Evaluator.hpp"
 #include "MoveOrdering.hpp"
 
+#include "../logic/game_data.hpp"
 
 /**
  * @brief Performs a quiescence search to evaluate stable positions, avoiding horizon effects.
@@ -17,7 +18,7 @@
  * @param moveordering Move ordering heuristics.
  * @return Evaluation score of the position.
  */
-int quiescenceSearch(Game& board,
+int quiescenceSearch(ExtendedGameData& board,
                         int alpha,
                         int beta,
                         int ply,

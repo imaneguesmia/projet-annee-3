@@ -2,7 +2,11 @@
 #include "logic/position.hpp"
 #include "logic/piece.hpp"
 #include "logic/move.hpp"
-#include "logic/game.hpp"
+#include "logic/game_data.hpp"
+
+#include "game_management/move_prompter.hpp"
+#include "game_management/game_manager.hpp"
+
 #include "view/board_view.hpp"
 
 #include "view/board_view.hpp"
@@ -111,30 +115,53 @@ void export_game(nb::module_& m) {
         .value("INGAME", GameState::INGAME)
         .value("CHECKMATE", GameState::CHECKMATE)
         .value("STALEMATE", GameState::STALEMATE);
+    
+    nb::class_<GameData>(m, "GameData")
+        .def_prop_ro("current_player", &GameData::getCurrentPlayer)
+        .def_prop_ro("castling_rights", &GameData::getCastlingRights)
+        .def_prop_ro("en_passant_position", &GameData::getEnPassantPosition)
+        
+        .def_prop_ro("current_pseudo_legals", &GameData::getCurrentPseudoLegals)
+        .def_prop_ro("current_legals", &GameData::getCurrentLegals)
 
-    nb::class_<Game>(m, "Game")
-        .def(nb::init<const std::string&>())
+        .def_prop_ro("is_currently_in_check", &GameData::isCurrentlyInCheck)
+        .def_prop_ro("game_state", &GameData::getGameState)
+
+        .def("get_piece_at", &GameData::getPieceAt);
+    
+    nb::class_<MovePrompter>(m, "MovePrompter")
+        .def("game_data", &MovePrompter::gameData)
+
+        .def("propose_move", &MovePrompter::proposeMove);
+    
+    nb::class_<GameManager>(m, "GameManager")
         .def(nb::init<>())
+        .def(nb::init<const std::string&>())
+    
+        .def("prompt_next_move", &GameManager::promptNextMove);
 
-        .def_prop_rw("current_player", &Game::getCurrentPlayer, &Game::setCurrentPlayer)
-        .def_prop_ro("en_passant_position", &Game::getEnPassantPosition)
-        .def_prop_ro("game_state", &Game::getGameState)
+    // nb::class_<Game>(m, "Game")
+    //     .def(nb::init<const std::string&>())
+    //     .def(nb::init<>())
 
-        .def("get_current_pseudo_legals", &Game::getCurrentPseudoLegals)
-        .def("get_current_legals", &Game::getCurrentLegals)
-        .def("is_currently_in_check", &Game::isCurrentlyInCheck)
+    //     .def_prop_rw("current_player", &Game::getCurrentPlayer, &Game::setCurrentPlayer)
+    //     .def_prop_ro("en_passant_position", &Game::getEnPassantPosition)
+    //     .def_prop_ro("game_state", &Game::getGameState)
 
-        .def("move", nb::overload_cast<const Position&, const Position&, const PType>(&Game::move))
-        .def("move", nb::overload_cast<const Move>(&Game::move))
+    //     .def("get_current_pseudo_legals", &Game::getCurrentPseudoLegals)
+    //     .def("get_current_legals", &Game::getCurrentLegals)
+    //     .def("is_currently_in_check", &Game::isCurrentlyInCheck)
 
-        .def("undo_last_move", &Game::undoLastMove)
+    //     .def("move", nb::overload_cast<const Position&, const Position&, const PType>(&Game::move))
+    //     .def("move", nb::overload_cast<const Move>(&Game::move))
 
-        .def("get_piece_at", &Game::getPieceAt)
-        .def("board_view", &Game::boardView)
+    //     .def("undo_last_move", &Game::undoLastMove)
 
-        .def_prop_ro("fen", &Game::fen)
+    //     .def("get_piece_at", &Game::getPieceAt)
 
-        .def("print_board", &Game::printBoard);
+    //     .def_prop_ro("fen", &Game::fen)
+
+    //     .def("print_board", &Game::printBoard);
 }
 
 NB_MODULE(chess_module, m) {

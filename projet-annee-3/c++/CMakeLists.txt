@@ -17,6 +17,7 @@ set(LOGIC "logic")
 set(MISC "misc")
 set(VIEW "view")
 set(MINIMAX "minimax")
+set(MANAGEMENT "game_management")
 
 # Compiler options (add -stdlib=libc++ for macOS)
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -61,23 +62,25 @@ add_library(
 # target_compile_definitions(logic PRIVATE FIND_NEW_MAGICS)
 
 # Library for all AI functionality
-include_directories(external/chess-library)
-include_directories(include)
 add_library(
     minimax STATIC
-    "src/${MINIMAX}/MinimaxAI2.cpp"
-    "src/${MINIMAX}/MinimaxAI3.cpp"
-    "src/${MINIMAX}/HumanPlayer.cpp"
-    "src/${MINIMAX}/GameManager.cpp"                # TODO: integrate chess-logic code
-    "src/${MINIMAX}/Search.cpp"                     # TODO: integrate chess-logic code
-    "src/${MINIMAX}/TranspositionTable.cpp"
-    "src/${MINIMAX}/MoveOrdering.cpp"               # TODO: integrate chess-logic code
-    "src/${MINIMAX}/Evaluator.cpp"                  # TODO: integrate chess-logic code
-    "src/${MINIMAX}/QuiescenceSearch.cpp"           # TODO: integrate chess-logic code
+    "src/${MINIMAX}/Search.cpp" "src/${MINIMAX}/Search.hpp"
+    "src/${MINIMAX}/TranspositionTable.cpp" "src/${MINIMAX}/TranspositionTable.hpp"
+    "src/${MINIMAX}/MoveOrdering.cpp" "src/${MINIMAX}/MoveOrdering.hpp"
+    "src/${MINIMAX}/Evaluator.cpp" "src/${MINIMAX}/Evaluator.hpp"
+    "src/${MINIMAX}/QuiescenceSearch.cpp" "src/${MINIMAX}/QuiescenceSearch.hpp"
+    "src/${MINIMAX}/ZobristHash.cpp" "src/${MINIMAX}/ZobristHash.hpp"
 )
 
-add_executable(chess-engine "src/${MINIMAX}/main.cpp")
-target_link_libraries(chess-engine PRIVATE minimax)
+# Library for game management
+add_library(
+    game_management STATIC
+    "src/${MANAGEMENT}/game_manager.cpp" "src/${MANAGEMENT}/game_manager.hpp"
+    "src/${MANAGEMENT}/move_accepter.hpp"
+    "src/${MANAGEMENT}/move_prompter.hpp"
+)
+
+set(LIBS "logic misc view minimax game_management")
 
 # ---- Create Python bindings ---- #
 
@@ -95,7 +98,7 @@ find_package(nanobind REQUIRED)
 
 # Create the nanobind module
 nanobind_add_module(chess_module "src/export.cpp")
-target_link_libraries(chess_module PRIVATE logic misc view)
+target_link_libraries(chess_module PRIVATE logic misc view minimax game_management)
 
 # Python typing
 nanobind_add_stub(
@@ -115,4 +118,4 @@ install(FILES "build/chess_module.pyi" DESTINATION cpp_chess)
 
 # Comment out the next lines if you don't want to build the testing executable
 add_executable(testing "src/testing.cpp")
-target_link_libraries(testing PRIVATE logic misc view)
+target_link_libraries(testing PRIVATE logic misc view minimax game_management)

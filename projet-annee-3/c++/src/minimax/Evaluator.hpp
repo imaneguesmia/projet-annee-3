@@ -14,24 +14,29 @@
 */
 
 #pragma once
-#include "logic/bitboard.hpp"
-#include "logic/board.hpp"
-#include "logic/position.hpp"
-#include "logic/player.hpp"
-#include "logic/piece.hpp"
-#include "chess.hpp"
+
+#include "../logic/bitboard.hpp"
+#include "../logic/board.hpp"
+#include "../logic/position.hpp"
+#include "../logic/player.hpp"
+#include "../logic/piece.hpp"
+#include "../logic/attack_tables.hpp"
+
 #include <cstdint>
+#include <memory>
 
 /**
     * @class Evaluator
     * @brief Responsible for static board evaluation.
     */
 class Evaluator {
+    std::shared_ptr<AttackTables> at;
+
 public:
     /**
         * @brief todo
         */
-    Evaluator();
+    Evaluator(std::shared_ptr<AttackTables> at);
 
     /**
         * @brief Evaluates the given board position.

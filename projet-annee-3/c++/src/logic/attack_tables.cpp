@@ -24,7 +24,7 @@ AttackTables::AttackTables() {
 // it is enough to just set the bits that they can target (while taking into account
 // the board edge).
 
-BB::BitBoard AttackTables::generatePawnAttacks(Player player, const Position& position) {
+BB::BitBoard AttackTables::generatePawnAttacksFromPosition(Player player, const Position& position) {
     BB::BitBoard piece = 0ULL;
     BB::BitBoard result = 0ULL;
 
@@ -41,7 +41,7 @@ BB::BitBoard AttackTables::generatePawnAttacks(Player player, const Position& po
     return result;
 }
 
-BB::BitBoard AttackTables::generateKnightAttacks(const Position& position) {
+BB::BitBoard AttackTables::generateKnightAttacksFromPosition(const Position& position) {
     BB::BitBoard piece = 0ULL;
     BB::BitBoard result = 0ULL;
 
@@ -62,7 +62,7 @@ BB::BitBoard AttackTables::generateKnightAttacks(const Position& position) {
     return result;
 }
 
-BB::BitBoard AttackTables::generateKingAttacks(const Position& position) {
+BB::BitBoard AttackTables::generateKingAttacksFromPosition(const Position& position) {
     BB::BitBoard piece = 0ULL;
     BB::BitBoard result = 0ULL;
 
@@ -84,11 +84,11 @@ BB::BitBoard AttackTables::generateKingAttacks(const Position& position) {
 void AttackTables::generateLeapingAttacks() {
     for (Square position = Square::FIRST; position != Square::OOB; increment_enum(position)) {
         for (Player player = Player::FIRST; player != Player::OOB; increment_enum(player)) {
-            pawn_attacks[player][position] = generatePawnAttacks(Player(player), position);
+            pawn_attacks[player][position] = generatePawnAttacksFromPosition(Player(player), position);
         }
 
-        knight_attacks[position] = generateKnightAttacks(position);
-        king_attacks[position] = generateKingAttacks(position);
+        knight_attacks[position] = generateKnightAttacksFromPosition(position);
+        king_attacks[position] = generateKingAttacksFromPosition(position);
     }
 }
 

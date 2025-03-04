@@ -17,6 +17,13 @@
 
 #pragma once
 
+#include "../logic/player.hpp"
+#include "../logic/position.hpp"
+#include "../logic/move.hpp"
+#include "../logic/board.hpp"
+
+#include "../misc/enum_array.hpp"
+
 #include <array>
 #include <vector>
 

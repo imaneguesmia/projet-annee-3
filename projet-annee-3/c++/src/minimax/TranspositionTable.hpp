@@ -2,6 +2,8 @@
 
 #include "ZobristHash.hpp"
 
+#include "../logic/move.hpp"
+
 #include <cstdint>
 #include <unordered_map>
 #include <optional>

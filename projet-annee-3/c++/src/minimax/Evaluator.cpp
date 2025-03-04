@@ -1,15 +1,19 @@
-#include "chess/Evaluator.hpp"
-#include "logic/bitboard.hpp"
-#include "logic/board.hpp"
-#include "logic/position.hpp"
-#include "logic/player.hpp"
-#include "logic/piece.hpp"
+#include "Evaluator.hpp"
+
 #include "eval_utils.hpp"
+
+#include "../logic/bitboard.hpp"
+#include "../logic/board.hpp"
+#include "../logic/position.hpp"
+#include "../logic/player.hpp"
+#include "../logic/piece.hpp"
+
 #include <array>
 #include <cstdint>
 
-Evaluator::Evaluator(){    
-
+Evaluator::Evaluator(std::shared_ptr<AttackTables> at)
+    : at(std::move(at))
+{
     for (int file = 0; file < 8; file++) {
         uint64_t bitboard = 0;
 
@@ -273,8 +277,11 @@ int Evaluator::passedPawnHeuristic(const Board& board, Player player, BB::BitBoa
     return score;
 }
 
-int Evaluator::backwardPawnHeuristic(const Board& board, Player player,BB::BitBoard pawnBitboard,BB::BitBoard oppPawnBitboard) {
+int Evaluator::backwardPawnHeuristic(const Board& board, Player player,BB::BitBoard pawn_bitboard, BB::BitBoard all_opp_pawn_bitboard) {
     int score = 0;
+
+    uint64_t backward_pawn_stop_squares;
+
     if(player == Player::White){
         uint64_t stops = northOne(pawn_bitboard);
         uint64_t wAttackSpans = wEastAttackFrontSpans(pawn_bitboard) | wWestAttackFrontSpans(pawn_bitboard);
@@ -286,7 +293,7 @@ int Evaluator::backwardPawnHeuristic(const Board& board, Player player,BB::BitBo
         uint64_t wAttacks = wPawnEastAttacks(all_opp_pawn_bitboard) | wPawnWestAttacks(all_opp_pawn_bitboard);
         backward_pawn_stop_squares = stops & wAttacks & ~bAttackSpans;
     } 
-    int count_bf = Bitboard(backward_pawn_stop_squares).count(); // Number of stop squares = number of backwards pawns
+    int count_bf = BB::popcount(backward_pawn_stop_squares); // Number of stop squares = number of backwards pawns
     score -= count_bf * 9; // https://github.com/mcostalba/Stockfish/blob/master/src/pawns.cpp
 
     return score;
@@ -294,7 +301,7 @@ int Evaluator::backwardPawnHeuristic(const Board& board, Player player,BB::BitBo
 
 int Evaluator::doubleTriplePawnHeuristic(const Board& board, Player player,BB::BitBoard pawnBitboard) {
     uint64_t doubledPawns = (player == Player::White) ? wPawnsInfrontOwn(pawnBitboard) : bPawnsInfrontOwn(pawnBitboard);
-    return -BB::BitBoard(doubledPawns).count() * 12; // https://beginchess.com/2010/08/15/think-like-a-chess-engine/
+    return -BB::popcount(doubledPawns)* 12; // https://beginchess.com/2010/08/15/think-like-a-chess-engine/
 }
 
 int Evaluator::pawnStructureHeuristic(const Board& board, Player player) {
@@ -304,8 +311,8 @@ int Evaluator::pawnStructureHeuristic(const Board& board, Player player) {
     Piece piece{PType::Pawn,player};
     BB::BitBoard pawnBitboard = board.bitboard(piece);
 
-    Piece piece{PType::Pawn,otherPlayer(player)};
-    BB::BitBoard oppPawnBitboard = board.bitboard(piece);
+    Piece opposite_piece{PType::Pawn,otherPlayer(player)};
+    BB::BitBoard oppPawnBitboard = board.bitboard(opposite_piece);
 
     score += isolatedPawnHeuristic(board, player,pawnBitboard);
     score += passedPawnHeuristic(board, player, pawnBitboard);
@@ -322,33 +329,33 @@ int Evaluator::mobilityHeuristic(const Board& board, Player player) {
     // Mobility score for Knights
     Piece knight{PType::Knight,player};
     BB::BitBoard knights_bb = board.bitboard(knight);
-    BB::BitBoard knights_attacks_bb = generate_knight_attacks(knights_bb) & ~friendly_bb;
-    int knights_attacks_count = BB::BitBoard(knights_attacks_bb).count() ;
+    BB::BitBoard knights_attacks_bb = at->generateSetwiseKnightAttacks(knights_bb) & ~friendly_bb;
+    int knights_attacks_count = BB::popcount(knights_attacks_bb) ;
 
-    score += mobility_bonus[int(P::KNIGHT)][knights_attacks_count];
+    score += mobility_bonus[int(PType::Knight)][knights_attacks_count];
 
     // Mobility score for Bishops
     Piece bishop{PType::Bishop,player};
     BB::BitBoard bishops_bb = board.bitboard(bishop);
-    BB::BitBoard bishops_attacks_bb = generate_bishop_attacks(bishops_bb,occupied_bb) & ~friendly_bb;
-    int bishop_attacks_count = BB::Bitboard(bishops_attacks_bb).count() ;
+    BB::BitBoard bishops_attacks_bb = at->generateSetwiseBishopAttacks(bishops_bb,occupied_bb) & ~friendly_bb;
+    int bishop_attacks_count = BB::popcount(bishops_attacks_bb);
 
-    score += mobility_bonus[int(PieceType::BISHOP)][bishop_attacks_count];
+    score += mobility_bonus[int(PType::Bishop)][bishop_attacks_count];
 
     // Mobility score for Rooks
     Piece rook{PType::Rook,player};
     BB::BitBoard rooks_bb = board.bitboard(rook);
-    BB::BitBoard rooks_attacks_bb = generate_rook_attacks(rooks_bb,occupied_bb) & ~friendly_bb;
-    int rooks_attacks_count = BB::Bitboard(rooks_attacks_bb).count() ;
+    BB::BitBoard rooks_attacks_bb = at->generateSetwiseRookAttacks(rooks_bb,occupied_bb) & ~friendly_bb;
+    int rooks_attacks_count = BB::popcount(rooks_attacks_bb);
 
-    score += mobility_bonus[int(PieceType::ROOK)][rooks_attacks_count];
+    score += mobility_bonus[int(PType::Rook)][rooks_attacks_count];
 
     // Mobility score for Queens
     Piece queen{PType::Queen,player};
     BB::BitBoard queens_bb = board.bitboard(queen);
-    BB::BitBoard queens_attacks_bb = generate_queen_attacks(queens_bb,occupied_bb) & ~friendly_bb;
-    int queens_attacks_count = BB::Bitboard(queens_attacks_bb).count() ;
+    BB::BitBoard queens_attacks_bb = at->generateSetwiseQueenAttacks(queens_bb,occupied_bb) & ~friendly_bb;
+    int queens_attacks_count = BB::popcount(queens_attacks_bb);
 
-    score += mobility_bonus[int(PieceType::QUEEN)][queens_attacks_count];    
+    score += mobility_bonus[int(PType::Queen)][queens_attacks_count];    
     return score;
 }

@@ -1,5 +1,9 @@
 #pragma once
 
+#include "game_data.hpp"
+
+#include "game_state.hpp"
+
 #include "board.hpp"
 #include "board_analysis.hpp"
 #include "move_generator.hpp"
@@ -10,24 +14,13 @@
 
 #include "../view/board_view.hpp"
 
-#include "chess/ZobristHash.hpp"
+#include "../minimax/ZobristHash.hpp"
 
 #include <memory>
 #include <string>
 #include <iostream>
 #include <stdexcept>
 #include <stack>
-
-/* ---- DECLARE class InvalidMoveException ---- */
-
-class InvalidMoveException : public std::invalid_argument {
-
-public:
-    InvalidMoveException(const std::string& what) : std::invalid_argument(what) {};
-};
-
-/* ---- END DECLARE ---- */
-
 
 
 /* ---- DECLARE struct UnmakeMove ---- */
@@ -56,16 +49,7 @@ std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move);
 
 /* ---- DECLARE class Game ---- */
 
-// Current game state
-enum class GameState {
-    INGAME,         // The game hasn't ended.
-    CHECKMATE,      // The current player is in checkmate (has lost).
-    STALEMATE,      // The current player is in stalemate (in a draw).
-
-    OOB, FIRST = INGAME, LAST = STALEMATE
-};
-
-class Game {
+class Game : public ExtendedGameData {
     const BoardAnalysis board_analysis;
     const MoveGenerator move_generator;
 
@@ -179,7 +163,7 @@ public:
 
     /* -- Getters and setters -- */
 
-    Player getCurrentPlayer() const { return current_player; };
+    Player getCurrentPlayer() const override { return current_player; };
     void setCurrentPlayer(const Player player) { current_player = player; };
 
     /* -- Getting board data -- */
@@ -189,31 +173,34 @@ public:
      * 
      * @return Bitflags indicating castling rights: `0b[qkQK]`.
      */
-    uint8_t getCastlingRights() const { return castling_rights; };
+    uint8_t getCastlingRights() const override { return castling_rights; };
 
     // Gets the current valid en passant target.
-    const Position& getEnPassantPosition() const { return en_passant; };
+    const Position& getEnPassantPosition() const override { return en_passant; };
 
     // Gets the list of pseudo-legal moves from the current board position.
-    const std::vector<Move>& getCurrentPseudoLegals(bool only_captures = false);
+    const std::vector<Move>& getCurrentPseudoLegals(bool only_captures = false) override;
     // Gets the list of legal moves from the current board position.
-    const std::vector<Move>& getCurrentLegals(bool only_captures = false);
-    // Gets the zobrist hash of the current board position.
-    uint64_t getHash();
+    const std::vector<Move>& getCurrentLegals(bool only_captures = false) override;
 
     // Returns `true` the current player's king is in check at the current board position.
-    bool isCurrentlyInCheck();
+    bool isCurrentlyInCheck() override;
     // Gets the current game state.
-    GameState getGameState();
+    GameState getGameState() override;
 
-    Piece getPieceAt(const Position& position) const {
+    Piece getPieceAt(const Position& position) const override {
         return board.pieceAt(position);
     }
 
+    /* --  Data required by the AI -- */
+    
     const Board& getBoard() const { return board; };
 
-    bool isRepetition(int count = 2);
-    bool isHalfMoveDraw() const { return halfmoves >= 100; };
+    // Gets the zobrist hash of the current board position.
+    uint64_t getHash() override;
+
+    bool isRepetition(int count = 2) override;
+    bool isHalfMoveDraw() const override { return halfmoves >= 100; };
 
     /* -- (Un)doing moves -- */
 
@@ -232,14 +219,14 @@ public:
      * @param move          The parameters of the move to make.
      * @return `true` if the move is legal and was successfully made. 
      */
-    bool move(const Move move);
+    bool move(const Move move) override;
 
     /**
      * @brief Undoes the last made move.
      * 
      * @return The last made move, or `std::nullopt` if there are no moves to undo.
      */
-    std::optional<Move> undoLastMove();
+    std::optional<Move> undoLastMove() override;
 
     /* -- String representation -- */
 
