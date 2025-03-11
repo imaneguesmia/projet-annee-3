@@ -121,8 +121,8 @@ void export_game(nb::module_& m) {
         .def_prop_ro("castling_rights", &GameData::getCastlingRights)
         .def_prop_ro("en_passant_position", &GameData::getEnPassantPosition)
         
-        .def_prop_ro("current_pseudo_legals", &GameData::getCurrentPseudoLegals)
-        .def_prop_ro("current_legals", &GameData::getCurrentLegals)
+        .def("get_current_pseudo_legals", &GameData::getCurrentPseudoLegals)
+        .def("get_current_legals", &GameData::getCurrentLegals)
 
         .def_prop_ro("is_currently_in_check", &GameData::isCurrentlyInCheck)
         .def_prop_ro("game_state", &GameData::getGameState)
@@ -130,7 +130,7 @@ void export_game(nb::module_& m) {
         .def("get_piece_at", &GameData::getPieceAt);
     
     nb::class_<MovePrompter>(m, "MovePrompter")
-        .def("game_data", &MovePrompter::gameData)
+        .def("game_data", &MovePrompter::gameData, nb::rv_policy::reference)
 
         .def("propose_move", &MovePrompter::proposeMove);
     

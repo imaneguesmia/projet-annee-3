@@ -28,6 +28,7 @@ class scene_ChessGame(Scene, ChessModel):
 
         self._chess_game = cm.GameManager() if initial_state is None else cm.GameManager(initial_state)
         self._move_prompter: cm.MovePrompter = None
+        self._game_data: cm.GameData = None
 
         self._selected_square: cm.Position | None = None
         self._selected_moves: list[cm.Move] = []
@@ -48,10 +49,14 @@ class scene_ChessGame(Scene, ChessModel):
 
         # Initialize AI engines
 
-        if PlayerType.MINIMAX in [white_player, black_player]:
+        self._player_types = [white_player, black_player]
+
+        if PlayerType.MINIMAX in self._player_types:
             self._minimax_engine = ...
-        if PlayerType.NEURAL_NET in [white_player, black_player]:
+        if PlayerType.NEURAL_NET in self._player_types:
             self._neural_net_engine = ...
+        
+        self.game_turn()
     
     @property
     def selected_square(self) -> cm.Position | None: 
@@ -63,28 +68,59 @@ class scene_ChessGame(Scene, ChessModel):
     
     # -- Game loop -- #
 
-    def start_game(self) -> None:
+    def get_player_type(self, player: cm.Player) -> PlayerType:
+        """"""
+        return self._player_types[0] if player == cm.Player.White else self._player_types[0]
+
+    def game_turn(self) -> None:
         """"""
         self._move_prompter = self._chess_game.prompt_next_move()
+        self._game_data = self._move_prompter.game_data()
 
-        
+        current_player = self._game_data.current_player
+        current_player_type = self.get_player_type(current_player)
+
+        match current_player_type:
+            case PlayerType.HUMAN:
+                # Allow the player to make a move
+                pass
+            case PlayerType.MINIMAX:
+                # Prevent human from moving
+                self._board.can_accept_events = False
+                pass
+            case PlayerType.NEURAL_NET:
+                # Prevent human from moving
+                self._board.can_accept_events = False
+                pass
 
     # -- Game model methods -- #
     
     # def board_view(self) -> cm.BoardView:
     #     return self._chess_game.board_view()
+
+    def make_move(self, move: cm.Move) -> None:
+        """"""
+        success = self._move_prompter.propose_move(move)
+
+        if success:
+            # Update data after move
+            self._selected_square = None
+            self._selected_moves = []
+
+            # Next turn
+            self.game_turn()
     
     @override
     def piece_at(self, square: cm.Position) -> cm.Piece:
-        return self._chess_game.get_piece_at(square)
+        return self._game_data.get_piece_at(square)
 
     def select_square(self, square: cm.Position) -> None:
         """"""
-        piece_on_square = self._chess_game.get_piece_at(square)
-        current_player = self._chess_game.current_player
+        piece_on_square = self._game_data.get_piece_at(square)
+        current_player = self._game_data.current_player
 
         # Update legal moves
-        self._legal_moves = self._chess_game.get_current_legals(False)
+        self._legal_moves = self._game_data.get_current_legals(False)
 
         # Select the clicked piece if it belongs to the current player
         if not piece_on_square.is_none() and piece_on_square.get_player() == current_player:
@@ -101,11 +137,7 @@ class scene_ChessGame(Scene, ChessModel):
                 if move_to_do.promotion != cm.PType.NoneType:
                     self.prompt_promotion(move_to_do)
                 else:
-                    self._chess_game.move(move_to_do)
-
-                    # Update data after move
-                    self._selected_square = None
-                    self._selected_moves = []
+                    self.make_move(move_to_do)
 
         else:
             self._selected_square = None
@@ -142,10 +174,6 @@ class scene_ChessGame(Scene, ChessModel):
             self._board.can_accept_events = True
 
             self._promotion.promotion = to_piece
-            self._chess_game.move(self._promotion)
-
-            # Update data after move
-            self._selected_square = None
-            self._selected_moves = []
+            self.make_move(self._promotion)
 
 
