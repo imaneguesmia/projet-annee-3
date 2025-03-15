@@ -22,7 +22,7 @@ int main(int argc, char ** argv) {
     // std::cout << Position("e4") << '\n';
     // return 0;
 
-    std::cout << "Initial state :" << std::endl;
+    // std::cout << "Initial state :" << std::endl;
 
     // Board b("6k1/1P6/5q2/3Pp3/3P4/8/8/R3K2R w KQ - 0 1");
     // std::cout << b << std::endl;
@@ -31,24 +31,24 @@ int main(int argc, char ** argv) {
     // Game b;
     // Game b("3r1r2/8/8/8/8/8/r7/4K3 w - - 0 1");
     // Game b("3r1r2/8/8/8/7b/8/r7/4K3 w - - 0 1");
-    Game b("3r4/8/8/8/7b/8/r7/4K3 w - - 0 1");
+    // Game b("3r4/8/8/8/7b/8/r7/4K3 w - - 0 1");
 
-    b.printBoard();
-    std::cout << b.fen() << '\n';
+    // b.printBoard();
+    // std::cout << b.fen() << '\n';
 
-    enum_array<GameState, std::string> outtt;
-    outtt[GameState::INGAME] = "INGAME";
-    outtt[GameState::CHECKMATE] = "CHECKMATE";
-    outtt[GameState::STALEMATE] = "STALEMATE";
+    // enum_array<GameState, std::string> outtt;
+    // outtt[GameState::INGAME] = "INGAME";
+    // outtt[GameState::CHECKMATE] = "CHECKMATE";
+    // outtt[GameState::STALEMATE] = "STALEMATE";
 
-    std::cout << outtt[b.getGameState()] << '\n';
+    // std::cout << outtt[b.getGameState()] << '\n';
 
-    // b.move({
-    //     Position::e1, Position::g1,
-    //     Player::White, PType::King,
-    //     PType::NoneType,
-    //     false, false, false, true
-    // });
+    // // b.move({
+    // //     Position::e1, Position::g1,
+    // //     Player::White, PType::King,
+    // //     PType::NoneType,
+    // //     false, false, false, true
+    // // });
 
     return 0;
 

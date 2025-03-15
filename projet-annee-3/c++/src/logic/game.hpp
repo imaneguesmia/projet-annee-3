@@ -147,19 +147,16 @@ private:
      * @return The `UnmakeMove` object associated with this action.
      */
     UnmakeMove makeMoveOnBoard(const Move move);
-    /**
-     * @brief Unmakes a move.
-     * 
-     * @param unmake_move   The associated `UnmakeMove` object.
-     */
-    void unmakeMoveOnBoard(const UnmakeMove unmake_move);
 
 public:
-    Game(const std::string& fen) : Game(
-        std::make_shared<const AttackTables>(), 
+    Game(const std::shared_ptr<const AttackTables> at, const std::string& fen) : Game(
+        std::move(at),
         gameStateFromFEN(fen)
     ) {};
-    Game() : Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {};
+    Game(const std::shared_ptr<const AttackTables> at) : Game(
+        std::move(at),
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    ) {};
 
     /* -- Getters and setters -- */
 
@@ -220,6 +217,19 @@ public:
      * @return `true` if the move is legal and was successfully made. 
      */
     bool move(const Move move) override;
+
+    /**
+     * @brief Gets the `UnmakeMove` object of the most recent move.
+     */
+    const UnmakeMove& getMostRecentUnmakeMove() const override {
+        return unmake_move_list.back();
+    }
+    /**
+     * @brief Unmakes a move.
+     * 
+     * @param unmake_move   The associated `UnmakeMove` object.
+     */
+    void unmakeMoveOnBoard(const UnmakeMove& unmake_move) override;
 
     /**
      * @brief Undoes the last made move.

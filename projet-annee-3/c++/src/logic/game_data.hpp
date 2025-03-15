@@ -8,6 +8,8 @@
 #include <vector>
 #include <optional>
 
+class UnmakeMove;
+
 /**
  * @brief Interface for game data.
  */
@@ -41,7 +43,9 @@ public:
     virtual ~ExtendedGameData() {};
 
     virtual bool move(Move move) = 0;
+    virtual const UnmakeMove& getMostRecentUnmakeMove() const = 0;
     virtual std::optional<Move> undoLastMove() = 0;
+    virtual void unmakeMoveOnBoard(const UnmakeMove& unmake_move) = 0;
 
     virtual const Board& getBoard() const = 0;
 

@@ -1,6 +1,8 @@
 from ..scene import Scene
 from ..scene_change import SceneId
 
+from ..data_transfer import PlayerType
+
 from ui import Text, Button
 from ui.colors import *
 
@@ -28,7 +30,10 @@ class scene_DifficultyMenu(Scene):
         difficulty_button.text_font = pygame.font.Font(None, 50)
 
         def oc(point: tuple[int, int]) -> bool:
-            self.request_scene_change(SceneId.GAME, {})
+            self.request_scene_change(SceneId.GAME, {
+                "white_player": PlayerType.HUMAN,
+                "black_player": PlayerType.MINIMAX
+            })
             return True
 
         difficulty_button.on_click = oc

@@ -4,11 +4,21 @@
 
 /* ---- DEFINE class GameManager ---- */
 
-MovePrompter GameManager::promptNextMove() {
-    return MovePrompter(*this, game);
-}
+GameManager::GameManager()
+    : at(std::make_shared<const AttackTables>())
+    , game(at)
+{}
 
-bool GameManager::acceptMove(Move move) {
+GameManager::GameManager(const std::string& initial_position)
+    : at(std::make_shared<const AttackTables>())
+    , game(at, initial_position)
+{}
+
+// MovePrompter GameManager::promptNextMove() {
+//     return MovePrompter(*this, game);
+// }
+
+bool GameManager::makeMove(Move move) {
     return game.move(move);
 }
 

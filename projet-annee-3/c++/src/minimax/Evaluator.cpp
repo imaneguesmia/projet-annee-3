@@ -11,7 +11,7 @@
 #include <array>
 #include <cstdint>
 
-Evaluator::Evaluator(std::shared_ptr<AttackTables> at)
+Evaluator::Evaluator(std::shared_ptr<const AttackTables> at)
     : at(std::move(at))
 {
     for (int file = 0; file < 8; file++) {

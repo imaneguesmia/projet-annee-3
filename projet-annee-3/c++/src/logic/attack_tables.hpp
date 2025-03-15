@@ -314,7 +314,7 @@ public:
 
     /* -- Set-wise attack table generation -- */
 
-    uint64_t generateSetwiseKnightAttacks(uint64_t knights) {
+    uint64_t generateSetwiseKnightAttacks(uint64_t knights) const {
         uint64_t attack = 0;
         attack |= (knights & not_col_A) >> 15;
         attack |= (knights & not_col_H) >> 17;
@@ -327,7 +327,7 @@ public:
         return attack;
     }
 
-    uint64_t generateSetwiseSliderAttacks(uint64_t pieces, uint64_t occupied, const int directions[4]) {
+    uint64_t generateSetwiseSliderAttacks(uint64_t pieces, uint64_t occupied, const int directions[4]) const {
         uint64_t attacks = 0;
         for (int i = 0; i < 4; i++) {
             int dir = directions[i];
@@ -342,17 +342,17 @@ public:
         return attacks;
     }
     
-    uint64_t generateSetwiseBishopAttacks(uint64_t bishops, uint64_t occupied) {
+    uint64_t generateSetwiseBishopAttacks(uint64_t bishops, uint64_t occupied) const {
         static const int bishop_directions[] = {9, 7, -9, -7};
         return generateSetwiseSliderAttacks(bishops, occupied, bishop_directions);
     }
     
-    uint64_t generateSetwiseRookAttacks(uint64_t rooks, uint64_t occupied) {
+    uint64_t generateSetwiseRookAttacks(uint64_t rooks, uint64_t occupied) const {
         static const int rook_directions[] = {8, -8, 1, -1};
         return generateSetwiseSliderAttacks(rooks, occupied, rook_directions);
     }
     
-    uint64_t generateSetwiseQueenAttacks(uint64_t queens, uint64_t occupied) {
+    uint64_t generateSetwiseQueenAttacks(uint64_t queens, uint64_t occupied) const {
         return generateSetwiseBishopAttacks(queens, occupied) | generateSetwiseRookAttacks(queens, occupied);
     }
 };

@@ -6,6 +6,7 @@
 
 #include "game_management/move_prompter.hpp"
 #include "game_management/game_manager.hpp"
+#include "game_management/move_provider.hpp"
 
 #include "view/board_view.hpp"
 
@@ -16,6 +17,7 @@
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/optional.h>
 #include <nanobind/stl/vector.h>
+#include <nanobind/stl/unique_ptr.h>
 
 #include <sstream>
 
@@ -128,40 +130,32 @@ void export_game(nb::module_& m) {
         .def_prop_ro("game_state", &GameData::getGameState)
 
         .def("get_piece_at", &GameData::getPieceAt);
+
+    nb::class_<ExtendedGameData>(m, "ExtendedGameData");
     
     nb::class_<MovePrompter>(m, "MovePrompter")
         .def("game_data", &MovePrompter::gameData, nb::rv_policy::reference)
+        .def("extended_game_data", &MovePrompter::extendedGameData, nb::rv_policy::reference)
 
         .def("propose_move", &MovePrompter::proposeMove);
     
     nb::class_<GameManager>(m, "GameManager")
         .def(nb::init<>())
         .def(nb::init<const std::string&>())
+
+        .def_prop_ro("current_player", &GameManager::getCurrentPlayer)
+
+        .def("game_data", &GameManager::gameData, nb::rv_policy::reference)
+        .def("extended_game_data", &GameManager::extendedGameData, nb::rv_policy::reference)
+
+        .def("create_minimax_player", &GameManager::createMinimaxPlayer)
     
-        .def("prompt_next_move", &GameManager::promptNextMove);
+        .def("make_move", &GameManager::makeMove);
+}
 
-    // nb::class_<Game>(m, "Game")
-    //     .def(nb::init<const std::string&>())
-    //     .def(nb::init<>())
-
-    //     .def_prop_rw("current_player", &Game::getCurrentPlayer, &Game::setCurrentPlayer)
-    //     .def_prop_ro("en_passant_position", &Game::getEnPassantPosition)
-    //     .def_prop_ro("game_state", &Game::getGameState)
-
-    //     .def("get_current_pseudo_legals", &Game::getCurrentPseudoLegals)
-    //     .def("get_current_legals", &Game::getCurrentLegals)
-    //     .def("is_currently_in_check", &Game::isCurrentlyInCheck)
-
-    //     .def("move", nb::overload_cast<const Position&, const Position&, const PType>(&Game::move))
-    //     .def("move", nb::overload_cast<const Move>(&Game::move))
-
-    //     .def("undo_last_move", &Game::undoLastMove)
-
-    //     .def("get_piece_at", &Game::getPieceAt)
-
-    //     .def_prop_ro("fen", &Game::fen)
-
-    //     .def("print_board", &Game::printBoard);
+void export_ai(nb::module_& m) {
+    nb::class_<AIMoveProvider>(m, "AIMoveProvider")
+        .def("get_move", &AIMoveProvider::getMove);
 }
 
 NB_MODULE(chess_module, m) {
@@ -171,4 +165,5 @@ NB_MODULE(chess_module, m) {
     export_move(m);
     export_board_view(m);
     export_game(m);
+    export_ai(m);
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../game_management/move_provider.hpp"
+
 #include "TranspositionTable.hpp"
 #include "Evaluator.hpp"
 #include "MoveOrdering.hpp"
@@ -13,20 +15,20 @@
  * @class Beluga
  * @brief Implements the NegaMax search with alpha-beta pruning and aspiration windows.
  */
-class Beluga {
+class Beluga : public AIMoveProvider {
 public:
     /**
      * @brief Constructor for the Beluga search engine.
      * @param depth Maximum search depth.
      */
-    explicit Beluga(int depth, std::shared_ptr<AttackTables> at);
+    explicit Beluga(int depth, std::shared_ptr<const AttackTables> at);
 
     /**
      * @brief Determines the best move for the current board position.
      * @param board The current chess board state.
      * @return The best move found.
      */
-    Move getMove(ExtendedGameData& board);
+    Move getMove(ExtendedGameData& board) override;
 
 private:
     /**

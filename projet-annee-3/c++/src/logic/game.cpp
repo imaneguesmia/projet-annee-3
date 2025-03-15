@@ -218,7 +218,7 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
     return unmake_move;
 }
 
-void Game::unmakeMoveOnBoard(const UnmakeMove unmake_move) {
+void Game::unmakeMoveOnBoard(const UnmakeMove& unmake_move) {
     board.unmovePiece(unmake_move.move, unmake_move.captured);
 
     castling_rights = unmake_move.castling_rights;

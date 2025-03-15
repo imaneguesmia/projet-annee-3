@@ -27,7 +27,7 @@ class scene_ChessGame(Scene, ChessModel):
         super().__init__(window_rect)
 
         self._chess_game = cm.GameManager() if initial_state is None else cm.GameManager(initial_state)
-        self._move_prompter: cm.MovePrompter = None
+        # self._move_prompter: cm.MovePrompter = None
         self._game_data: cm.GameData = None
 
         self._selected_square: cm.Position | None = None
@@ -52,9 +52,9 @@ class scene_ChessGame(Scene, ChessModel):
         self._player_types = [white_player, black_player]
 
         if PlayerType.MINIMAX in self._player_types:
-            self._minimax_engine = ...
+            self._minimax_engine: cm.AIMoveProvider = self._chess_game.create_minimax_player(1)
         if PlayerType.NEURAL_NET in self._player_types:
-            self._neural_net_engine = ...
+            self._neural_net_engine: cm.AIMoveProvider = ...
         
         self.game_turn()
     
@@ -70,23 +70,29 @@ class scene_ChessGame(Scene, ChessModel):
 
     def get_player_type(self, player: cm.Player) -> PlayerType:
         """"""
-        return self._player_types[0] if player == cm.Player.White else self._player_types[0]
+        return self._player_types[0] if player == cm.Player.White else self._player_types[1]
 
     def game_turn(self) -> None:
         """"""
-        self._move_prompter = self._chess_game.prompt_next_move()
-        self._game_data = self._move_prompter.game_data()
+        self._game_data = self._chess_game.game_data()
 
-        current_player = self._game_data.current_player
+        current_player = self._chess_game.current_player
         current_player_type = self.get_player_type(current_player)
 
         match current_player_type:
             case PlayerType.HUMAN:
                 # Allow the player to make a move
+                self._board.can_accept_events = True
                 pass
             case PlayerType.MINIMAX:
                 # Prevent human from moving
                 self._board.can_accept_events = False
+
+                move_to_make = self._minimax_engine.get_move(
+                    self._chess_game.extended_game_data()
+                )
+                self.make_move(move_to_make)
+
                 pass
             case PlayerType.NEURAL_NET:
                 # Prevent human from moving
@@ -100,15 +106,21 @@ class scene_ChessGame(Scene, ChessModel):
 
     def make_move(self, move: cm.Move) -> None:
         """"""
-        success = self._move_prompter.propose_move(move)
+        success = self._chess_game.make_move(move)
 
         if success:
+            print("made move")
+            print(move)
+
             # Update data after move
             self._selected_square = None
             self._selected_moves = []
 
             # Next turn
             self.game_turn()
+        else:
+            print("INVALID MOVE")
+            exit()
     
     @override
     def piece_at(self, square: cm.Position) -> cm.Piece:
