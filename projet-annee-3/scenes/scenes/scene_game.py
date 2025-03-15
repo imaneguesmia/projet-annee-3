@@ -11,10 +11,14 @@ from .promotion_panel import PromotionPanel
 import cpp_chess as cm
 
 from ui.colors import *
+from ui.button import Button
+from ..scene_change import SceneId
 
 import pygame
 
 from typing import override
+
+BOARD_SIZE = 800
 
 class scene_ChessGame(Scene, ChessModel):
 
@@ -35,10 +39,15 @@ class scene_ChessGame(Scene, ChessModel):
 
         self._promotion: cm.Move | None = None
 
+        # Centrer l'échiquier de 800x800 dans la fenêtre 1920x1080
+        self.board_x = (window_rect.width - BOARD_SIZE) // 2
+        self.board_y = (window_rect.height - BOARD_SIZE) // 2
+
         self._board = ChessBoard(
-            pygame.Rect(0, 0, window_rect.height, window_rect.height),
+            pygame.Rect(self.board_x, self.board_y, BOARD_SIZE, BOARD_SIZE),
             self
-        )
+)
+
 
         self._promotion_panel = PromotionPanel(window_rect, self)
         self._promotion_panel.is_visible = False
@@ -46,6 +55,8 @@ class scene_ChessGame(Scene, ChessModel):
 
         self.elements.append(self._board)
         self.elements.append(self._promotion_panel)
+
+        self.elements.append(self._create_quit_button(window_rect))
 
         # Initialize AI engines
 
@@ -57,7 +68,6 @@ class scene_ChessGame(Scene, ChessModel):
             self._neural_net_engine: cm.AIMoveProvider = ...
         
         self.game_turn()
-        # print(self._chess_game.game_data().get_current_legals(False))
     
     @property
     def selected_square(self) -> cm.Position | None: 
@@ -188,5 +198,27 @@ class scene_ChessGame(Scene, ChessModel):
 
             self._promotion.promotion = to_piece
             self.make_move(self._promotion)
+
+    def _create_quit_button(self, window_rect: pygame.Rect) -> Button:
+        """Creates a quit button on the right side of the screen."""
+        button_rect = pygame.Rect(
+            self.board_x + BOARD_SIZE + 50,  # 50px de marge après l'échiquier
+            window_rect.centery - 40,   # Centré verticalement
+            200, 80                     # Taille du bouton
+        )
+
+        quit_button = Button(button_rect, "Quit")
+        quit_button.color = SAND_COLOR
+        quit_button.hover_color = SAND_HOVER
+        quit_button.text_color = BLACK
+        quit_button.text_font = pygame.font.Font(None, 50)
+
+        def oc(point: tuple[int, int]) -> bool:
+            self.request_scene_change(SceneId.MAINMENU, {})
+            return True
+
+        quit_button.on_click = oc
+        return quit_button
+
 
 

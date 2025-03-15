@@ -9,7 +9,7 @@ MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80
 BUTTON_SPACING = 50  
 
-bg_image_path = "./projet-annee-3/images/bg.png"
+bg_image_path = "./projet-annee-3/images/background.jpeg"
 
 class scene_CustomMenu(Scene):
     def __init__(self, window_rect: pygame.Rect):
