@@ -4,6 +4,8 @@
 
 #include <sstream>
 
+#include <fmt/core.h>
+
 /* ---- DEFINE struct UnmakeMove ---- */
 
 std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move) {
@@ -85,7 +87,7 @@ uint8_t Game::castlingRightsFromString(const std::string& castling_indicators) c
                     flags |= 0b1000;
                 break;
                 default:
-                    throw std::invalid_argument(std::format(
+                    throw std::invalid_argument(fmt::format(
                         "Invalid FEN sequence: unknown character '{}' in castling indicators"
                     , c));
             }

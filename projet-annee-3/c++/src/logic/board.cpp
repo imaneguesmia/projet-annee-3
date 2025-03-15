@@ -7,6 +7,8 @@
 #include <format>
 #include <cstring>
 
+#include <fmt/core.h>
+
 /* ---- DEFINE class Board ---- */
 
 /* -- Helpers -- */
@@ -28,7 +30,7 @@ void Board::setPiecePositions(const std::string& piece_positions) {
                     row++;
                     continue;
                 default:
-                    throw std::invalid_argument(std::format(
+                    throw std::invalid_argument(fmt::format(
                         "Invalid FEN sequence: unknown character '{}' in board definition"
                     , c));
             }

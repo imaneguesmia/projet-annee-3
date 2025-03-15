@@ -3,7 +3,8 @@
 #include <utility>
 #include <stdexcept>
 #include <type_traits>
-#include <format>
+
+#include <fmt/core.h>
 
 /**
  * @brief Safely converts an integral value to an enum class value.
@@ -17,11 +18,9 @@
  * @throws `std::invalid_argument` if the given integral value is out of bounds.
  */
 template <class EnumType, class IntegralType>
-constexpr EnumType safely_to_enum_class(IntegralType n) 
-    requires (std::is_scoped_enum_v<EnumType> && std::is_integral_v<IntegralType>)
-{
+constexpr EnumType safely_to_enum_class(IntegralType n) {
     if (n < static_cast<int>(EnumType::FIRST) || n > static_cast<int>(EnumType::LAST)) {
-        throw std::invalid_argument(std::format("Integral value {} out of bounds of enum class", n));
+        throw std::invalid_argument(fmt::format("Integral value {} out of bounds of enum class", n));
     } 
     return static_cast<EnumType>(n);
 }

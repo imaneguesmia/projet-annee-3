@@ -9,7 +9,8 @@ import pygame
 pygame.init()
 
 # ✅ Fenêtre en FULLSCREEN sur l'écran actif
-fenetre = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+# fenetre = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+fenetre = pygame.display.set_mode()
 SCREEN_WIDTH, SCREEN_HEIGHT = fenetre.get_size()
 
 pygame.display.set_caption("Beluga Engine")

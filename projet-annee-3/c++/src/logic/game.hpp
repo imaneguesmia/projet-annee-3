@@ -199,7 +199,7 @@ public:
 
     /* --  Data required by the AI -- */
     
-    const Board& getBoard() const { return board; };
+    const Board& getBoard() const override { return board; };
 
     // Gets the zobrist hash of the current board position.
     uint64_t getHash() override;

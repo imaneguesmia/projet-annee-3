@@ -54,9 +54,9 @@ public:
     /* -- Getters and setters -- */
 
     // Gets the row of the position. Returns meaningless value if position is invalid.
-    int getRow() const { return std::to_underlying(position_index) / 8; };
+    int getRow() const { return static_cast<uint8_t>(position_index) / 8; };
     // Gets the column of the position. Returns meaningless value if position is invalid.
-    int getColumn() const { return std::to_underlying(position_index) % 8; };
+    int getColumn() const { return static_cast<uint8_t>(position_index) % 8; };
 
     // Sets the position to the given row and column.
     void setPosition(int row, int col);
@@ -89,7 +89,7 @@ public:
 
     /* -- Typecasting -- */
 
-    operator uint8_t() const { return std::to_underlying(position_index); };
+    operator uint8_t() const { return static_cast<uint8_t>(position_index); };
 };
 
 // Prints the string representation of the position to the output stream.

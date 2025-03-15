@@ -7,10 +7,12 @@ project(
     LANGUAGES CXX
 )
 
-# Use c++23
-set(CMAKE_CXX_STANDARD 23)
+# Use c++17
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_CXX_FLAGS "-O2")
 
 # Directories
 set(LOGIC "logic")
@@ -24,6 +26,18 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     MESSAGE("Compiling with Clang/AppleClang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
+
+# ---- fmt ---- #
+
+include(FetchContent)
+
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt
+    GIT_TAG        e69e5f977d458f2650bb346dadf2ad30c5320281) # 10.2.1
+FetchContent_MakeAvailable(fmt)
+
+link_libraries(fmt::fmt)
 
 # ---- Libraries ---- #
 
@@ -85,7 +99,7 @@ set(LIBS "logic misc view minimax game_management")
 # ---- Create Python bindings ---- #
 
 # Find Python and nanobind
-set(Python_FIND_VIRTUALENV ONLY)
+set(Python_FIND_VIRTUALENV FIRST)
 find_package(Python 3.13 REQUIRED
     COMPONENTS          Interpreter Development.Module
     OPTIONAL_COMPONENTS Development.SABIModule
