@@ -95,6 +95,13 @@ class UIElement(AttributeWatcher, ABC):
             bool: `True` if the event was consumed and should no longer be propagated.
         """
         return False
+    
+    def on_userevent(self) -> bool:
+        """Method to call on user event.
+
+        Returns:
+            bool: `True` if the event was consumed and should no longer be propagated.
+        """
 
     def _will_accept_event(self, event: pygame.event.Event) -> bool:
         """Returns `True` if the event will be accepted by this element."""
@@ -145,6 +152,7 @@ class UIElement(AttributeWatcher, ABC):
                         self.reset_changed()
                     
                     consumed |= self.on_hover(event.pos)
+
                 case _:
                     consumed = False
         

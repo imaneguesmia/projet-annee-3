@@ -31,8 +31,6 @@ class Scene(ABC):
 
             print(f"[Scene] Background loaded and scaled to {window_rect.size}")  # Debug info
 
-
-    
     @final
     def handle_event(self, event: Event) -> None:
         """Handles a pygame event.
@@ -43,17 +41,15 @@ class Scene(ABC):
         for el in self.elements:
             if el.handle_event(event): break
     
-    @final
     def update(self) -> None:
         """Updates all UI elements."""
         for el in self.elements:
             el._recursive_update()
     
-    @final
     def draw(self, dest: pygame.Surface) -> None:
 
         """Draw background."""
-        if self._bg_image:
+        if self._bg_image is not None:
             dest.blit(self._bg_image, (0,0))  
         else:
             self._surface.fill(self.bg_color)  

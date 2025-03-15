@@ -54,10 +54,10 @@ class PromotionButton(Button):
         # self._text.text = self._piece.fen()
 
 class PromotionPanel(NinepatchPanel):
-    def __init__(self, window_rect: pygame.Rect, model: ChessModel):
+    def __init__(self, board_rect: pygame.Rect, model: ChessModel):
         panel_rect = pygame.Rect(
-            window_rect.centerx - PROMOTION_PANEL_WIDTH/2 - PROMOTION_PANEL_PADDING,
-            window_rect.centery - PROMOTION_PANEL_HEIGHT/2 - PROMOTION_PANEL_PADDING, 
+            board_rect.centerx - PROMOTION_PANEL_WIDTH/2 - PROMOTION_PANEL_PADDING,
+            board_rect.centery - PROMOTION_PANEL_HEIGHT/2 - PROMOTION_PANEL_PADDING, 
             PROMOTION_PANEL_WIDTH + PROMOTION_PANEL_PADDING*2,
             PROMOTION_PANEL_HEIGHT + PROMOTION_PANEL_PADDING*2
         )

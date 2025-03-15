@@ -22,7 +22,7 @@ class ChessBoard(UIElement):
 
         self._model = model
 
-                # Stocker la position du plateau pour corriger les clics souris
+        # Stocker la position du plateau pour corriger les clics souris
         self.board_x = rect.x
         self.board_y = rect.y
 
@@ -85,7 +85,6 @@ class ChessBoard(UIElement):
         row = y // self.square_size
         col = x // self.square_size
         return cm.Position(row, col)
-
 
     def square_to_coordinates(self, square: cm.Position) -> tuple[int, int]:
         x = self.square_size * square.column

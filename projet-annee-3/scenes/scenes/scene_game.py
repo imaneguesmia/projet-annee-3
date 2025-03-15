@@ -7,11 +7,12 @@ from .chess_model import ChessModel
 
 from .promotion_panel import PromotionPanel
 
-
 import cpp_chess as cm
 
 from ui.colors import *
-from ui.button import Button
+from ui import Button, NinepatchPanel
+import image_loader as img
+
 from ..scene_change import SceneId
 
 import pygame
@@ -19,6 +20,7 @@ import pygame
 from typing import override
 
 BOARD_SIZE = 800
+SIDE_PANEL_WIDTH = 400
 
 class scene_ChessGame(Scene, ChessModel):
 
@@ -40,34 +42,33 @@ class scene_ChessGame(Scene, ChessModel):
         self._promotion: cm.Move | None = None
 
         # Centrer l'échiquier de 800x800 dans la fenêtre 1920x1080
-        self.board_x = (window_rect.width - BOARD_SIZE) // 2
+        self.board_x = (window_rect.width - SIDE_PANEL_WIDTH) // 2 - BOARD_SIZE // 2
         self.board_y = (window_rect.height - BOARD_SIZE) // 2
 
         self._board = ChessBoard(
             pygame.Rect(self.board_x, self.board_y, BOARD_SIZE, BOARD_SIZE),
             self
-)
+        )
 
-
-        self._promotion_panel = PromotionPanel(window_rect, self)
+        self._promotion_panel = PromotionPanel(self._board.absolute_rect, self)
         self._promotion_panel.is_visible = False
         self._promotion_panel.can_accept_events = False
 
         self.elements.append(self._board)
         self.elements.append(self._promotion_panel)
 
-        self.elements.append(self._create_quit_button(window_rect))
+        self.elements.append(self._create_side_panel(window_rect))
 
         # Initialize AI engines
 
         self._player_types = [white_player, black_player]
 
         if PlayerType.MINIMAX in self._player_types:
-            self._minimax_engine: cm.AIMoveProvider = self._chess_game.create_minimax_player(10)
+            self._minimax_engine: cm.AIMoveProvider = self._chess_game.create_minimax_player(5)
         if PlayerType.NEURAL_NET in self._player_types:
             self._neural_net_engine: cm.AIMoveProvider = ...
         
-        self.game_turn()
+        self._frames_before_next_turn = 0  # Set to `0` to advance game turn next frame.
     
     @property
     def selected_square(self) -> cm.Position | None: 
@@ -78,6 +79,20 @@ class scene_ChessGame(Scene, ChessModel):
         return self._selected_moves
     
     # -- Game loop -- #
+
+    @override
+    def update(self) -> None:
+        """"""
+        super().update()
+
+        if self._frames_before_next_turn > 0:
+            self._frames_before_next_turn -= 1
+        elif self._frames_before_next_turn == 0:
+            self._frames_before_next_turn = -1
+            self.game_turn()
+    
+    def advance_turn(self) -> None:
+        self._frames_before_next_turn = 2
 
     def get_player_type(self, player: cm.Player) -> PlayerType:
         """"""
@@ -94,7 +109,6 @@ class scene_ChessGame(Scene, ChessModel):
             case PlayerType.HUMAN:
                 # Allow the player to make a move
                 self._board.can_accept_events = True
-                pass
             case PlayerType.MINIMAX:
                 # Prevent human from moving
                 self._board.can_accept_events = False
@@ -103,32 +117,23 @@ class scene_ChessGame(Scene, ChessModel):
                     self._chess_game.extended_game_data()
                 )
                 self.make_move(move_to_make)
-
-                pass
             case PlayerType.NEURAL_NET:
                 # Prevent human from moving
                 self._board.can_accept_events = False
-                pass
 
     # -- Game model methods -- #
-    
-    # def board_view(self) -> cm.BoardView:
-    #     return self._chess_game.board_view()
 
     def make_move(self, move: cm.Move) -> None:
         """"""
         success = self._chess_game.make_move(move)
 
         if success:
-            print("made move")
-            print(move)
-
             # Update data after move
             self._selected_square = None
             self._selected_moves = []
 
             # Next turn
-            self.game_turn()
+            self.advance_turn()
         else:
             print("INVALID MOVE")
             exit()
@@ -199,11 +204,25 @@ class scene_ChessGame(Scene, ChessModel):
             self._promotion.promotion = to_piece
             self.make_move(self._promotion)
 
-    def _create_quit_button(self, window_rect: pygame.Rect) -> Button:
+    def _create_side_panel(self, window_rect: pygame.Rect) -> NinepatchPanel:
+        """"""
+        panel_rect = pygame.Rect(
+            window_rect.width - SIDE_PANEL_WIDTH, 0,
+            SIDE_PANEL_WIDTH,
+            window_rect.height
+        )
+
+        panel = NinepatchPanel(panel_rect, img.IMAGES.panel(img.PanelTheme.LEFT))
+
+        panel.add_child(self._create_quit_button(panel.area))
+
+        return panel
+
+    def _create_quit_button(self, panel_area: pygame.Rect) -> Button:
         """Creates a quit button on the right side of the screen."""
         button_rect = pygame.Rect(
-            self.board_x + BOARD_SIZE + 50,  # 50px de marge après l'échiquier
-            window_rect.centery - 40,   # Centré verticalement
+            panel_area.centerx - 100,  # 50px de marge après l'échiquier
+            panel_area.centery - 50,   # Centré verticalement
             200, 80                     # Taille du bouton
         )
 
