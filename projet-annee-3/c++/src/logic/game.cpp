@@ -218,7 +218,7 @@ UnmakeMove Game::makeMoveOnBoard(const Move move) {
     return unmake_move;
 }
 
-void Game::unmakeMoveOnBoard(const UnmakeMove& unmake_move) {
+void Game::unmakeMoveOnBoard(const UnmakeMove unmake_move) {
     board.unmovePiece(unmake_move.move, unmake_move.captured);
 
     castling_rights = unmake_move.castling_rights;
@@ -269,16 +269,20 @@ std::optional<Move> Game::undoLastMove() {
     if (unmake_move_list.empty()) {
         return std::nullopt;
     } else {
-        const UnmakeMove& unmake_move = unmake_move_list.back();
+        const UnmakeMove unmake_move = unmake_move_list.back();
         unmake_move_list.pop_back();
 
-        unmakeMoveOnBoard(unmake_move);
-
-        // Set update flags to update data.
-        update_flags = ALL;
+        undo(unmake_move);
 
         return unmake_move.move;
     }
+}
+
+void Game::undo(const UnmakeMove unmake_move) {
+    unmakeMoveOnBoard(unmake_move);
+
+    // Set update flags to update data.
+    update_flags = ALL;
 }
 
 /* -- String representation -- */

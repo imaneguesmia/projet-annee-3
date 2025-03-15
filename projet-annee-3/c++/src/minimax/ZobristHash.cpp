@@ -32,6 +32,7 @@ ZobristHash::ZobristHash()
         random64(), random64(), random64(), random64(), random64(), random64(), random64(), random64()
     })
 {
+    std::cout << "ZOBRIST constructor\n"; 
     generateKeys();
 }
 

@@ -125,7 +125,9 @@ private:
         , en_passant(initial_state.en_passant)
         , halfmoves(initial_state.halfmoves)
         , fullmoves(initial_state.fullmoves)
-    {};
+    {
+        std::cout << "GAME constructor\n";
+    };
 
     // Sets the current valid en passant target.
     void setEnPassantPosition(const Position& position) { en_passant = position; };
@@ -147,6 +149,12 @@ private:
      * @return The `UnmakeMove` object associated with this action.
      */
     UnmakeMove makeMoveOnBoard(const Move move);
+    /**
+     * @brief Unmakes a move.
+     * 
+     * @param unmake_move   The associated `UnmakeMove` object.
+     */
+    void unmakeMoveOnBoard(const UnmakeMove unmake_move);
 
 public:
     Game(const std::shared_ptr<const AttackTables> at, const std::string& fen) : Game(
@@ -217,19 +225,19 @@ public:
      * @return `true` if the move is legal and was successfully made. 
      */
     bool move(const Move move) override;
-
-    /**
-     * @brief Gets the `UnmakeMove` object of the most recent move.
-     */
-    const UnmakeMove& getMostRecentUnmakeMove() const override {
-        return unmake_move_list.back();
-    }
     /**
      * @brief Unmakes a move.
      * 
      * @param unmake_move   The associated `UnmakeMove` object.
      */
-    void unmakeMoveOnBoard(const UnmakeMove& unmake_move) override;
+    void undo(const UnmakeMove unmake_move) override;
+
+    /**
+     * @brief Gets the `UnmakeMove` object of the most recent move.
+     */
+    const UnmakeMove getMostRecentUnmakeMove() const override {
+        return unmake_move_list.back();
+    }
 
     /**
      * @brief Undoes the last made move.
@@ -243,7 +251,7 @@ public:
     // Translates the current board state into FEN notation.
     const std::string fen() const;
 
-    void printBoard() const { std::cout << board << '\n'; };
+    void printBoard() const override { std::cout << board << '\n'; };
 };
 
 /* ---- END DECLARE ---- */

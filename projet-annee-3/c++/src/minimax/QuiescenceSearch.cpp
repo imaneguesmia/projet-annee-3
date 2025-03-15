@@ -39,16 +39,10 @@ int quiescenceSearch(ExtendedGameData& game,
         moveOrdering.pickNextMove(captures, moveIndex);
         Move capture = captures[moveIndex];
 
-        std::cout << "quiescence 1\n";
-
         game.move(capture);
-        std::cout << "made move = " << capture << "\n";
-        const UnmakeMove& unmake_move = game.getMostRecentUnmakeMove();
-        std::cout << "unmake move = "<<unmake_move<<"\n";
+        const UnmakeMove unmake_move = game.getMostRecentUnmakeMove();
         int score = -quiescenceSearch(game, -beta, -alpha, ply + 1, evaluator, moveOrdering);
-        std::cout << "quiescence 4\n";
-        game.unmakeMoveOnBoard(unmake_move);
-        std::cout << "quiescence 5\n";
+        game.undo(unmake_move);
 
         if (score > standPat) {
             standPat = score;

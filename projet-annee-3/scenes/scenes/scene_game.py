@@ -52,11 +52,12 @@ class scene_ChessGame(Scene, ChessModel):
         self._player_types = [white_player, black_player]
 
         if PlayerType.MINIMAX in self._player_types:
-            self._minimax_engine: cm.AIMoveProvider = self._chess_game.create_minimax_player(1)
+            self._minimax_engine: cm.AIMoveProvider = self._chess_game.create_minimax_player(10)
         if PlayerType.NEURAL_NET in self._player_types:
             self._neural_net_engine: cm.AIMoveProvider = ...
         
         self.game_turn()
+        # print(self._chess_game.game_data().get_current_legals(False))
     
     @property
     def selected_square(self) -> cm.Position | None: 

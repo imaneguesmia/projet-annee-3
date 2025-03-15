@@ -3,6 +3,8 @@
 #include "MoveOrdering.hpp"
 #include "QuiescenceSearch.hpp"
 
+#include "../logic/game.hpp"
+
 #include <algorithm> // std::max
 
 Beluga::Beluga(int depth, std::shared_ptr<const AttackTables> at)
@@ -25,7 +27,6 @@ Move Beluga::getMove(ExtendedGameData& board)
 
     for (int currentDepth = 1; currentDepth <= searchDepth; ++currentDepth)
     {
-        std::cout << currentDepth << '\n';
         // Aspiration window around bestScore (except for first iteration)
         int alpha = (currentDepth == 1) ? alphaGlobal : bestScore - ASP_WIN;
         int beta  = (currentDepth == 1) ? betaGlobal  : bestScore + ASP_WIN;
@@ -59,8 +60,6 @@ int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int
 
     const std::uint64_t zKey = board.getHash();
 
-    std::cout << zKey << '\n';
-
     // Check for repetition or 50-move rule
     if (ply > 0) {
         if (board.isRepetition(1) || board.isHalfMoveDraw()) {
@@ -68,11 +67,9 @@ int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int
         }
     }
 
-    std::cout << "negamax 1\n";
-
     // Transposition table lookup
     auto ttEntryOpt = transpositionTable.lookup(zKey);
-    std::cout << "negamax 2\n";
+    
     if (ttEntryOpt.has_value()) {
         const TTEntry& entry = *ttEntryOpt;
         if (entry.depth >= depth) {
@@ -90,7 +87,6 @@ int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int
             }
         }
     }
-    std::cout << "negamax 3\n";
 
     // Check if game is over (checkmate, stalemate, etc.)
     // auto [gameResultReason, gameResult] = board.isGameOver();
@@ -99,56 +95,44 @@ int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int
     // }
     GameState current_state = board.getGameState();
     if (current_state != GameState::INGAME) {
-        std::cout << "negamax : terminal state found";
+        
         return evaluateTerminal(current_state, ply);
     }
-    std::cout << "negamax 4\n";
 
     // Quiescence search if depth is zero or negative
     if (depth <= 0) {
         return quiescenceSearch(board, alpha, beta, ply, evaluator, moveOrdering);
     }
-    std::cout << "negamax 5\n";
 
     // Generate all legal moves
     std::vector<Move> moves = board.getCurrentLegals();
-    std::cout << "1\n";
 
     if (moves.empty()) {
         return evaluator.evaluate(board.getBoard(), board.getCurrentPlayer());
     }
-    std::cout << "2\n";
 
     // Retrieve a potential best move from transposition table
     Move ttBestMove = Move::NO_MOVE;
     if (ttEntryOpt.has_value()) {
         ttBestMove = ttEntryOpt->bestMove;
     }
-    std::cout << "3\n";
 
     // Assign a score to moves based on heuristics (MVV-LVA, killer moves, history..)
     moveOrdering.scoreMoves(moves, board.getBoard(), ply, ttBestMove, board.getCurrentPlayer());
-    std::cout << "4\n";
 
     int bestValue = -INF;
     int alphaOrig = alpha;
     Move bestMove = Move::NO_MOVE;
 
-    std::cout << "5\n";
 
     for (int moveIndex = 0; moveIndex < moves.size(); moveIndex++) {
         moveOrdering.pickNextMove(moves, moveIndex);  // Bring the best move to index 'moveIndex'
         Move move = moves[moveIndex];
-        std::cout << "6\n";
 
         board.move(move);
-        std::cout << "6.1\n";
-        const UnmakeMove& most_recent_unmake_move = board.getMostRecentUnmakeMove();
-        std::cout << "6.2\n";
+        const UnmakeMove most_recent_unmake_move = board.getMostRecentUnmakeMove();
         int val = -negamax(board, depth - 1, -beta, -alpha, ply + 1);
-        std::cout << "6.3\n";
-        board.unmakeMoveOnBoard(most_recent_unmake_move);
-        std::cout << "7\n";
+        board.undo(most_recent_unmake_move);
 
         if (val > bestValue) {
             bestValue = val;
@@ -164,7 +148,6 @@ int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int
             }
             break;
         }
-        std::cout << "8\n";
     }
 
     // Store result in transposition table

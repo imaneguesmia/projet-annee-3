@@ -43,9 +43,9 @@ public:
     virtual ~ExtendedGameData() {};
 
     virtual bool move(Move move) = 0;
-    virtual const UnmakeMove& getMostRecentUnmakeMove() const = 0;
+    virtual const UnmakeMove getMostRecentUnmakeMove() const = 0;
     virtual std::optional<Move> undoLastMove() = 0;
-    virtual void unmakeMoveOnBoard(const UnmakeMove& unmake_move) = 0;
+    virtual void undo(const UnmakeMove unmake_move) = 0;
 
     virtual const Board& getBoard() const = 0;
 
@@ -54,4 +54,6 @@ public:
 
     virtual bool isRepetition(int count) = 0;
     virtual bool isHalfMoveDraw() const = 0;
+
+    virtual void printBoard() const = 0;
 };
