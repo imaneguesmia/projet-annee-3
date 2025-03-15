@@ -10,7 +10,7 @@ MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80
 BUTTON_SPACING = 100  # Espace entre les boutons
 
-bg_image_path = "./projet-annee-3/images/background.jpeg"
+bg_image_path = "./projet-annee-3/images/beach.jpg"
 button_sprite_path = "./projet-annee-3/images/button_sprite.png"
 
 class scene_MainMenu(Scene):
@@ -28,13 +28,12 @@ class scene_MainMenu(Scene):
         self.quit_button = self._create_quit_button(window_rect)
 
         # Title
-        self.title = Text("AQUACHESS", (window_rect.centerx, 150), color=BLACK)
-        self.title.font = pygame.font.Font(None, 80)
+        self.title_image = pygame.image.load("./projet-annee-3/images/main_title.png").convert_alpha()
+
 
         self.elements.extend([
             self.play_button,
             self.quit_button,
-            self.title
         ])
 
     def _create_play_button(self, window_rect: pygame.Rect) -> Button:
@@ -82,6 +81,9 @@ class scene_MainMenu(Scene):
     def draw(self, surface):
         """Draws the menu, including buttons and sprites."""
         super().draw(surface)  # Draw the standard scene elements
+
+        title_rect = self.title_image.get_rect(center=(self.window_rect.centerx, 250))
+        surface.blit(self.title_image, title_rect)
         
         # Draw the button sprite on each button
         for button in [self.play_button, self.quit_button]:

@@ -45,7 +45,7 @@ class SceneManager:
 
         while running:
 
-            self._current_scene.update()  # 🔄 Passe le temps écoulé à la scène
+            self._current_scene.update()  
             self._current_scene.draw(self._window)
 
             pygame.display.flip()

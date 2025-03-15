@@ -8,17 +8,22 @@ import pygame
 
 MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80
+BUTTON_SPACING_X = 150  # horizontal spacing between buttons
+BUTTON_SPACING_Y = 100  # vertical spacing between rows
 
 
-bg_image_path = "./projet-annee-3/images/background.jpeg"
+bg_image_path = "./projet-annee-3/images/beach.jpg"
 
 class scene_DifficultyMenu(Scene):
-    def _create_difficulty_button(self, window_rect: pygame.Rect, label: str, y_offset: int, scene_id: SceneId) -> Button:
+    def _create_difficulty_button(self, window_rect: pygame.Rect, label: str, x_offset: int, y_offset: int, scene_id: SceneId) -> Button:
         """Creates and returns a difficulty button."""
+
+        # Utilise l'origine calculée plus haut
         button_rect = pygame.Rect(
-            window_rect.centerx - MENU_BUTTON_WIDTH / 2,
-            window_rect.centery - MENU_BUTTON_HEIGHT / 2 + y_offset,
-            MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT
+            self.group_origin_x + x_offset,
+            self.group_origin_y + y_offset,
+            MENU_BUTTON_WIDTH,
+            MENU_BUTTON_HEIGHT
         )
 
         difficulty_button = Button(button_rect, label)
@@ -28,32 +33,13 @@ class scene_DifficultyMenu(Scene):
         difficulty_button.text_font = pygame.font.Font(None, 50)
 
         def oc(point: tuple[int, int]) -> bool:
-            self.request_scene_change(SceneId.GAME, {})
+            self.request_scene_change(scene_id, {})
             return True
 
         difficulty_button.on_click = oc
         return difficulty_button
-    
-    def _create_custom_button(self, window_rect: pygame.Rect) -> Button:
-        """Creates and returns the custom AI settings button."""
-        button_rect = pygame.Rect(
-            window_rect.centerx - MENU_BUTTON_WIDTH / 2,
-            window_rect.centery - MENU_BUTTON_HEIGHT / 2 + 200,
-            MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT
-        )
 
-        custom_button = Button(button_rect, "Custom")
-        custom_button.color = SAND_COLOR
-        custom_button.hover_color = SAND_HOVER
-        custom_button.text_color = BLACK
-        custom_button.text_font = pygame.font.Font(None, 50)
 
-        def oc(point: tuple[int, int]) -> bool:
-            self.request_scene_change(SceneId.CUSTOM, {}) 
-            return True
-
-        custom_button.on_click = oc
-        return custom_button
 
 
     def _create_back_button(self, window_rect: pygame.Rect) -> Button:
@@ -80,16 +66,48 @@ class scene_DifficultyMenu(Scene):
     def __init__(self, window_rect: pygame.Rect):
         super().__init__(window_rect, bg_image_path)
 
+        # Load the title image
+        self.title_image = pygame.image.load("./projet-annee-3/images/select_puzzle.png").convert_alpha()
+
+
         self.bg_color = AQUA_BLUE
 
-        title = Text("Select Difficulty", (window_rect.centerx, 150), color=BLACK)
-        title.font = pygame.font.Font(None, 70)
+        # 👇 Nouveau centrage du groupe sur toute la fenêtre
+        total_group_width = MENU_BUTTON_WIDTH * 2 + BUTTON_SPACING_X
+        total_group_height = MENU_BUTTON_HEIGHT * 2 + BUTTON_SPACING_Y
+
+        self.group_origin_x = (window_rect.width - total_group_width) // 2
+        self.group_origin_y = (window_rect.height - total_group_height) // 2
 
         self.elements.extend([
-            title,
-            self._create_difficulty_button(window_rect, "Easy", -100, SceneId.GAME),
-            self._create_difficulty_button(window_rect, "Medium", 0, SceneId.GAME),
-            self._create_difficulty_button(window_rect, "Hard", 100, SceneId.GAME),
-            self._create_custom_button(window_rect),
+
+            # Top-left button (Puzzle 1)
+            self._create_difficulty_button(window_rect, "Puzzle 1", 0, 0, SceneId.GAME),
+
+            # Top-right button (Puzzle 2)
+            self._create_difficulty_button(window_rect, "Puzzle 2",
+                MENU_BUTTON_WIDTH + BUTTON_SPACING_X, 0, SceneId.GAME),
+
+            # Bottom-left button (Puzzle 3)
+            self._create_difficulty_button(window_rect, "Puzzle 3",
+                0, MENU_BUTTON_HEIGHT + BUTTON_SPACING_Y, SceneId.GAME),
+
+            # Bottom-right button (Puzzle 4)
+            self._create_difficulty_button(window_rect, "Puzzle 4",
+                MENU_BUTTON_WIDTH + BUTTON_SPACING_X,
+                MENU_BUTTON_HEIGHT + BUTTON_SPACING_Y,
+                SceneId.GAME
+            ),
+
             self._create_back_button(window_rect)
         ])
+        
+    def draw(self, surface):
+        # Call base draw for background + UI elements
+        super().draw(surface)
+
+        # Draw title image at the top center
+        title_rect = self.title_image.get_rect(center=(self.window_rect.centerx, 200))
+        surface.blit(self.title_image, title_rect)
+
+

@@ -22,7 +22,15 @@ class Scene(ABC):
 
         self._scene_change: SceneChange | None = None
 
-        self._bg_image = pygame.image.load(bg_image_path).convert() if bg_image_path else None
+        self._bg_image = None
+        if bg_image_path:
+            raw_bg_image = pygame.image.load(bg_image_path).convert()
+
+            # Redimensionner l'image à la taille réelle de la fenêtre
+            self._bg_image = pygame.transform.scale(raw_bg_image, window_rect.size)
+
+            print(f"[Scene] Background loaded and scaled to {window_rect.size}")  # Debug info
+
 
     
     @final
