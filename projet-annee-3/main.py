@@ -1,7 +1,7 @@
-import cpp_chess as cm
-import pygame
 from scenes import SceneManager, SceneId
 import image_loader as img
+
+import pygame
 
 # ------------------------------
 # Initialisation de Pygame
@@ -22,10 +22,6 @@ BOARD_SIZE = 800  # Taille fixe pour la board, même en fullscreen
 # ------------------------------
 # Initialisation du jeu
 # ------------------------------
-# chess_game = cm.Game()
-
-# ✅ Création de l'échiquier
-# chess_board = ChessBoard(rect, BOARD_SIZE, chess_game)
 
 # ✅ Chargement des images (taille d'une case en pixels)
 img.IMAGES = img.ImageLoader(BOARD_SIZE // 8)

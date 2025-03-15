@@ -1,6 +1,6 @@
 from ui import UIElement
 
-from .chess_model import ChessModel
+from .chess_board_callback_interface import ChessBoardCallbackInterface
 
 import image_loader as img
 
@@ -13,18 +13,20 @@ from typing import override
 class ChessBoard(UIElement):
     """UI element to display the chessboard. Essentially the View and Controller in an MVC model."""
 
-    def __init__(self, rect: pygame.Rect, model: ChessModel):
+    def __init__(self, rect: pygame.Rect, callbacks: ChessBoardCallbackInterface):
         assert rect.width == rect.height, "ChessBoard must be square"
 
         super().__init__(rect)
 
         self.square_size = rect.width // 8
 
-        self._model = model
+        self._callbacks = callbacks
 
         # Stocker la position du plateau pour corriger les clics souris
         self.board_x = rect.x
         self.board_y = rect.y
+
+        self.is_game_over = False  # If `True` handle click events differently
 
     
     @override
@@ -50,14 +52,14 @@ class ChessBoard(UIElement):
                 dest.blit(tile, coords)
 
                 # Draw moves
-                if self._model.selected_square is not None:
+                if self._callbacks.selected_square is not None:
                     # Draw selected square
-                    if self._model.selected_square == square:
+                    if self._callbacks.selected_square == square:
                         dest.blit(img.IMAGES.selected_sprite(tile_index), coords)
                     # Draw legal moves
                     else:
                         possible_move = next(
-                            (move for move in self._model.selected_moves if cm.Position(move.target) == square),
+                            (move for move in self._callbacks.selected_moves if cm.Position(move.target) == square),
                             None
                         )
 
@@ -65,7 +67,7 @@ class ChessBoard(UIElement):
                             dest.blit(img.IMAGES.attacked_sprite(tile_index, possible_move.capture), coords)
 
                 # Draw pieces
-                piece_on_square = self._model.piece_at(square)
+                piece_on_square = self._callbacks.piece_at(square)
 
                 if piece_on_square.fen() != ".":
                     piece_image = img.IMAGES.piece_sprite(piece_on_square)
@@ -93,10 +95,15 @@ class ChessBoard(UIElement):
     
     @override
     def on_click(self, point: tuple[int, int]) -> bool:
-        square = self.coordinates_to_square(*point)
+        if self.is_game_over:
+            self._callbacks.reshow_game_end_panel()
 
-        if square is not None:  # Vérifie que le clic est bien sur le board
-            self._model.select_square(square)
             return True
+        else:
+            square = self.coordinates_to_square(*point)
 
-        return False
+            if square is not None:  # Vérifie que le clic est bien sur le board
+                self._callbacks.select_square(square)
+                return True
+
+            return False

@@ -1,4 +1,4 @@
-from .chess_model import ChessModel
+from .chess_board_callback_interface import ChessBoardCallbackInterface
 
 import image_loader as img
 
@@ -11,16 +11,16 @@ import pygame
 
 from typing import override
 
-PROMOTION_PANEL_WIDTH = 400
-PROMOTION_PANEL_HEIGHT = 100
-PROMOTION_PANEL_PADDING = 8
+PANEL_WIDTH = 400
+PANEL_HEIGHT = 100
+PANEL_PADDING = 8
 
-PROMOTION_BUTTON_PADDING = 8
-PROMOTION_BUTTON_SIZE = PROMOTION_PANEL_WIDTH/4 - PROMOTION_BUTTON_PADDING*2
+BUTTON_PADDING = 8
+BUTTON_SIZE = PANEL_WIDTH/4 - BUTTON_PADDING*2
 
 class PromotionButton(Button):
-    def __init__(self, position: tuple[int, int], p_type: cm.PType, model: ChessModel):
-        button_rect = pygame.Rect(position, (PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE))
+    def __init__(self, position: tuple[int, int], p_type: cm.PType, model: ChessBoardCallbackInterface):
+        button_rect = pygame.Rect(position, (BUTTON_SIZE, BUTTON_SIZE))
         piece = cm.Piece(p_type, cm.Player.White)
 
         super().__init__(button_rect, "")
@@ -54,12 +54,12 @@ class PromotionButton(Button):
         # self._text.text = self._piece.fen()
 
 class PromotionPanel(NinepatchPanel):
-    def __init__(self, board_rect: pygame.Rect, model: ChessModel):
+    def __init__(self, board_rect: pygame.Rect, model: ChessBoardCallbackInterface):
         panel_rect = pygame.Rect(
-            board_rect.centerx - PROMOTION_PANEL_WIDTH/2 - PROMOTION_PANEL_PADDING,
-            board_rect.centery - PROMOTION_PANEL_HEIGHT/2 - PROMOTION_PANEL_PADDING, 
-            PROMOTION_PANEL_WIDTH + PROMOTION_PANEL_PADDING*2,
-            PROMOTION_PANEL_HEIGHT + PROMOTION_PANEL_PADDING*2
+            board_rect.centerx - PANEL_WIDTH/2 - PANEL_PADDING,
+            board_rect.centery - PANEL_HEIGHT/2 - PANEL_PADDING, 
+            PANEL_WIDTH + PANEL_PADDING*2,
+            PANEL_HEIGHT + PANEL_PADDING*2
         )
 
         super().__init__(panel_rect, img.IMAGES.panel(img.PanelTheme.TEST), 31)
@@ -68,8 +68,8 @@ class PromotionPanel(NinepatchPanel):
 
         for i, p_type in enumerate([cm.PType.Knight, cm.PType.Bishop, cm.PType.Rook, cm.PType.Queen]):
             position = (
-                PROMOTION_PANEL_PADDING + PROMOTION_BUTTON_PADDING + (PROMOTION_BUTTON_SIZE+PROMOTION_BUTTON_PADDING*2)*i,
-                PROMOTION_PANEL_PADDING + PROMOTION_BUTTON_PADDING
+                PANEL_PADDING + BUTTON_PADDING + (BUTTON_SIZE+BUTTON_PADDING*2)*i,
+                PANEL_PADDING + BUTTON_PADDING
             )
             button = PromotionButton(position, p_type, model)
 

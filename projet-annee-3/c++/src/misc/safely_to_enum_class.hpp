@@ -5,8 +5,6 @@
 #include <type_traits>
 #include <format>
 
-#include <stacktrace>
-
 /**
  * @brief Safely converts an integral value to an enum class value.
  * The given enum class type must have the identifiers `EnumType::FIRST` and `EnumType::LAST` for bounding.

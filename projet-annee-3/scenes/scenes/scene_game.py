@@ -3,9 +3,10 @@ from ..scene import Scene
 from ..data_transfer.player_type import PlayerType
 
 from .chess_board import ChessBoard
-from .chess_model import ChessModel
+from .chess_board_callback_interface import ChessBoardCallbackInterface
 
 from .promotion_panel import PromotionPanel
+from .game_end_panel import GameEndPanel
 
 import cpp_chess as cm
 
@@ -19,10 +20,18 @@ import pygame
 
 from typing import override
 
+# ---- UI constants ---- #
+
 BOARD_SIZE = 800
 SIDE_PANEL_WIDTH = 400
 
-class scene_ChessGame(Scene, ChessModel):
+BUTTON_WIDTH = 200
+BUTTON_HEIGHT = 80
+BUTTON_MARGIN = 20
+
+# ---- DEFINE class scene_ChessGame ---- #
+
+class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
     def __init__(self, 
         window_rect: pygame.Rect, 
@@ -33,7 +42,6 @@ class scene_ChessGame(Scene, ChessModel):
         super().__init__(window_rect)
 
         self._chess_game = cm.GameManager() if initial_state is None else cm.GameManager(initial_state)
-        # self._move_prompter: cm.MovePrompter = None
         self._game_data: cm.GameData = None
 
         self._selected_square: cm.Position | None = None
@@ -54,8 +62,11 @@ class scene_ChessGame(Scene, ChessModel):
         self._promotion_panel.is_visible = False
         self._promotion_panel.can_accept_events = False
 
+        self._game_end_panel = self._create_game_end_panel()
+
         self.elements.append(self._board)
         self.elements.append(self._promotion_panel)
+        self.elements.append(self._game_end_panel)
 
         self.elements.append(self._create_side_panel(window_rect))
 
@@ -85,6 +96,7 @@ class scene_ChessGame(Scene, ChessModel):
         """"""
         super().update()
 
+        # Handle countdown to next turn.
         if self._frames_before_next_turn > 0:
             self._frames_before_next_turn -= 1
         elif self._frames_before_next_turn == 0:
@@ -92,20 +104,23 @@ class scene_ChessGame(Scene, ChessModel):
             self.game_turn()
     
     def advance_turn(self) -> None:
+        """Waits two frames, then advances to the next turn.
+        
+        This leaves time for the board drawing to catch up.
+        """
         self._frames_before_next_turn = 2
 
     def get_player_type(self, player: cm.Player) -> PlayerType:
-        """"""
+        """Gets the type of the given player (human, minimax AI or neural network AI)"""
         return self._player_types[0] if player == cm.Player.White else self._player_types[1]
+    
+    def player_move(self, player_type: PlayerType) -> None:
+        """Does a move depending on the player type.
 
-    def game_turn(self) -> None:
-        """"""
-        self._game_data = self._chess_game.game_data()
-
-        current_player = self._chess_game.current_player
-        current_player_type = self.get_player_type(current_player)
-
-        match current_player_type:
+        Args:
+            player_type (PlayerType): The type of player to move.
+        """
+        match player_type:
             case PlayerType.HUMAN:
                 # Allow the player to make a move
                 self._board.can_accept_events = True
@@ -116,10 +131,35 @@ class scene_ChessGame(Scene, ChessModel):
                 move_to_make = self._minimax_engine.get_move(
                     self._chess_game.extended_game_data()
                 )
+
                 self.make_move(move_to_make)
             case PlayerType.NEURAL_NET:
                 # Prevent human from moving
                 self._board.can_accept_events = False
+    
+    def end_game(self, game_state: cm.GameState) -> None:
+        """Display for the end of the game."""
+        self._board.can_accept_events = False
+        self._board.is_game_over = True
+
+        self._game_end_panel.display_end_state(game_state)
+
+    def game_turn(self) -> None:
+        """Does a game turn, checking if the game is finished then letting the current
+        player make a move if it isn't.
+        """
+        self._game_data = self._chess_game.game_data()
+        current_player = self._chess_game.current_player
+
+        game_state = self._game_data.game_state
+
+        match game_state:
+            case cm.GameState.INGAME:
+                current_player_type = self.get_player_type(current_player)
+
+                self.player_move(current_player_type)
+            case _:
+                self.end_game(game_state)
 
     # -- Game model methods -- #
 
@@ -203,6 +243,16 @@ class scene_ChessGame(Scene, ChessModel):
 
             self._promotion.promotion = to_piece
             self.make_move(self._promotion)
+    
+    # -- UI elements -- #
+
+    def _quit_game_callback(self):
+        """Returns a callback that exits to main menu."""
+        def quit(_) -> bool:
+            self.request_scene_change(SceneId.MAINMENU, {})
+            return True
+
+        return quit
 
     def _create_side_panel(self, window_rect: pygame.Rect) -> NinepatchPanel:
         """"""
@@ -221,9 +271,9 @@ class scene_ChessGame(Scene, ChessModel):
     def _create_quit_button(self, panel_area: pygame.Rect) -> Button:
         """Creates a quit button on the right side of the screen."""
         button_rect = pygame.Rect(
-            panel_area.centerx - 100,  # 50px de marge après l'échiquier
-            panel_area.centery - 50,   # Centré verticalement
-            200, 80                     # Taille du bouton
+            panel_area.centerx - BUTTON_WIDTH//2,
+            panel_area.height - BUTTON_MARGIN - BUTTON_HEIGHT,
+            BUTTON_WIDTH, BUTTON_HEIGHT
         )
 
         quit_button = Button(button_rect, "Quit")
@@ -232,12 +282,37 @@ class scene_ChessGame(Scene, ChessModel):
         quit_button.text_color = BLACK
         quit_button.text_font = pygame.font.Font(None, 50)
 
-        def oc(point: tuple[int, int]) -> bool:
-            self.request_scene_change(SceneId.MAINMENU, {})
+        quit_button.on_click = self._quit_game_callback()
+
+        return quit_button
+    
+    def _create_game_end_panel(self) -> GameEndPanel:
+        """Created the game end panel."""
+        panel = GameEndPanel(self._board.absolute_rect)
+
+        def view_board(_) -> bool:
+            self.hide_game_end_panel()
             return True
 
-        quit_button.on_click = oc
-        return quit_button
+        panel.set_on_quit_clicked(self._quit_game_callback())
+        panel.set_on_view_board_clicked(view_board)
 
+        return panel
+    
+    def hide_game_end_panel(self) -> None:
+        """Hides the game end panel for board viewing."""
+        self._game_end_panel.is_visible = False
+        self._game_end_panel.can_accept_events = False
 
+        self._board.can_accept_events = True
+    
+    @override
+    def reshow_game_end_panel(self) -> None:
+        """Reshows the game end panel after viewing board at the end of the game."""
+        self._game_end_panel.is_visible = True
+        self._game_end_panel.can_accept_events = True
+
+        self._board.can_accept_events = False
+
+# ---- END DEFINE ---- #
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.31)
+cmake_minimum_required(VERSION 3.20...3.31)
 
 project(
     ProjetAnnee3
@@ -85,11 +85,12 @@ set(LIBS "logic misc view minimax game_management")
 # ---- Create Python bindings ---- #
 
 # Find Python and nanobind
-set(Python_FIND_VIRTUALENV FIRST)
+set(Python_FIND_VIRTUALENV ONLY)
 find_package(Python 3.13 REQUIRED
     COMPONENTS          Interpreter Development.Module
     OPTIONAL_COMPONENTS Development.SABIModule
 )
+message(STATUS ${Python_EXECUTABLE})
 execute_process(
     COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
     OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE NB_DIR)
