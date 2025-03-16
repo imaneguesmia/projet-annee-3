@@ -305,3 +305,106 @@ python main.py \
 - **nnue-jsontobin** : <https://github.com/cosmobobak/nnue-jsontobin>
 
 ---
+
+
+#include "chess/QuiescenceSearchNNUE.hpp"
+#include "chess.hpp"
+#include "chess/MoveOrdering.hpp"
+
+namespace chess {
+
+    int quiescenceSearchNNUE(Board& board,
+                            int alpha,
+                            int beta,
+                            int ply,
+                            NNUEEvaluator& evaluator,
+                            MoveOrdering& moveOrdering)
+    {
+        // Stand-pat evaluation using NNUE
+        int standPat = evaluator.evaluate(board);
+
+        if (standPat >= beta) {
+            return beta; // Beta cutoff (fail-hard)
+        }
+        if (standPat > alpha) {
+            alpha = standPat; // Update alpha if the static eval is better
+        }
+
+        // Generate only capture moves
+        Movelist captures;
+        movegen::legalmoves<movegen::MoveGenType::CAPTURE>(captures, board);
+
+        // Assign score to moves using heuristics (MVV-LVA, etc.)
+        moveOrdering.scoreMoves(captures, board, ply, Move::NO_MOVE);
+
+        for (int moveIndex = 0; moveIndex < captures.size(); moveIndex++) {
+            moveOrdering.pickNextMove(captures, moveIndex);
+            Move capture = captures[moveIndex];
+
+            // Update NNUE state before making the move
+            evaluator.updateForMove(board, capture);
+            board.makeMove(capture);
+            // evaluator.resetNetwork(board);
+
+            int score = -quiescenceSearchNNUE(board, -beta, -alpha, ply + 1, evaluator, moveOrdering);
+
+            board.unmakeMove(capture);
+            // Restore the previous accumulator state 
+            evaluator.restoreAccumulator();
+            // evaluator.resetNetwork(board);
+
+            if (score > standPat) {
+                standPat = score;
+                if (score > alpha) {
+                    alpha = score;
+                }
+                if (alpha >= beta) {
+                    break; // Beta cutoff (fail-hard pruning)
+                }
+            }
+        }
+
+        return alpha;
+    }
+
+    int QuiescenceSearchNNUE::search(Board& board, int alpha, int beta, int depth) {
+        int standPat = evaluator.evaluate(board);
+        
+        if (standPat >= beta) {
+            return beta;
+        }
+
+        if (alpha < standPat) {
+            alpha = standPat;
+        }
+
+        if (depth <= 0) {
+            return alpha;
+        }
+
+        Movelist moves;
+        movegen::legalmoves<movegen::MoveGenType::CAPTURE>(moves, board);
+
+        for (const auto& capture : moves) {
+            // Update NNUE state before making the move
+            evaluator.updateForMove(board, capture);
+            board.makeMove(capture);
+            
+            int score = -search(board, -beta, -alpha, depth - 1);
+            
+            board.unmakeMove(capture);
+            // Restore the previous accumulator state instead of resetting
+            evaluator.restoreAccumulator();
+
+            if (score >= beta) {
+                return beta;
+            }
+            if (score > alpha) {
+                alpha = score;
+            }
+        }
+
+        return alpha;
+    }
+
+} // namespace chess 

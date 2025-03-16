@@ -13,6 +13,7 @@ namespace chess {
     void GameManager::playGame() {
         while (board.isGameOver().first == GameResultReason::NONE) {
             board.displayBoard();
+            std::cout << "Board FEN: " << board.getFen() << std::endl;
             Player* currentPlayer = (board.sideToMove() == Color::WHITE) ? white : black;
 
             // Measure move selection time

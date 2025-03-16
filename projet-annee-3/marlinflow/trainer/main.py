@@ -178,12 +178,12 @@ def main():
         "save_epochs": args.save_epochs,
         "lr_drop": args.lr_drop,
         "device": str(DEVICE),
-        "architecture": "NnHalfKP(128)",
+        "architecture": "NnBoard768(128)",
     }
     train_log.set_training_params(train_params)
 
     print("Création du modèle...")
-    model = NnHalfKP(128).to(DEVICE)
+    model = NnBoard768(128).to(DEVICE)
     start_epoch = 0
 
     # Charger un checkpoint existant si demandé

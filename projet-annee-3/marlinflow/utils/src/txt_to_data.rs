@@ -29,33 +29,41 @@ pub fn run(options: Options) -> Result<()> {
     for line in input.lines() {
         line_count += 1;
         let line = line?;
-        println!("Traitement de la ligne {} : {}", line_count, line);
+        
+        // Afficher le progrès uniquement toutes les 100 000 lignes
+        if line_count % 100_000 == 0 {
+            println!("Traitement de la ligne {} : {}", line_count, line);
+        }
         
         let result = (|| {
             let (board, annotation) = match line.split_once(" | ") {
                 Some(parts) => parts,
                 None => {
-                    println!("  Erreur: Format de ligne invalide");
+                    if line_count % 100_000 == 0 {
+                        println!("  Erreur: Format de ligne invalide");
+                    }
                     return None;
                 }
             };
-            println!("  Board: {}", board);
             
             let (cp, wdl) = match annotation.split_once(" | ") {
                 Some(parts) => parts,
                 None => {
-                    println!("  Erreur: Format d'annotation invalide");
+                    if line_count % 100_000 == 0 {
+                        println!("  Erreur: Format d'annotation invalide");
+                    }
                     return None;
                 }
             };
-            println!("  CP: {}, WDL: {}", cp, wdl);
 
             let complete_fen = format!("{} 0 1", board);
             
             let board: Board = match complete_fen.parse() {
                 Ok(b) => b,
                 Err(e) => {
-                    println!("  Erreur: FEN invalide - {:?}", e);
+                    if line_count % 100_000 == 0 {
+                        println!("  Erreur: FEN invalide - {:?}", e);
+                    }
                     return None;
                 }
             };
@@ -63,7 +71,9 @@ pub fn run(options: Options) -> Result<()> {
             let cp: f32 = match cp.parse() {
                 Ok(v) => v,
                 Err(e) => {
-                    println!("  Erreur: CP invalide - {}", e);
+                    if line_count % 100_000 == 0 {
+                        println!("  Erreur: CP invalide - {}", e);
+                    }
                     return None;
                 }
             };
@@ -71,7 +81,9 @@ pub fn run(options: Options) -> Result<()> {
             let wdl: f32 = match wdl.parse() {
                 Ok(v) => v,
                 Err(e) => {
-                    println!("  Erreur: WDL invalide - {}", e);
+                    if line_count % 100_000 == 0 {
+                        println!("  Erreur: WDL invalide - {}", e);
+                    }
                     return None;
                 }
             };
@@ -100,10 +112,13 @@ pub fn run(options: Options) -> Result<()> {
                 _ if wdl < 0.75 => 1,
                 _ => 2
             };
-            println!("  Valeurs converties - CP: {}, WDL: {}", cp, wdl);
+            
+            if line_count % 100_000 == 0 {
+                println!("  Valeurs converties - CP: {}, WDL: {}", cp, wdl);
+                println!("  Position packée avec succès");
+            }
 
             let packed = PackedBoard::pack(&board, cp, wdl, 0);
-            println!("  Position packée avec succès");
             Some(packed)
         })();
 
@@ -111,7 +126,7 @@ pub fn run(options: Options) -> Result<()> {
             match output.write_all(bytemuck::bytes_of(&packed)) {
                 Ok(_) => {
                     success_count += 1;
-                    if success_count % 1000 == 0 {
+                    if success_count % 1_000_000 == 0 {
                         println!("  {} positions écrites avec succès", success_count);
                     }
                 }
