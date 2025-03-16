@@ -4,7 +4,7 @@ import pygame
 
 from enum import Enum
 
-IMG_DIR = "projet-annee-3/images/"
+IMG_DIR = "resources/images/"
 
 class PanelTheme(Enum):
     TEST = 0

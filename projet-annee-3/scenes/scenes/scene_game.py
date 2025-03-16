@@ -11,9 +11,9 @@ from .side_bar import SideBar, PANEL_WIDTH as SIDEBAR_WIDTH
 
 import cpp_chess as cm
 
+from ui import Button
+from ui.font import FONT_PATH, FONT_SIZE_MEDIUM
 from ui.colors import *
-from ui import Button, NinepatchPanel
-import image_loader as img
 
 from ..scene_change import SceneId
 
@@ -289,7 +289,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         quit_button.color = SAND_COLOR
         quit_button.hover_color = SAND_HOVER
         quit_button.text_color = BLACK
-        quit_button.text_font = pygame.font.Font(None, 50)
+        quit_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         def quit(_) -> bool:
             self.request_scene_change(SceneId.MAINMENU, {})

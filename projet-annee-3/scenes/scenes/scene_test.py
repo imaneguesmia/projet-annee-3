@@ -35,7 +35,7 @@ class scene_Test(Scene):
 
         button.on_click = oc
 
-        # child = Button(pygame.Rect(0, 0, 100, 50), "child")
+        # child = Button(pygame.Rect(0, 0, 100, FONT_SIZE_SMALL), "child")
 
         # def occ(self):
         #     print("Child clicked")

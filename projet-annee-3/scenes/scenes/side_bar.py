@@ -2,14 +2,13 @@ import image_loader as img
 
 from ..data_transfer.player_type import PlayerType
 
-from ui import Button, NinepatchPanel, Image, Text, TextAlign
+from ui import Button, NinepatchPanel, Text, TextAlign
+from ui.font import FONT_PATH, FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM
 from ui.colors import *
 
 import cpp_chess as cm
 
 import pygame
-
-HEADER_FONT_SIZE = 40
 
 BUTTON_WIDTH = 200
 BUTTON_HEIGHT = 80
@@ -20,8 +19,10 @@ PANEL_PADDING = 20
 
 EVAL_PANEL_HEIGHT = 200
 EVAL_PANEL_V_PADDING = 5
-EVAL_PANEL_H_PADDING = 10
+EVAL_PANEL_H_PADDING = 12
 EVAL_PANEL_SPACING = 20
+
+EVAL_PANEL_TEXT_COLOR = "white"
 
 class SideBar(NinepatchPanel):
     def _create_button(self, button_rect: pygame.Rect, text: str) -> Button:
@@ -30,7 +31,7 @@ class SideBar(NinepatchPanel):
         button.color = SAND_COLOR
         button.hover_color = SAND_HOVER
         button.text_color = BLACK
-        button.text_font = pygame.font.Font(None, 50)
+        button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         return button
     
@@ -69,8 +70,6 @@ class SideBar(NinepatchPanel):
 
         panel = NinepatchPanel(rect, img.IMAGES.panel(img.PanelTheme.INSET), 31)
 
-        # header_text = "White" if player == cm.Player.White else "Black"
-        # player_type = self._w
         if player == cm.Player.White:
             header_text = "White"
             player_type = self._white_player
@@ -78,36 +77,33 @@ class SideBar(NinepatchPanel):
             header_text = "Black"
             player_type = self._black_player
 
-
-        panel.add_child(
-            Text(
-                f"{header_text} : {self._player_type_to_string(player_type)}", 
-                (panel.area.centerx, HEADER_FONT_SIZE//2 + EVAL_PANEL_V_PADDING),
-                fontsize=HEADER_FONT_SIZE,
-                color="blue"
-            )
+        header_text = Text(
+            f"{header_text} : {self._player_type_to_string(player_type)}", 
+            (panel.area.centerx, FONT_SIZE_MEDIUM//2 + EVAL_PANEL_V_PADDING),
+            fontsize=FONT_SIZE_MEDIUM,
+            color=EVAL_PANEL_TEXT_COLOR
         )
+        panel.add_child(header_text)
 
         eval_label = Text(
             "Evaluation = ",
-            (EVAL_PANEL_H_PADDING, HEADER_FONT_SIZE//2 + HEADER_FONT_SIZE + EVAL_PANEL_V_PADDING),
+            (EVAL_PANEL_H_PADDING, header_text.dest_rect.bottom + 12),
             align=TextAlign.LEFT,
-            fontsize=HEADER_FONT_SIZE,
-            color="blue"
+            fontsize=FONT_SIZE_SMALL,
+            color=EVAL_PANEL_TEXT_COLOR
         )
         eval_text = Text(
             "--",
-            (eval_label.dest_rect.right, HEADER_FONT_SIZE//2 + HEADER_FONT_SIZE + EVAL_PANEL_V_PADDING),
+            (eval_label.dest_rect.right, eval_label.dest_rect.centery),
             align=TextAlign.LEFT,
-            fontsize=HEADER_FONT_SIZE,
-            color="blue"
+            fontsize=FONT_SIZE_SMALL,
+            color=EVAL_PANEL_TEXT_COLOR
         )
         win_state_text = Text(
             "???",
-            (EVAL_PANEL_H_PADDING, HEADER_FONT_SIZE//2 + HEADER_FONT_SIZE*2 + EVAL_PANEL_V_PADDING),
-            align=TextAlign.LEFT,
-            fontsize=HEADER_FONT_SIZE,
-            color="blue"
+            (panel.area.centerx, eval_text.dest_rect.bottom + 15),
+            fontsize=FONT_SIZE_TINY,
+            color=EVAL_PANEL_TEXT_COLOR
         )
 
         panel.add_child(eval_label)
@@ -158,9 +154,11 @@ class SideBar(NinepatchPanel):
             if value == 0:
                 win_state_text.text = ""
             elif value > 0:
-                win_state_text.text = "(Winning!)"
+                win_state_text.text = "(Thinks it's winning!)"
+                win_state_text.color = "green"
             else:
-                win_state_text.text = "(Losing...)"
+                win_state_text.text = "(Thinks it's losing...)"
+                win_state_text.color = "red"
             
 
     def set_on_quit_clicked(self, on_click) -> None:

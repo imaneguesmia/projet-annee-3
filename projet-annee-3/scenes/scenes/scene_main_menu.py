@@ -1,7 +1,8 @@
 from ..scene import Scene
 from ..scene_change import SceneId
 
-from ui import Text, Button
+from ui import Button
+from ui.font import FONT_PATH, FONT_SIZE_LARGE
 from ui.colors import *
 
 import pygame
@@ -10,8 +11,8 @@ MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80
 BUTTON_SPACING = 100  # Espace entre les boutons
 
-bg_image_path = "./projet-annee-3/images/beach.jpg"
-button_sprite_path = "./projet-annee-3/images/button_sprite.png"
+bg_image_path = "./resources/images/beach.jpg"
+button_sprite_path = "./resources/images/button_sprite.png"
 
 class scene_MainMenu(Scene):
     def __init__(self, window_rect: pygame.Rect):
@@ -28,7 +29,7 @@ class scene_MainMenu(Scene):
         self.quit_button = self._create_quit_button(window_rect)
 
         # Title
-        self.title_image = pygame.image.load("./projet-annee-3/images/main_title.png").convert_alpha()
+        self.title_image = pygame.image.load("./resources/images/main_title.png").convert_alpha()
 
 
         self.elements.extend([
@@ -48,7 +49,7 @@ class scene_MainMenu(Scene):
         play_button.color = SAND_COLOR
         play_button.hover_color = SAND_HOVER
         play_button.text_color = BLACK
-        play_button.text_font = pygame.font.Font(None, 60)
+        play_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_LARGE)
 
         def oc(point: tuple[int, int]) -> bool:
             self.request_scene_change(SceneId.DIFFICULTY, {})
@@ -69,7 +70,7 @@ class scene_MainMenu(Scene):
         quit_button.color = SAND_COLOR
         quit_button.hover_color = SAND_HOVER
         quit_button.text_color = BLACK
-        quit_button.text_font = pygame.font.Font(None, 60)
+        quit_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_LARGE)
 
         def oc(point: tuple[int, int]) -> bool:
             self.request_quit()

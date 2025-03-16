@@ -1,6 +1,7 @@
 from ..scene import Scene
 from ..scene_change import SceneId
 from ui import Text, Button
+from ui.font import FONT_PATH, FONT_SIZE_MEDIUM
 from ui.slider import Slider
 from ui.colors import *
 import pygame
@@ -9,7 +10,7 @@ MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80
 BUTTON_SPACING = 50  
 
-bg_image_path = "./projet-annee-3/images/background.jpeg"
+bg_image_path = "./resources/images/background.jpeg"
 
 class scene_CustomMenu(Scene):
     def __init__(self, window_rect: pygame.Rect):
@@ -20,7 +21,7 @@ class scene_CustomMenu(Scene):
         self.ai_depth = 3  
 
         title = Text("Select AI Settings", (window_rect.centerx, 150), color=BLACK)
-        title.font = pygame.font.Font(None, 70)
+        title.font = pygame.font.Font(FONT_PATH, 70)
 
         minimax_x = window_rect.centerx - MENU_BUTTON_WIDTH - BUTTON_SPACING // 2
         alphabeta_x = window_rect.centerx + BUTTON_SPACING // 2
@@ -36,7 +37,7 @@ class scene_CustomMenu(Scene):
 
 
         self.depth_label = Text(f"Depth: {self.ai_depth}", (window_rect.centerx, window_rect.centery - 40), color=BLACK)
-        self.depth_label.font = pygame.font.Font(None, 50)
+        self.depth_label.font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         self.elements.extend([
             title,
@@ -76,7 +77,7 @@ class scene_CustomMenu(Scene):
 
         button.hover_color = SAND_HOVER
         button.text_color = BLACK
-        button.text_font = pygame.font.Font(None, 50)
+        button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
     def _create_start_game_button(self, window_rect: pygame.Rect) -> Button:
         """Creates the button to start the game with the chosen algorithm."""
@@ -90,7 +91,7 @@ class scene_CustomMenu(Scene):
         start_button.color = SAND_COLOR
         start_button.hover_color = SAND_HOVER
         start_button.text_color = BLACK
-        start_button.text_font = pygame.font.Font(None, 50)
+        start_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         def oc(point: tuple[int, int]) -> bool:
             self.ai_depth = self.depth_slider.get_value()  
@@ -113,7 +114,7 @@ class scene_CustomMenu(Scene):
         back_button.color = SAND_COLOR
         back_button.hover_color = SAND_HOVER
         back_button.text_color = BLACK
-        back_button.text_font = pygame.font.Font(None, 50)
+        back_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         def oc(point: tuple[int, int]) -> bool:
             print("Returning to the previous menu")

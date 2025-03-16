@@ -1,6 +1,7 @@
 import image_loader as img
 
-from ui import Button, NinepatchPanel, Image, Text
+from ui import Button, NinepatchPanel, Text
+from ui.font import FONT_PATH, FONT_SIZE_MEDIUM, FONT_SIZE_LARGE
 from ui.colors import *
 
 import cpp_chess as cm
@@ -10,8 +11,6 @@ import pygame
 PANEL_WIDTH = 600
 PANEL_HEIGHT = 200
 PANEL_PADDING = 20
-
-FONT_SIZE = 60
 
 BUTTON_WIDTH = 200
 BUTTON_HEIGHT = 80
@@ -24,7 +23,7 @@ class GameEndPanel(NinepatchPanel):
         button.color = SAND_COLOR
         button.hover_color = SAND_HOVER
         button.text_color = BLACK
-        button.text_font = pygame.font.Font(None, 50)
+        button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         return button
     
@@ -62,7 +61,7 @@ class GameEndPanel(NinepatchPanel):
 
         super().__init__(panel_rect, img.IMAGES.panel(img.PanelTheme.TEST), 31)
 
-        self._text = Text("LMAO", (self.area.centerx, PANEL_PADDING + FONT_SIZE//2), fontsize=FONT_SIZE)
+        self._text = Text("LMAO", (self.area.centerx, PANEL_PADDING + FONT_SIZE_LARGE//2), fontsize=FONT_SIZE_LARGE)
         self.add_child(self._text)
 
         self._view_button = self._create_view_button()

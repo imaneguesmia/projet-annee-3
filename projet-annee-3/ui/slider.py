@@ -1,4 +1,7 @@
 from .ui_element import UIElement
+
+from .font import FONT_PATH
+
 import pygame
 
 class Slider(UIElement):
@@ -55,7 +58,7 @@ class Slider(UIElement):
         pygame.draw.rect(surface, (200, 200, 200), self.dest_rect, 2)  #Slider bar
         pygame.draw.rect(surface, (0, 0, 0), self.slider_rect) 
 
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(FONT_PATH, 36)
         value_text = font.render(str(self.value), True, (0, 0, 0))
         surface.blit(value_text, (self.slider_rect.centerx - value_text.get_width() // 2, self.dest_rect.y - 30))
 

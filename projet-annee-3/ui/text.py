@@ -1,5 +1,7 @@
 from .ui_element import UIElement
 
+from .font import FONT_PATH
+
 import pygame
 
 from typing import override
@@ -21,7 +23,7 @@ class Text(UIElement):
         super().__init__()
 
         self.text = text
-        self.font = pygame.font.Font(None, fontsize)
+        self.font = pygame.font.Font(FONT_PATH, fontsize)
 
         self.color = color
         self.bg_color = bg_color
