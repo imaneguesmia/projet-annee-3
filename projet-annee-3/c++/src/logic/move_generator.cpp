@@ -45,20 +45,20 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                 case PType::Pawn: {
                     // Generate pushes on the fly because I can't be bothered.
 
+                    // Special attack validation: can only do this move if attacking something.
+                    BB::BitBoard attacks = at->getPawnAttackBitboard(player, from) & board.occupancy(other);
+
                     BB::BitBoard single_push;
 
                     if (player == Player::White) {
                         single_push = (BB::new_at(from) >> 8) & ~board.occupancy();
                         double_push = ((single_push >> 8)) & ~board.occupancy() & row_4;
-                        promotion = single_push & row_8;
+                        promotion = (single_push | attacks) & row_8;
                     } else {
                         single_push = (BB::new_at(from) << 8) & ~board.occupancy();
                         double_push = ((single_push << 8)) & ~board.occupancy() & row_5;
-                        promotion = single_push & row_1;
+                        promotion = (single_push | attacks) & row_1;
                     }
-
-                    // Special attack validation: can only do this move if attacking something.
-                    BB::BitBoard attacks = at->getPawnAttackBitboard(player, from) & board.occupancy(other);
 
                     en_passant = en_passant_position.isValid();
                     en_passant *= at->getPawnAttackBitboard(player, from) & BB::new_at(en_passant_position);
@@ -83,23 +83,6 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case PType::King: {
-                    // uint8_t castling_rights = castling_rights;
-
-                    // [TODO] This is not the most efficient way to do this.
-                    // for (int i = 0; castling_rights; i++, castling_rights >>= 1) {
-                    //     auto [between, target] = relevant_castling_squares[i];
-
-                    //     if (
-                    //         (castling_rights & 1ULL) &&
-                    //         !board_analysis.isSquareAttacked(from, other, board) && 
-                    //         !board_analysis.isSquareAttacked(between, other, board) &&
-                    //         !BB::get_bit(board.occupancy(), static_cast<int>(between)) &&
-                    //         !BB::get_bit(board.occupancy(), static_cast<int>(target))
-                    //     ) {
-                    //         BB::set_bit(castle, static_cast<int>(target));
-                    //     }
-                    // }
-
                     uint8_t relevant_castling_bits = castling_rights >> (2 * static_cast<int>(player));
 
                     for (int i = 0; i < 2; i++) {
@@ -115,7 +98,6 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                             BB::set_bit(castle, static_cast<int>(target));
                         }
                     }
-
 
                     BB::BitBoard attacks = at->getKingAttackBitboard(from) & ~board.occupancy(player);
 
