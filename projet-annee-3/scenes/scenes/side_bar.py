@@ -69,11 +69,19 @@ class SideBar(NinepatchPanel):
 
         panel = NinepatchPanel(rect, img.IMAGES.panel(img.PanelTheme.INSET), 31)
 
-        header_text = "White" if player == cm.Player.White else "Black"
+        # header_text = "White" if player == cm.Player.White else "Black"
+        # player_type = self._w
+        if player == cm.Player.White:
+            header_text = "White"
+            player_type = self._white_player
+        else:
+            header_text = "Black"
+            player_type = self._black_player
+
 
         panel.add_child(
             Text(
-                f"{header_text} : {self._player_type_to_string(player)}", 
+                f"{header_text} : {self._player_type_to_string(player_type)}", 
                 (panel.area.centerx, HEADER_FONT_SIZE//2 + EVAL_PANEL_V_PADDING),
                 fontsize=HEADER_FONT_SIZE,
                 color="blue"
