@@ -25,3 +25,7 @@ uv.lock
 
 # Compiled Python bindings
 **/chess_module.*
+
+# CMake
+include
+lib

@@ -11,7 +11,6 @@
  * array.
  */
 template <class IndexEnum, class ValueType>
-    requires(std::is_scoped_enum_v<IndexEnum>)
 class enum_array {
     ValueType array[static_cast<int>(IndexEnum::LAST) + 1] {};
 

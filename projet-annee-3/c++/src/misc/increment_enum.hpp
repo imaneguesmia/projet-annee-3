@@ -12,11 +12,10 @@
  * @param value         The value to increment.
  */
 template <class EnumType>
-    requires(std::is_scoped_enum_v<EnumType>)
 constexpr void increment_enum(EnumType& value) noexcept {
     if (value == EnumType::OOB) return;
 
-    int next = std::to_underlying(value) + 1;
+    int next = static_cast<int>(value) + 1;
 
     if (next <= static_cast<int>(EnumType::LAST)) value = static_cast<EnumType>(next); 
     else value = EnumType::OOB;
@@ -29,11 +28,10 @@ constexpr void increment_enum(EnumType& value) noexcept {
  * @param value         The value to get the next value of.
  */
 template <class EnumType>
-    requires(std::is_scoped_enum_v<EnumType>)
 constexpr EnumType next_in_enum(const EnumType& value) noexcept {
     if (value == EnumType::OOB) return EnumType::OOB;
 
-    int next = std::to_underlying(value) + 1;
+    int next = static_cast<int>(value) + 1;
 
     if (next <= static_cast<int>(EnumType::LAST)) return static_cast<EnumType>(next);
     else return EnumType::OOB;
@@ -47,11 +45,10 @@ constexpr EnumType next_in_enum(const EnumType& value) noexcept {
  * @param value         The value to decrement.
  */
 template <class EnumType>
-    requires(std::is_scoped_enum_v<EnumType>)
 constexpr void decrement_enum(EnumType& value) noexcept {
     if (value == EnumType::OOB) return;
 
-    int next = std::to_underlying(value) - 1;
+    int next = static_cast<int>(value) - 1;
 
     if (next >= static_cast<int>(EnumType::FIRST)) value = static_cast<EnumType>(next); 
     else value = EnumType::OOB;
@@ -64,11 +61,10 @@ constexpr void decrement_enum(EnumType& value) noexcept {
  * @param value         The value to get the next value of.
  */
 template <class EnumType>
-    requires(std::is_scoped_enum_v<EnumType>)
 constexpr EnumType previous_in_enum(const EnumType& value) noexcept {
     if (value == EnumType::OOB) return EnumType::OOB;
 
-    int next = std::to_underlying(value) - 1;
+    int next = static_cast<int>(value) - 1;
 
     if (next >= static_cast<int>(EnumType::FIRST)) return static_cast<EnumType>(next);
     else return EnumType::OOB;

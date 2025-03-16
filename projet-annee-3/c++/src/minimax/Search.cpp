@@ -9,7 +9,6 @@
 
 Beluga::Beluga(int depth, std::shared_ptr<const AttackTables> at)
     : searchDepth(depth)
-    , evaluator(std::move(at))
 {}
 
 Move Beluga::getMove(ExtendedGameData& board)
@@ -89,10 +88,6 @@ int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int
     }
 
     // Check if game is over (checkmate, stalemate, etc.)
-    // auto [gameResultReason, gameResult] = board.isGameOver();
-    // if (gameResultReason != GameResultReason::NONE) {
-    //     return evaluateTerminal(gameResultReason, gameResult, ply);
-    // }
     GameState current_state = board.getGameState();
     if (current_state != GameState::INGAME) {
         
@@ -123,7 +118,6 @@ int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int
     int bestValue = -INF;
     int alphaOrig = alpha;
     Move bestMove = Move::NO_MOVE;
-
 
     for (int moveIndex = 0; moveIndex < moves.size(); moveIndex++) {
         moveOrdering.pickNextMove(moves, moveIndex);  // Bring the best move to index 'moveIndex'
@@ -180,4 +174,11 @@ int Beluga::evaluateTerminal(GameState end_state, int ply) const
         return -MATE_SCORE + ply;
     }
     return 0;
+}
+
+int Beluga::getPositionValue(ExtendedGameData& board, Player player) 
+{
+    int self_eval = evaluator.evaluate(board.getBoard(), player);
+
+    return self_eval;
 }

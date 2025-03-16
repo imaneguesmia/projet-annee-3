@@ -30,22 +30,22 @@
     * @brief Responsible for static board evaluation.
     */
 class Evaluator {
-    std::shared_ptr<const AttackTables> at;
+    const AttackTables& at = AttackTables::getInstance();
 
 public:
     /**
         * @brief todo
         */
-    Evaluator(std::shared_ptr<const AttackTables> at);
+    Evaluator();
 
     /**
         * @brief Evaluates the given board position.
         * @param board The current chess board state.
-        * @param player The playr being evaluated (WHITE or BLACK).
+        * @param player The player being evaluated (WHITE or BLACK).
         * @return The evaluation score, positive if the player to move has the advantage,
 *       * negative if the opponent has the advantage.
         */
-    int evaluate(const Board& board,Player player);
+    int evaluate(const Board& board, Player player);
 
 private:
     /**

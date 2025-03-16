@@ -7,11 +7,13 @@
 #include <format>
 #include <cstring>
 
+#include <fmt/core.h>
+
 /* -- DEFINE class Position -- */
 
 void Position::setPosition(int row, int col) {
     if (row < 0 || row > 7 || col < 0 || col > 7) {
-        throw std::invalid_argument(std::format("Invalid position: ({}, {})", row, col));
+        throw std::invalid_argument(fmt::format("Invalid position: ({}, {})", row, col));
     }
 
     position_index = Square((row * 8) + col);
@@ -45,7 +47,7 @@ void Position::setPositionString(const std::string& string) {
         ('a' > string[0] || 'h' < string[0]) ||
         ('1' > string[1] || '8' < string[1])
     ) {
-        throw std::invalid_argument(std::format("Invalid position string: {}", string));
+        throw std::invalid_argument(fmt::format("Invalid position string: {}", string));
     }
     
     else {

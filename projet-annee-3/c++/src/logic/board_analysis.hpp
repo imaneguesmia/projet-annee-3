@@ -14,12 +14,10 @@
  */
 class BoardAnalysis {
     // Shared pointer to the pre-initialized attack tables.
-    const std::shared_ptr<const AttackTables> at;
+    const AttackTables& at = AttackTables::getInstance();
 
 public:
-    BoardAnalysis(const std::shared_ptr<const AttackTables> at)
-        : at(std::move(at))
-    {};
+    BoardAnalysis() {};
     ~BoardAnalysis() {};
 
     /**

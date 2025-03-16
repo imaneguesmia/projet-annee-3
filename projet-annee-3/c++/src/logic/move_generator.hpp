@@ -24,16 +24,6 @@ class MoveGenerator {
     static constexpr BB::BitBoard row_8 {255ULL};
 
     // Lookup table of relevant board squares to check when castling.
-    // static constexpr Square relevant_castling_squares[2][2][2] {
-    //     {
-    //         {Square::f1, Square::g1},   // King-side white
-    //         {Square::d1, Square::c1}    // Queen-side white
-    //     },
-    //     {
-    //         {Square::f8, Square::g8},   // King-side black
-    //         {Square::d8, Square::c8}    // Queen-side black
-    //     }
-    // };
     static constexpr Square relevant_castling_squares[2][2][2] {
         {
             {Square::f1, Square::g1},   // King-side white
@@ -46,14 +36,11 @@ class MoveGenerator {
     };
 
     // Shared pointer to the pre-initialized attack tables.
-    const std::shared_ptr<const AttackTables> at;
+    const AttackTables& at = AttackTables::getInstance();
     const BoardAnalysis board_analysis;
 
 public:
-    MoveGenerator(const std::shared_ptr<const AttackTables> at) 
-        : at(at)
-        , board_analysis(std::move(at))
-    {};
+    MoveGenerator() {};
     ~MoveGenerator() {};
 
     /**

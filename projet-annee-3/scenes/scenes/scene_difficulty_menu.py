@@ -3,7 +3,8 @@ from ..scene_change import SceneId
 
 from ..data_transfer import PlayerType
 
-from ui import Text, Button
+from ui import Button
+from ui.font import FONT_PATH, FONT_SIZE_MEDIUM
 from ui.colors import *
 
 import pygame
@@ -14,7 +15,7 @@ BUTTON_SPACING_X = 150  # horizontal spacing between buttons
 BUTTON_SPACING_Y = 100  # vertical spacing between rows
 
 
-bg_image_path = "./projet-annee-3/images/beach.jpg"
+bg_image_path = "./resources/images/beach.jpg"
 
 class scene_DifficultyMenu(Scene):
     def _create_difficulty_button(self, window_rect: pygame.Rect, label: str, x_offset: int, y_offset: int, scene_id: SceneId) -> Button:
@@ -32,20 +33,20 @@ class scene_DifficultyMenu(Scene):
         difficulty_button.color = SAND_COLOR
         difficulty_button.hover_color = SAND_HOVER
         difficulty_button.text_color = BLACK
-        difficulty_button.text_font = pygame.font.Font(None, 50)
+        difficulty_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         def oc(point: tuple[int, int]) -> bool:
             self.request_scene_change(scene_id, {
-                "white_player": PlayerType.HUMAN,
-                "black_player": PlayerType.MINIMAX
+                "white_player": PlayerType.MINIMAX,
+                "black_player": PlayerType.HUMAN,
+                # "initial_state": "3k4/5Q2/3K4/8/8/8/8/8 w - - 0 1"
+                # "initial_state": "4k3/8/8/8/8/3r1r2/r7/4K3 w - - 0 1"
+                # "initial_state": "4k3/8/8/8/8/4q3/r7/4K3 w - - 0 1"
             })
             return True
 
         difficulty_button.on_click = oc
         return difficulty_button
-
-
-
 
     def _create_back_button(self, window_rect: pygame.Rect) -> Button:
         """Creates and returns the back button."""
@@ -59,7 +60,7 @@ class scene_DifficultyMenu(Scene):
         back_button.color = SAND_COLOR
         back_button.hover_color = SAND_HOVER
         back_button.text_color = BLACK
-        back_button.text_font = pygame.font.Font(None, 50)
+        back_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         def oc(point: tuple[int, int]) -> bool:
             self.request_scene_change(SceneId.MAINMENU, {})
@@ -72,7 +73,7 @@ class scene_DifficultyMenu(Scene):
         super().__init__(window_rect, bg_image_path)
 
         # Load the title image
-        self.title_image = pygame.image.load("./projet-annee-3/images/select_puzzle.png").convert_alpha()
+        self.title_image = pygame.image.load("./resources/images/select_puzzle.png").convert_alpha()
 
 
         self.bg_color = AQUA_BLUE

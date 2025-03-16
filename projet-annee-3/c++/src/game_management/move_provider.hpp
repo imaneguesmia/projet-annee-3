@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../logic/player.hpp"
+
 class Move;
 class ExtendedGameData;
 
@@ -12,4 +14,5 @@ public:
     virtual ~AIMoveProvider() {};
 
     virtual Move getMove(ExtendedGameData& board) = 0;
+    virtual int getPositionValue(ExtendedGameData& board, Player player) = 0;
 };

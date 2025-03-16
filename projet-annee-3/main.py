@@ -1,7 +1,7 @@
-import cpp_chess as cm
-import pygame
 from scenes import SceneManager, SceneId
 import image_loader as img
+
+import pygame
 
 # ------------------------------
 # Initialisation de Pygame
@@ -9,7 +9,8 @@ import image_loader as img
 pygame.init()
 
 # ✅ Fenêtre en FULLSCREEN sur l'écran actif
-fenetre = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+# fenetre = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+fenetre = pygame.display.set_mode()
 SCREEN_WIDTH, SCREEN_HEIGHT = fenetre.get_size()
 
 pygame.display.set_caption("Beluga Engine")
@@ -22,10 +23,6 @@ BOARD_SIZE = 800  # Taille fixe pour la board, même en fullscreen
 # ------------------------------
 # Initialisation du jeu
 # ------------------------------
-# chess_game = cm.Game()
-
-# ✅ Création de l'échiquier
-# chess_board = ChessBoard(rect, BOARD_SIZE, chess_game)
 
 # ✅ Chargement des images (taille d'une case en pixels)
 img.IMAGES = img.ImageLoader(BOARD_SIZE // 8)

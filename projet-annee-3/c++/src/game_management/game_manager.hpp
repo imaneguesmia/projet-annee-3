@@ -21,15 +21,13 @@ class GameManager {
     Game game;
 
 public:
-    GameManager();
+    GameManager() {};
     GameManager(const std::string& initial_position);
     ~GameManager() {};
 
     std::unique_ptr<AIMoveProvider> createMinimaxPlayer(int depth) {
         return std::make_unique<Beluga>(depth, at);
     }
-
-    // MovePrompter promptNextMove();
 
     Player getCurrentPlayer() { return game.getCurrentPlayer(); };
 

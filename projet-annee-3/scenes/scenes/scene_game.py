@@ -3,15 +3,17 @@ from ..scene import Scene
 from ..data_transfer.player_type import PlayerType
 
 from .chess_board import ChessBoard
-from .chess_model import ChessModel
+from .chess_board_callback_interface import ChessBoardCallbackInterface
 
 from .promotion_panel import PromotionPanel
+from .game_end_panel import GameEndPanel
+from .side_bar import SideBar, PANEL_WIDTH as SIDEBAR_WIDTH
 
 import cpp_chess as cm
 
+from ui import Button
+from ui.font import FONT_PATH, FONT_SIZE_MEDIUM
 from ui.colors import *
-from ui import Button, NinepatchPanel
-import image_loader as img
 
 from ..scene_change import SceneId
 
@@ -19,10 +21,17 @@ import pygame
 
 from typing import override
 
-BOARD_SIZE = 800
-SIDE_PANEL_WIDTH = 400
+# ---- UI constants ---- #
 
-class scene_ChessGame(Scene, ChessModel):
+BOARD_SIZE = 800
+
+BUTTON_WIDTH = 200
+BUTTON_HEIGHT = 80
+BUTTON_MARGIN = 20
+
+# ---- DEFINE class scene_ChessGame ---- #
+
+class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
     def __init__(self, 
         window_rect: pygame.Rect, 
@@ -32,9 +41,13 @@ class scene_ChessGame(Scene, ChessModel):
     ):
         super().__init__(window_rect)
 
+        self._initial_state = initial_state
+
+        self._player_types = (white_player, black_player)
+
         self._chess_game = cm.GameManager() if initial_state is None else cm.GameManager(initial_state)
-        # self._move_prompter: cm.MovePrompter = None
         self._game_data: cm.GameData = None
+        self._extended_game_data: cm.ExtendedGameData = None
 
         self._selected_square: cm.Position | None = None
         self._selected_moves: list[cm.Move] = []
@@ -42,7 +55,7 @@ class scene_ChessGame(Scene, ChessModel):
         self._promotion: cm.Move | None = None
 
         # Centrer l'échiquier de 800x800 dans la fenêtre 1920x1080
-        self.board_x = (window_rect.width - SIDE_PANEL_WIDTH) // 2 - BOARD_SIZE // 2
+        self.board_x = (window_rect.width - SIDEBAR_WIDTH) // 2 - BOARD_SIZE // 2
         self.board_y = (window_rect.height - BOARD_SIZE) // 2
 
         self._board = ChessBoard(
@@ -54,14 +67,16 @@ class scene_ChessGame(Scene, ChessModel):
         self._promotion_panel.is_visible = False
         self._promotion_panel.can_accept_events = False
 
+        self._game_end_panel = self._create_game_end_panel()
+
         self.elements.append(self._board)
         self.elements.append(self._promotion_panel)
+        self.elements.append(self._game_end_panel)
 
-        self.elements.append(self._create_side_panel(window_rect))
+        self._side_bar = self._create_side_panel(window_rect)
+        self.elements.append(self._side_bar)
 
         # Initialize AI engines
-
-        self._player_types = [white_player, black_player]
 
         if PlayerType.MINIMAX in self._player_types:
             self._minimax_engine: cm.AIMoveProvider = self._chess_game.create_minimax_player(5)
@@ -69,6 +84,7 @@ class scene_ChessGame(Scene, ChessModel):
             self._neural_net_engine: cm.AIMoveProvider = ...
         
         self._frames_before_next_turn = 0  # Set to `0` to advance game turn next frame.
+        self.update_stored_game_data()
     
     @property
     def selected_square(self) -> cm.Position | None: 
@@ -85,6 +101,7 @@ class scene_ChessGame(Scene, ChessModel):
         """"""
         super().update()
 
+        # Handle countdown to next turn.
         if self._frames_before_next_turn > 0:
             self._frames_before_next_turn -= 1
         elif self._frames_before_next_turn == 0:
@@ -92,20 +109,23 @@ class scene_ChessGame(Scene, ChessModel):
             self.game_turn()
     
     def advance_turn(self) -> None:
+        """Waits two frames, then advances to the next turn.
+        
+        This leaves time for the board drawing to catch up.
+        """
         self._frames_before_next_turn = 2
 
     def get_player_type(self, player: cm.Player) -> PlayerType:
-        """"""
+        """Gets the type of the given player (human, minimax AI or neural network AI)"""
         return self._player_types[0] if player == cm.Player.White else self._player_types[1]
+    
+    def player_move(self, player_type: PlayerType) -> None:
+        """Does a move depending on the player type.
 
-    def game_turn(self) -> None:
-        """"""
-        self._game_data = self._chess_game.game_data()
-
-        current_player = self._chess_game.current_player
-        current_player_type = self.get_player_type(current_player)
-
-        match current_player_type:
+        Args:
+            player_type (PlayerType): The type of player to move.
+        """
+        match player_type:
             case PlayerType.HUMAN:
                 # Allow the player to make a move
                 self._board.can_accept_events = True
@@ -114,12 +134,59 @@ class scene_ChessGame(Scene, ChessModel):
                 self._board.can_accept_events = False
 
                 move_to_make = self._minimax_engine.get_move(
-                    self._chess_game.extended_game_data()
+                    self._extended_game_data
                 )
+
                 self.make_move(move_to_make)
             case PlayerType.NEURAL_NET:
                 # Prevent human from moving
                 self._board.can_accept_events = False
+    
+    def end_game(self, game_state: cm.GameState) -> None:
+        """Display for the end of the game."""
+        self._board.can_accept_events = False
+        self._board.is_game_over = True
+
+        self._game_end_panel.display_end_state(game_state, self._chess_game.current_player)
+
+    def display_evaluations(self) -> None:
+        """Updates the displayed position evaluations."""
+
+        for player in [cm.Player.White, cm.Player.Black]:
+            player_type = self.get_player_type(player)
+
+            match player_type:
+                case PlayerType.HUMAN:
+                    evaluation = None
+                case PlayerType.MINIMAX:
+                    evaluation = self._minimax_engine.get_position_value(self._extended_game_data, player)
+                case PlayerType.NEURAL_NET:
+                    evaluation = self._neural_net_engine.get_position_value(self._extended_game_data, player)
+
+            self._side_bar.set_evaluation(evaluation, player)
+    
+    def update_stored_game_data(self) -> None:
+        """Updates the cached game data."""
+        self._game_data = self._chess_game.game_data()
+        self._extended_game_data = self._chess_game.extended_game_data()
+
+        self.display_evaluations()
+
+    def game_turn(self) -> None:
+        """Does a game turn, checking if the game is finished then letting the current
+        player make a move if it isn't.
+        """
+        self.update_stored_game_data()
+
+        current_player = self._chess_game.current_player
+        game_state = self._game_data.game_state
+
+        if game_state == cm.GameState.INGAME:
+            current_player_type = self.get_player_type(current_player)
+
+            self.player_move(current_player_type)
+        else:
+            self.end_game(game_state)
 
     # -- Game model methods -- #
 
@@ -134,6 +201,7 @@ class scene_ChessGame(Scene, ChessModel):
 
             # Next turn
             self.advance_turn()
+            self.update_stored_game_data()
         else:
             print("INVALID MOVE")
             exit()
@@ -203,16 +271,12 @@ class scene_ChessGame(Scene, ChessModel):
 
             self._promotion.promotion = to_piece
             self.make_move(self._promotion)
+    
+    # -- UI elements -- #
 
-    def _create_side_panel(self, window_rect: pygame.Rect) -> NinepatchPanel:
+    def _create_side_panel(self, window_rect: pygame.Rect) -> SideBar:
         """"""
-        panel_rect = pygame.Rect(
-            window_rect.width - SIDE_PANEL_WIDTH, 0,
-            SIDE_PANEL_WIDTH,
-            window_rect.height
-        )
-
-        panel = NinepatchPanel(panel_rect, img.IMAGES.panel(img.PanelTheme.LEFT))
+        panel = SideBar(window_rect, self._player_types)
 
         panel.add_child(self._create_quit_button(panel.area))
 
@@ -221,23 +285,60 @@ class scene_ChessGame(Scene, ChessModel):
     def _create_quit_button(self, panel_area: pygame.Rect) -> Button:
         """Creates a quit button on the right side of the screen."""
         button_rect = pygame.Rect(
-            panel_area.centerx - 100,  # 50px de marge après l'échiquier
-            panel_area.centery - 50,   # Centré verticalement
-            200, 80                     # Taille du bouton
+            panel_area.centerx - BUTTON_WIDTH//2,
+            panel_area.height - BUTTON_MARGIN - BUTTON_HEIGHT,
+            BUTTON_WIDTH, BUTTON_HEIGHT
         )
 
         quit_button = Button(button_rect, "Quit")
         quit_button.color = SAND_COLOR
         quit_button.hover_color = SAND_HOVER
         quit_button.text_color = BLACK
-        quit_button.text_font = pygame.font.Font(None, 50)
+        quit_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
-        def oc(point: tuple[int, int]) -> bool:
+        def quit(_) -> bool:
             self.request_scene_change(SceneId.MAINMENU, {})
             return True
 
-        quit_button.on_click = oc
+        quit_button.on_click = quit
+
         return quit_button
+    
+    def _create_game_end_panel(self) -> GameEndPanel:
+        """Created the game end panel."""
+        panel = GameEndPanel(self._board.absolute_rect)
 
+        # Re-enter the scene with the same parameters
+        def retry(_) -> bool:
+            self.request_scene_change(SceneId.GAME, {
+                "initial_state": self._initial_state,
+                "white_player": self._player_types[0],
+                "black_player": self._player_types[1]
+            })
 
+        def view_board(_) -> bool:
+            self.hide_game_end_panel()
+            return True
+
+        panel.set_on_retry_clicked(retry)
+        panel.set_on_view_board_clicked(view_board)
+
+        return panel
+    
+    def hide_game_end_panel(self) -> None:
+        """Hides the game end panel for board viewing."""
+        self._game_end_panel.is_visible = False
+        self._game_end_panel.can_accept_events = False
+
+        self._board.can_accept_events = True
+    
+    @override
+    def reshow_game_end_panel(self) -> None:
+        """Reshows the game end panel after viewing board at the end of the game."""
+        self._game_end_panel.is_visible = True
+        self._game_end_panel.can_accept_events = True
+
+        self._board.can_accept_events = False
+
+# ---- END DEFINE ---- #
 

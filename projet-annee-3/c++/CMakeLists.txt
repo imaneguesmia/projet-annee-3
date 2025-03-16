@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.31)
+cmake_minimum_required(VERSION 3.20...3.31)
 
 project(
     ProjetAnnee3
@@ -7,10 +7,12 @@ project(
     LANGUAGES CXX
 )
 
-# Use c++23
-set(CMAKE_CXX_STANDARD 23)
+# Use c++17
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_CXX_FLAGS "-O2")
 
 # Directories
 set(LOGIC "logic")
@@ -24,6 +26,18 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     MESSAGE("Compiling with Clang/AppleClang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
+
+# ---- fmt ---- #
+
+include(FetchContent)
+
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt
+    GIT_TAG        e69e5f977d458f2650bb346dadf2ad30c5320281) # 10.2.1
+FetchContent_MakeAvailable(fmt)
+
+link_libraries(fmt::fmt)
 
 # ---- Libraries ---- #
 
@@ -93,6 +107,7 @@ find_package(Python 3.13 REQUIRED
     COMPONENTS          Interpreter Development.Module
     OPTIONAL_COMPONENTS Development.SABIModule
 )
+message(STATUS ${Python_EXECUTABLE})
 execute_process(
     COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
     OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE NB_DIR)

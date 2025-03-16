@@ -15,20 +15,20 @@ bool BoardAnalysis::isSquareAttacked(
 
     return (
         // Pawn attacks
-        at->getPawnAttackBitboard(other_player, position) & board.bitboard(Piece(PType::Pawn, player)) ||
+        at.getPawnAttackBitboard(other_player, position) & board.bitboard(Piece(PType::Pawn, player)) ||
         // Knight attacks
-        at->getKnightAttackBitboard(position) & board.bitboard(Piece(PType::Knight, player)) ||
+        at.getKnightAttackBitboard(position) & board.bitboard(Piece(PType::Knight, player)) ||
         // King attacks
-        at->getKingAttackBitboard(position) & board.bitboard(Piece(PType::King, player)) ||
+        at.getKingAttackBitboard(position) & board.bitboard(Piece(PType::King, player)) ||
 
         // Bishop attacks
         // For example, here we check if there is a good bishop on the squares attacked by an opposing bishop on
         // this square.
-        at->getBishopAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Bishop, player)) ||
+        at.getBishopAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Bishop, player)) ||
         // Rook attacks
-        at->getRookAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Rook, player)) ||
+        at.getRookAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Rook, player)) ||
         // Queen attacks
-        at->getQueenAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Queen, player)));
+        at.getQueenAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Queen, player)));
 }
 
 bool BoardAnalysis::isInCheck(const Player player, const Board &board) const

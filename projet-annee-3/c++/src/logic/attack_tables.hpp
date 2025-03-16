@@ -13,7 +13,7 @@
 /* ---- DECLARE class AttackTables ---- */
 
 /**
- * @brief Helper class to generate piece attack lookup tables in advance.
+ * @brief Helper singleton to generate piece attack lookup tables in advance.
  * 
  * Used to avoid having to expensively generate attack bitboards on the fly. Leaper pieces use simple lookup
  * tables, while slider pieces use the magic bitboard hashing technique (https://www.chessprogramming.org/Magic_Bitboards).
@@ -230,14 +230,30 @@ class AttackTables {
         const enum_array<Square, std::unique_ptr<Magic>>& magics
     ) const;
 
-public:
+private:
     /**
      * @brief Constructs a new AttackTables object.
      * 
      * All attack tables are generated on construction.
      */
     AttackTables();
+
+    static std::unique_ptr<const AttackTables> instance;
+
+public:
+    AttackTables(AttackTables&) = delete;
+    void operator=(const AttackTables&) = delete;
+
     ~AttackTables() {};
+
+    static const AttackTables& getInstance() {
+        // return *instance.get();
+        if (instance == nullptr) {
+            instance.reset(new AttackTables());
+        }
+
+        return *instance;
+    }
 
     /**
      * @brief Gets the attack bitboard of a pawn.

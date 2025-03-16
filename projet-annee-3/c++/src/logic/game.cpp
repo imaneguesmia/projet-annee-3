@@ -4,6 +4,8 @@
 
 #include <sstream>
 
+#include <fmt/core.h>
+
 /* ---- DEFINE struct UnmakeMove ---- */
 
 std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move) {
@@ -85,7 +87,7 @@ uint8_t Game::castlingRightsFromString(const std::string& castling_indicators) c
                     flags |= 0b1000;
                 break;
                 default:
-                    throw std::invalid_argument(std::format(
+                    throw std::invalid_argument(fmt::format(
                         "Invalid FEN sequence: unknown character '{}' in castling indicators"
                     , c));
             }
@@ -136,7 +138,11 @@ bool Game::isCurrentlyInCheck() {
 
 GameState Game::getGameState() {
     if (update_flags & GAME_STATE) {
-        if (getCurrentLegals().size() == 0) {
+        if (isHalfMoveDraw()) {
+            game_state = GameState::HALF_MOVE_DRAW;
+        } else if (isRepetition()) {
+            game_state = GameState::REPETITION;
+        } else if (getCurrentLegals().size() == 0) {
             game_state = isCurrentlyInCheck() ? GameState::CHECKMATE : GameState::STALEMATE;
         } else {
             game_state = GameState::INGAME;
