@@ -5,12 +5,12 @@
 /* ---- DEFINE class BoardAnalysis ---- */
 
 bool BoardAnalysis::isSquareAttacked(
-    const Position& position, Player player,
-    const Board& board
-) const {
+    const Position &position, Player player,
+    const Board &board) const
+{
     Player other_player = otherPlayer(player);
 
-    // If a piece P is on a square S, it follows that a piece of the same type on any 
+    // If a piece P is on a square S, it follows that a piece of the same type on any
     // square that P is attacking is also attacking S.
 
     return (
@@ -28,14 +28,12 @@ bool BoardAnalysis::isSquareAttacked(
         // Rook attacks
         at->getRookAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Rook, player)) ||
         // Queen attacks
-        at->getQueenAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Queen, player))
-    );
+        at->getQueenAttackBitboard(position, board.occupancy()) & board.bitboard(Piece(PType::Queen, player)));
 }
 
-bool BoardAnalysis::isInCheck(const Player player, const Board& board) const {
-    int king_index = BB::leastSignificantBitIndex(board.bitboard(Piece(PType::King, player)));
-    Position king_square {safely_to_enum_class<Square>(king_index)};
-
+bool BoardAnalysis::isInCheck(const Player player, const Board &board) const
+{
+    Position king_square = board.kingSquare(player);
     return isSquareAttacked(king_square, otherPlayer(player), board);
 }
 

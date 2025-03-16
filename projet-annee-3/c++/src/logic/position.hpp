@@ -3,22 +3,81 @@
 #include <utility>
 #include <iostream>
 #include <string>
+#include <cstdint>
 
 // Enum over board positions.
-enum class Square : uint8_t {
+enum class Square : uint8_t
+{
     a8 = 0U,
-        b8, c8, d8, e8, f8, g8, h8,
-    a7, b7, c7, d7, e7, f7, g7, h7,
-    a6, b6, c6, d6, e6, f6, g6, h6,
-    a5, b5, c5, d5, e5, f5, g5, h5,
-    a4, b4, c4, d4, e4, f4, g4, h4,
-    a3, b3, c3, d3, e3, f3, g3, h3,
-    a2, b2, c2, d2, e2, f2, g2, h2,
-    a1, b1, c1, d1, e1, f1, g1, h1,
+    b8,
+    c8,
+    d8,
+    e8,
+    f8,
+    g8,
+    h8,
+    a7,
+    b7,
+    c7,
+    d7,
+    e7,
+    f7,
+    g7,
+    h7,
+    a6,
+    b6,
+    c6,
+    d6,
+    e6,
+    f6,
+    g6,
+    h6,
+    a5,
+    b5,
+    c5,
+    d5,
+    e5,
+    f5,
+    g5,
+    h5,
+    a4,
+    b4,
+    c4,
+    d4,
+    e4,
+    f4,
+    g4,
+    h4,
+    a3,
+    b3,
+    c3,
+    d3,
+    e3,
+    f3,
+    g3,
+    h3,
+    a2,
+    b2,
+    c2,
+    d2,
+    e2,
+    f2,
+    g2,
+    h2,
+    a1,
+    b1,
+    c1,
+    d1,
+    e1,
+    f1,
+    g1,
+    h1,
 
-    Invalid,  // Special value indicating an invalid position.
+    Invalid, // Special value indicating an invalid position.
 
-    OOB, FIRST = a8, LAST = h1
+    OOB,
+    FIRST = a8,
+    LAST = h1
 };
 
 /* ---- DECLARE class Position ---- */
@@ -26,10 +85,11 @@ enum class Square : uint8_t {
 /**
  * @brief Class representing a position (square) on the board.
  */
-class Position {
+class Position
+{
 
 private:
-    Square position_index;  // The index of the position, from 0 to 63. 64 if invalid.
+    Square position_index; // The index of the position, from 0 to 63. 64 if invalid.
 
 public:
     // Constructs a Position from the given row and column.
@@ -39,7 +99,7 @@ public:
     // Constructs a Position with the given index. Throws `std::invalid_argument` if the index is out of bounds.
     Position(int index) { setPositionSquare(index); };
     // Constructs a Position from the given position string, i.e. "e4". "-" if invalid.
-    Position(const std::string& string) { setPositionString(string); };
+    Position(const std::string &string) { setPositionString(string); };
 
     // Constructs an invalid Position.
     Position() : Position(Square::Invalid) {};
@@ -70,22 +130,20 @@ public:
     // Gets the string representation of the position, i.e. "e4". "-" if invalid.
     std::string getPositionString() const;
     // Sets the position from the given position string.
-    void setPositionString(const std::string& string);
+    void setPositionString(const std::string &string);
 
     /* -- Increment/decrement operators -- */
 
     // Increments the position to the next index, i.e. a7->b7, h3->a2.
 
-    Position& operator++();
+    Position &operator++();
     Position operator++(int);
 
-    Position& operator--();
+    Position &operator--();
     Position operator--(int);
 
-    bool operator==(const Position& other) const;
-    bool operator!=(const Position& other) const;
-
-
+    bool operator==(const Position &other) const;
+    bool operator!=(const Position &other) const;
 
     /* -- Typecasting -- */
 
@@ -93,6 +151,6 @@ public:
 };
 
 // Prints the string representation of the position to the output stream.
-std::ostream& operator<<(std::ostream& out, const Position& position);
+std::ostream &operator<<(std::ostream &out, const Position &position);
 
 /* ---- END DECLARE ---- */

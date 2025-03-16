@@ -70,6 +70,8 @@ add_library(
     "src/${MINIMAX}/Evaluator.cpp" "src/${MINIMAX}/Evaluator.hpp"
     "src/${MINIMAX}/QuiescenceSearch.cpp" "src/${MINIMAX}/QuiescenceSearch.hpp"
     "src/${MINIMAX}/ZobristHash.cpp" "src/${MINIMAX}/ZobristHash.hpp"
+    "src/${MINIMAX}/KingSafety.cpp" "src/${MINIMAX}/KingSafety.hpp"
+
 )
 
 # Library for game management
@@ -85,6 +87,7 @@ set(LIBS "logic misc view minimax game_management")
 # ---- Create Python bindings ---- #
 
 # Find Python and nanobind
+set(Python_FIND_STRATEGY LOCATION)
 set(Python_FIND_VIRTUALENV FIRST)
 find_package(Python 3.13 REQUIRED
     COMPONENTS          Interpreter Development.Module
