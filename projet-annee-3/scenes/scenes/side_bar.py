@@ -100,7 +100,7 @@ class SideBar(NinepatchPanel):
             color=EVAL_PANEL_TEXT_COLOR
         )
         win_state_text = Text(
-            "???",
+            "",
             (panel.area.centerx, eval_text.dest_rect.bottom + 15),
             fontsize=FONT_SIZE_TINY,
             color=EVAL_PANEL_TEXT_COLOR

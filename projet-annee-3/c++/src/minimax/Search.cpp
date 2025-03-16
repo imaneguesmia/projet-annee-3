@@ -180,7 +180,5 @@ int Beluga::getPositionValue(ExtendedGameData& board, Player player)
 {
     int self_eval = evaluator.evaluate(board.getBoard(), player);
 
-    std::cout << "Self eval = " << self_eval << '\n';
-
     return self_eval;
 }

@@ -38,8 +38,10 @@ class scene_DifficultyMenu(Scene):
         def oc(point: tuple[int, int]) -> bool:
             self.request_scene_change(scene_id, {
                 "white_player": PlayerType.MINIMAX,
-                "black_player": PlayerType.MINIMAX,
-                # "initial_state": "3k4/8/8/8/8/3r1r2/r7/4K3 w - - 0 1"
+                "black_player": PlayerType.HUMAN,
+                # "initial_state": "3k4/5Q2/3K4/8/8/8/8/8 w - - 0 1"
+                # "initial_state": "4k3/8/8/8/8/3r1r2/r7/4K3 w - - 0 1"
+                # "initial_state": "4k3/8/8/8/8/4q3/r7/4K3 w - - 0 1"
             })
             return True
 

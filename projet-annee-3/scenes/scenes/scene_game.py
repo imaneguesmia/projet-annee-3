@@ -84,6 +84,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
             self._neural_net_engine: cm.AIMoveProvider = ...
         
         self._frames_before_next_turn = 0  # Set to `0` to advance game turn next frame.
+        self.update_stored_game_data()
     
     @property
     def selected_square(self) -> cm.Position | None: 
@@ -146,7 +147,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         self._board.can_accept_events = False
         self._board.is_game_over = True
 
-        self._game_end_panel.display_end_state(game_state)
+        self._game_end_panel.display_end_state(game_state, self._chess_game.current_player)
 
     def display_evaluations(self) -> None:
         """Updates the displayed position evaluations."""
@@ -163,18 +164,21 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
                     evaluation = self._neural_net_engine.get_position_value(self._extended_game_data, player)
 
             self._side_bar.set_evaluation(evaluation, player)
+    
+    def update_stored_game_data(self) -> None:
+        """Updates the cached game data."""
+        self._game_data = self._chess_game.game_data()
+        self._extended_game_data = self._chess_game.extended_game_data()
+
+        self.display_evaluations()
 
     def game_turn(self) -> None:
         """Does a game turn, checking if the game is finished then letting the current
         player make a move if it isn't.
         """
-        self._game_data = self._chess_game.game_data()
-        self._extended_game_data = self._chess_game.extended_game_data()
+        self.update_stored_game_data()
 
         current_player = self._chess_game.current_player
-
-        self.display_evaluations()
-
         game_state = self._game_data.game_state
 
         if game_state == cm.GameState.INGAME:
@@ -197,6 +201,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
             # Next turn
             self.advance_turn()
+            self.update_stored_game_data()
         else:
             print("INVALID MOVE")
             exit()
