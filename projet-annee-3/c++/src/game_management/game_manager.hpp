@@ -29,8 +29,6 @@ public:
         return std::make_unique<Beluga>(depth, at);
     }
 
-    // MovePrompter promptNextMove();
-
     Player getCurrentPlayer() { return game.getCurrentPlayer(); };
 
     GameData& gameData() { return game; };

@@ -36,17 +36,14 @@ class scene_DifficultyMenu(Scene):
 
         def oc(point: tuple[int, int]) -> bool:
             self.request_scene_change(scene_id, {
-                "white_player": PlayerType.HUMAN,
-                "black_player": PlayerType.MINIMAX
+                "white_player": PlayerType.MINIMAX,
+                "black_player": PlayerType.MINIMAX,
                 # "initial_state": "3k4/8/8/8/8/3r1r2/r7/4K3 w - - 0 1"
             })
             return True
 
         difficulty_button.on_click = oc
         return difficulty_button
-
-
-
 
     def _create_back_button(self, window_rect: pygame.Rect) -> Button:
         """Creates and returns the back button."""

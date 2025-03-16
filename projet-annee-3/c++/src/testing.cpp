@@ -21,27 +21,33 @@ C++ library and will not have any entry point.
 #include <memory>
 #include <stdexcept>
 
-int main(int argc, char ** argv) {
+int main(int argc, char ** argv) { 
+
+    // fewfwefew
     try {
-        auto gm = GameManager("r1bqkbnr/pppppppp/2n5/8/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2");
+        // auto gm = GameManager("4rr2/4P3/8/8/8/8/8/8 w - - 0 1");
         // auto gm = GameManager("r1bqkbnr/pppppppp/2n5/8/4P3/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 2");
         auto at = std::make_shared<const AttackTables>();
 
-        // auto g1 = Game(at);
+        auto g1 = Game(at, "4rr2/4P3/8/8/8/8/8/8 w - - 0 1");
         // auto g2 = Game(at);
+
+        for (const auto& m : g1.getCurrentLegals()) {
+            std::cout << m << '\n';
+        }
 
         // std::cout << g1.fen() << ' ' << g1.getHash() << '\n';
         // std::cout << g2.fen() << ' ' << g2.getHash() << '\n';
 
         // std::cout <<(int)gm.getCurrentPlayer()<<'\n';
 
-        auto s = gm.createMinimaxPlayer(1);
+        // auto s = gm.createMinimaxPlayer(1);
 
-        auto m = s->getMove(gm.extendedGameData());
+        // auto m = s->getMove(gm.extendedGameData());
 
-        std::cout << "Move:\n" << m << std::endl;
+        // std::cout << "Move:\n" << m << std::endl;
 
-        std::cout << (m == Move::NO_MOVE) << '\n';
+        // std::cout << (m == Move::NO_MOVE) << '\n';
     } catch (const std::exception& e) {
         std::cout << e.what() << '\n';
         return 1;

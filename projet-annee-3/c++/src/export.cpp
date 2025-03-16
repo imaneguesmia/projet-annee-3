@@ -116,7 +116,9 @@ void export_game(nb::module_& m) {
     nb::enum_<GameState>(m, "GameState")
         .value("INGAME", GameState::INGAME)
         .value("CHECKMATE", GameState::CHECKMATE)
-        .value("STALEMATE", GameState::STALEMATE);
+        .value("STALEMATE", GameState::STALEMATE)
+        .value("HALF_MOVE_DRAW", GameState::HALF_MOVE_DRAW)
+        .value("REPETITION", GameState::REPETITION);
     
     nb::class_<GameData>(m, "GameData")
         .def_prop_ro("current_player", &GameData::getCurrentPlayer)
@@ -155,7 +157,8 @@ void export_game(nb::module_& m) {
 
 void export_ai(nb::module_& m) {
     nb::class_<AIMoveProvider>(m, "AIMoveProvider")
-        .def("get_move", &AIMoveProvider::getMove);
+        .def("get_move", &AIMoveProvider::getMove)
+        .def("get_position_value", &AIMoveProvider::getPositionValue);
 }
 
 NB_MODULE(chess_module, m) {

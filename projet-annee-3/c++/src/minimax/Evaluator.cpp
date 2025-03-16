@@ -46,9 +46,9 @@ int Evaluator::mirrorSquare(int sq) const
 /**
  * @brief Evaluates the given board position.
  * @param board The current chess board state.
- * @return The evaluation score from the current's Player perspective.
+ * @return The evaluation score from the given Player perspective.
  */
-int Evaluator::evaluate(const Board& board,Player player)
+int Evaluator::evaluate(const Board& board, Player player)
 {
     int score = 0;
 

@@ -9,6 +9,7 @@ IMG_DIR = "projet-annee-3/images/"
 class PanelTheme(Enum):
     TEST = 0
     LEFT = 1
+    INSET = 2
 
 class ImageLoader:
     def __init__(self, square_size: float):
@@ -45,7 +46,7 @@ class ImageLoader:
                 self._select[i].append(self._load_square_image(f"select{i}{j}.png"))
     
     def _load_panels(self) -> None:
-        for i in range(2):
+        for i in range(3):
             self._panels.append(pygame.image.load(f"{IMG_DIR}panels{i}.png"))
     
     # -- Get specific sprites -- #

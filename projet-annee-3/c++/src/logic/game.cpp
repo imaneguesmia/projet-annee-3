@@ -138,7 +138,11 @@ bool Game::isCurrentlyInCheck() {
 
 GameState Game::getGameState() {
     if (update_flags & GAME_STATE) {
-        if (getCurrentLegals().size() == 0) {
+        if (isHalfMoveDraw()) {
+            game_state = GameState::HALF_MOVE_DRAW;
+        } else if (isRepetition()) {
+            game_state = GameState::REPETITION;
+        } else if (getCurrentLegals().size() == 0) {
             game_state = isCurrentlyInCheck() ? GameState::CHECKMATE : GameState::STALEMATE;
         } else {
             game_state = GameState::INGAME;

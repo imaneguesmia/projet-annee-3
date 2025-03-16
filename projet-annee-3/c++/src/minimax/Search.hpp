@@ -30,6 +30,14 @@ public:
      */
     Move getMove(ExtendedGameData& board) override;
 
+    /**
+     * @brief Evaluates the current board position.
+     * @param board The current chess board state.
+     * @return The ratio between the value of this state for the given player and the total value
+     * of this state for both players
+     */
+    int getPositionValue(ExtendedGameData& board, Player player) override;
+
 private:
     /**
      * @brief Implements the NegaMax search algorithm with alpha-beta pruning.

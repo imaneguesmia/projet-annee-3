@@ -14,10 +14,6 @@ GameManager::GameManager(const std::string& initial_position)
     , game(at, initial_position)
 {}
 
-// MovePrompter GameManager::promptNextMove() {
-//     return MovePrompter(*this, game);
-// }
-
 bool GameManager::makeMove(Move move) {
     return game.move(move);
 }

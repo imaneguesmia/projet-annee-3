@@ -133,12 +133,3 @@ class scene_CustomMenu(Scene):
         """Draws the scene and the slider."""
         super().draw(surface)
         self.depth_slider.draw(surface)
-
-
-
-
-
-
-
-
-

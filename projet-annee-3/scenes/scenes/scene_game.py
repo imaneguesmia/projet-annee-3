@@ -7,6 +7,7 @@ from .chess_board_callback_interface import ChessBoardCallbackInterface
 
 from .promotion_panel import PromotionPanel
 from .game_end_panel import GameEndPanel
+from .side_bar import SideBar, PANEL_WIDTH as SIDEBAR_WIDTH
 
 import cpp_chess as cm
 
@@ -23,7 +24,6 @@ from typing import override
 # ---- UI constants ---- #
 
 BOARD_SIZE = 800
-SIDE_PANEL_WIDTH = 400
 
 BUTTON_WIDTH = 200
 BUTTON_HEIGHT = 80
@@ -41,8 +41,13 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
     ):
         super().__init__(window_rect)
 
+        self._initial_state = initial_state
+
+        self._player_types = (white_player, black_player)
+
         self._chess_game = cm.GameManager() if initial_state is None else cm.GameManager(initial_state)
         self._game_data: cm.GameData = None
+        self._extended_game_data: cm.ExtendedGameData = None
 
         self._selected_square: cm.Position | None = None
         self._selected_moves: list[cm.Move] = []
@@ -50,7 +55,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         self._promotion: cm.Move | None = None
 
         # Centrer l'échiquier de 800x800 dans la fenêtre 1920x1080
-        self.board_x = (window_rect.width - SIDE_PANEL_WIDTH) // 2 - BOARD_SIZE // 2
+        self.board_x = (window_rect.width - SIDEBAR_WIDTH) // 2 - BOARD_SIZE // 2
         self.board_y = (window_rect.height - BOARD_SIZE) // 2
 
         self._board = ChessBoard(
@@ -68,11 +73,10 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         self.elements.append(self._promotion_panel)
         self.elements.append(self._game_end_panel)
 
-        self.elements.append(self._create_side_panel(window_rect))
+        self._side_bar = self._create_side_panel(window_rect)
+        self.elements.append(self._side_bar)
 
         # Initialize AI engines
-
-        self._player_types = [white_player, black_player]
 
         if PlayerType.MINIMAX in self._player_types:
             self._minimax_engine: cm.AIMoveProvider = self._chess_game.create_minimax_player(5)
@@ -129,7 +133,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
                 self._board.can_accept_events = False
 
                 move_to_make = self._minimax_engine.get_move(
-                    self._chess_game.extended_game_data()
+                    self._extended_game_data
                 )
 
                 self.make_move(move_to_make)
@@ -144,22 +148,41 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
         self._game_end_panel.display_end_state(game_state)
 
+    def display_evaluations(self) -> None:
+        """Updates the displayed position evaluations."""
+
+        for player in [cm.Player.White, cm.Player.Black]:
+            player_type = self.get_player_type(player)
+
+            match player_type:
+                case PlayerType.HUMAN:
+                    evaluation = None
+                case PlayerType.MINIMAX:
+                    evaluation = self._minimax_engine.get_position_value(self._extended_game_data, player)
+                case PlayerType.NEURAL_NET:
+                    evaluation = self._neural_net_engine.get_position_value(self._extended_game_data, player)
+
+            self._side_bar.set_evaluation(evaluation, player)
+
     def game_turn(self) -> None:
         """Does a game turn, checking if the game is finished then letting the current
         player make a move if it isn't.
         """
         self._game_data = self._chess_game.game_data()
+        self._extended_game_data = self._chess_game.extended_game_data()
+
         current_player = self._chess_game.current_player
+
+        self.display_evaluations()
 
         game_state = self._game_data.game_state
 
-        match game_state:
-            case cm.GameState.INGAME:
-                current_player_type = self.get_player_type(current_player)
+        if game_state == cm.GameState.INGAME:
+            current_player_type = self.get_player_type(current_player)
 
-                self.player_move(current_player_type)
-            case _:
-                self.end_game(game_state)
+            self.player_move(current_player_type)
+        else:
+            self.end_game(game_state)
 
     # -- Game model methods -- #
 
@@ -246,23 +269,9 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
     
     # -- UI elements -- #
 
-    def _quit_game_callback(self):
-        """Returns a callback that exits to main menu."""
-        def quit(_) -> bool:
-            self.request_scene_change(SceneId.MAINMENU, {})
-            return True
-
-        return quit
-
-    def _create_side_panel(self, window_rect: pygame.Rect) -> NinepatchPanel:
+    def _create_side_panel(self, window_rect: pygame.Rect) -> SideBar:
         """"""
-        panel_rect = pygame.Rect(
-            window_rect.width - SIDE_PANEL_WIDTH, 0,
-            SIDE_PANEL_WIDTH,
-            window_rect.height
-        )
-
-        panel = NinepatchPanel(panel_rect, img.IMAGES.panel(img.PanelTheme.LEFT))
+        panel = SideBar(window_rect, self._player_types)
 
         panel.add_child(self._create_quit_button(panel.area))
 
@@ -282,7 +291,11 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         quit_button.text_color = BLACK
         quit_button.text_font = pygame.font.Font(None, 50)
 
-        quit_button.on_click = self._quit_game_callback()
+        def quit(_) -> bool:
+            self.request_scene_change(SceneId.MAINMENU, {})
+            return True
+
+        quit_button.on_click = quit
 
         return quit_button
     
@@ -290,11 +303,19 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         """Created the game end panel."""
         panel = GameEndPanel(self._board.absolute_rect)
 
+        # Re-enter the scene with the same parameters
+        def retry(_) -> bool:
+            self.request_scene_change(SceneId.GAME, {
+                "initial_state": self._initial_state,
+                "white_player": self._player_types[0],
+                "black_player": self._player_types[1]
+            })
+
         def view_board(_) -> bool:
             self.hide_game_end_panel()
             return True
 
-        panel.set_on_quit_clicked(self._quit_game_callback())
+        panel.set_on_retry_clicked(retry)
         panel.set_on_view_board_clicked(view_board)
 
         return panel
