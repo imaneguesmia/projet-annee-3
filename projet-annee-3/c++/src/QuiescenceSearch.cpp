@@ -29,6 +29,11 @@ namespace chess {
         Movelist captures;
         movegen::legalmoves<movegen::MoveGenType::CAPTURE>(captures, board);
 
+        // If no captures are available, return the stand-pat score
+        if (captures.empty()) {
+            return standPat;
+        }
+
         // Assign score to moves using heuristics (MVV-LVA, etc.)
         moveOrdering.scoreMoves(captures, board, ply, Move::NO_MOVE);
 
@@ -40,11 +45,8 @@ namespace chess {
             int score = -quiescenceSearch(board, -beta, -alpha, ply + 1, evaluator, moveOrdering);
             board.unmakeMove(capture);
 
-            if (score > standPat) {
-                standPat = score;
-                if (score > alpha) {
-                    alpha = score;
-                }
+            if (score > alpha) {
+                alpha = score;
                 if (alpha >= beta) {
                     break; // Beta cutoff (fail-hard pruning)
                 }

@@ -38,6 +38,13 @@ namespace chess {
  *       * negative if the opponent has the advantage.
          */
         int evaluate(const Board& board);
+        
+        /**
+         * @brief Gets the material value of a piece.
+         * @param piece The chess piece.
+         * @return The material value of the piece.
+         */
+        int getPieceValue(Piece piece) const;
 
     private:
         /**
@@ -46,6 +53,13 @@ namespace chess {
          * @return Mirrored square index.
          */
         int mirrorSquare(int sq) const;
+        
+        // Material values for pieces
+        static constexpr int PAWN_VALUE = 100;
+        static constexpr int KNIGHT_VALUE = 320;
+        static constexpr int BISHOP_VALUE = 330;
+        static constexpr int ROOK_VALUE = 500;
+        static constexpr int QUEEN_VALUE = 900;
     };
 
 } // namespace chess

@@ -108,6 +108,21 @@ int Evaluator::mirrorSquare(int sq) const
 }
 
 /**
+ * @brief Gets the material value of a piece.
+ * @param piece The chess piece.
+ * @return The material value of the piece.
+ */
+int Evaluator::getPieceValue(Piece piece) const
+{
+    if (piece == Piece::NONE) {
+        return 0;
+    }
+    
+    PieceType pt = piece.type();
+    return baseValues[static_cast<int>(pt)];
+}
+
+/**
  * @brief Evaluates the given board position.
  * @param board The current chess board state.
  * @return The evaluation score from the current's Player perspective.

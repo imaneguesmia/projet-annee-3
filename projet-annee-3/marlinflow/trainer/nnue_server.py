@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+# python nnue_server.py --model-path "nn/beluga_v1_10" --model-type "board768" --scale 400
 import argparse
 import socket
 import sys
