@@ -258,4 +258,6 @@ BB::BitBoard AttackTables::getSlidingAttackTable(
     return magic.table[occupancy];
 }
 
+std::unique_ptr<const AttackTables> AttackTables::instance = nullptr;
+
 /* ---- END DEFINE ---- */

@@ -30,13 +30,13 @@
     * @brief Responsible for static board evaluation.
     */
 class Evaluator {
-    std::shared_ptr<const AttackTables> at;
+    const AttackTables& at = AttackTables::getInstance();
 
 public:
     /**
         * @brief todo
         */
-    Evaluator(std::shared_ptr<const AttackTables> at);
+    Evaluator();
 
     /**
         * @brief Evaluates the given board position.

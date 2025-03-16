@@ -97,6 +97,7 @@ class SideBar(NinepatchPanel):
         win_state_text = Text(
             "???",
             (EVAL_PANEL_H_PADDING, HEADER_FONT_SIZE//2 + HEADER_FONT_SIZE*2 + EVAL_PANEL_V_PADDING),
+            align=TextAlign.LEFT,
             fontsize=HEADER_FONT_SIZE,
             color="blue"
         )

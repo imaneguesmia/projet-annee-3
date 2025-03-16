@@ -9,7 +9,6 @@
 
 Beluga::Beluga(int depth, std::shared_ptr<const AttackTables> at)
     : searchDepth(depth)
-    , evaluator(std::move(at))
 {}
 
 Move Beluga::getMove(ExtendedGameData& board)

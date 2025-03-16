@@ -46,7 +46,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     // Generate pushes on the fly because I can't be bothered.
 
                     // Special attack validation: can only do this move if attacking something.
-                    BB::BitBoard attacks = at->getPawnAttackBitboard(player, from) & board.occupancy(other);
+                    BB::BitBoard attacks = at.getPawnAttackBitboard(player, from) & board.occupancy(other);
 
                     BB::BitBoard single_push;
 
@@ -61,25 +61,25 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     }
 
                     en_passant = en_passant_position.isValid();
-                    en_passant *= at->getPawnAttackBitboard(player, from) & BB::new_at(en_passant_position);
+                    en_passant *= at.getPawnAttackBitboard(player, from) & BB::new_at(en_passant_position);
 
                     capture = attacks | en_passant;
                     pseudo_legals = single_push | double_push | capture;
                 } break;
                 case PType::Knight:
-                    pseudo_legals = at->getKnightAttackBitboard(from) & ~board.occupancy(player);
+                    pseudo_legals = at.getKnightAttackBitboard(from) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case PType::Bishop:
-                    pseudo_legals = at->getBishopAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    pseudo_legals = at.getBishopAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case PType::Rook:
-                    pseudo_legals = at->getRookAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    pseudo_legals = at.getRookAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case PType::Queen:
-                    pseudo_legals = at->getQueenAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
+                    pseudo_legals = at.getQueenAttackBitboard(from, board.occupancy()) & ~board.occupancy(player);
                     capture = pseudo_legals & board.occupancy(other);
                 break;
                 case PType::King: {
@@ -99,7 +99,7 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                         }
                     }
 
-                    BB::BitBoard attacks = at->getKingAttackBitboard(from) & ~board.occupancy(player);
+                    BB::BitBoard attacks = at.getKingAttackBitboard(from) & ~board.occupancy(player);
 
                     pseudo_legals = attacks | castle;
                     capture = attacks & board.occupancy(other);

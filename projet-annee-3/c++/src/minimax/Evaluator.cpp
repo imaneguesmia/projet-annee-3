@@ -11,9 +11,7 @@
 #include <array>
 #include <cstdint>
 
-Evaluator::Evaluator(std::shared_ptr<const AttackTables> at)
-    : at(std::move(at))
-{
+Evaluator::Evaluator() {
     for (int file = 0; file < 8; file++) {
         uint64_t bitboard = 0;
 
@@ -329,7 +327,7 @@ int Evaluator::mobilityHeuristic(const Board& board, Player player) {
     // Mobility score for Knights
     Piece knight{PType::Knight,player};
     BB::BitBoard knights_bb = board.bitboard(knight);
-    BB::BitBoard knights_attacks_bb = at->generateSetwiseKnightAttacks(knights_bb) & ~friendly_bb;
+    BB::BitBoard knights_attacks_bb = at.generateSetwiseKnightAttacks(knights_bb) & ~friendly_bb;
     int knights_attacks_count = BB::popcount(knights_attacks_bb) ;
 
     score += mobility_bonus[int(PType::Knight)][knights_attacks_count];
@@ -337,7 +335,7 @@ int Evaluator::mobilityHeuristic(const Board& board, Player player) {
     // Mobility score for Bishops
     Piece bishop{PType::Bishop,player};
     BB::BitBoard bishops_bb = board.bitboard(bishop);
-    BB::BitBoard bishops_attacks_bb = at->generateSetwiseBishopAttacks(bishops_bb,occupied_bb) & ~friendly_bb;
+    BB::BitBoard bishops_attacks_bb = at.generateSetwiseBishopAttacks(bishops_bb,occupied_bb) & ~friendly_bb;
     int bishop_attacks_count = BB::popcount(bishops_attacks_bb);
 
     score += mobility_bonus[int(PType::Bishop)][bishop_attacks_count];
@@ -345,7 +343,7 @@ int Evaluator::mobilityHeuristic(const Board& board, Player player) {
     // Mobility score for Rooks
     Piece rook{PType::Rook,player};
     BB::BitBoard rooks_bb = board.bitboard(rook);
-    BB::BitBoard rooks_attacks_bb = at->generateSetwiseRookAttacks(rooks_bb,occupied_bb) & ~friendly_bb;
+    BB::BitBoard rooks_attacks_bb = at.generateSetwiseRookAttacks(rooks_bb,occupied_bb) & ~friendly_bb;
     int rooks_attacks_count = BB::popcount(rooks_attacks_bb);
 
     score += mobility_bonus[int(PType::Rook)][rooks_attacks_count];
@@ -353,7 +351,7 @@ int Evaluator::mobilityHeuristic(const Board& board, Player player) {
     // Mobility score for Queens
     Piece queen{PType::Queen,player};
     BB::BitBoard queens_bb = board.bitboard(queen);
-    BB::BitBoard queens_attacks_bb = at->generateSetwiseQueenAttacks(queens_bb,occupied_bb) & ~friendly_bb;
+    BB::BitBoard queens_attacks_bb = at.generateSetwiseQueenAttacks(queens_bb,occupied_bb) & ~friendly_bb;
     int queens_attacks_count = BB::popcount(queens_attacks_bb);
 
     score += mobility_bonus[int(PType::Queen)][queens_attacks_count];    

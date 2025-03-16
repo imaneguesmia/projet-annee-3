@@ -27,9 +27,9 @@ int main(int argc, char ** argv) {
     try {
         // auto gm = GameManager("4rr2/4P3/8/8/8/8/8/8 w - - 0 1");
         // auto gm = GameManager("r1bqkbnr/pppppppp/2n5/8/4P3/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 2");
-        auto at = std::make_shared<const AttackTables>();
+        // auto at = std::make_shared<const AttackTables>();
 
-        auto g1 = Game(at, "4rr2/4P3/8/8/8/8/8/8 w - - 0 1");
+        auto g1 = Game("4rr2/4P3/8/8/8/8/8/8 w - - 0 1");
         // auto g2 = Game(at);
 
         for (const auto& m : g1.getCurrentLegals()) {

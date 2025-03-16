@@ -115,11 +115,8 @@ private:
     };
     const GameData gameStateFromFEN(const std::string& fen) const;
 
-    Game(const std::shared_ptr<const AttackTables> at, const GameData& initial_state)
-        : board_analysis(at)
-        , move_generator(std::move(at))
-
-        , board(initial_state.board_string)
+    Game(const GameData& initial_state)
+        : board(initial_state.board_string)
         , current_player(initial_state.current_player)
         , castling_rights(initial_state.castling_rights)
         , en_passant(initial_state.en_passant)
@@ -157,14 +154,8 @@ private:
     void unmakeMoveOnBoard(const UnmakeMove unmake_move);
 
 public:
-    Game(const std::shared_ptr<const AttackTables> at, const std::string& fen) : Game(
-        std::move(at),
-        gameStateFromFEN(fen)
-    ) {};
-    Game(const std::shared_ptr<const AttackTables> at) : Game(
-        std::move(at),
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-    ) {};
+    Game(const std::string& fen) : Game(gameStateFromFEN(fen)) {};
+    Game() : Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {};
 
     /* -- Getters and setters -- */
 

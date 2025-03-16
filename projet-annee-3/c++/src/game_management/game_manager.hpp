@@ -21,7 +21,7 @@ class GameManager {
     Game game;
 
 public:
-    GameManager();
+    GameManager() {};
     GameManager(const std::string& initial_position);
     ~GameManager() {};
 
