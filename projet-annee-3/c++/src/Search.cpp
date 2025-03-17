@@ -29,11 +29,11 @@ Move Beluga::getMove(Board& board)
         int alpha = (currentDepth == 1) ? alphaGlobal : bestScore - ASP_WIN;
         int beta  = (currentDepth == 1) ? betaGlobal  : bestScore + ASP_WIN;
 
-        int score = negamax(board, currentDepth, alpha, beta, /*ply=*/0, /*isPV=*/true);
+        int score = negamax(board, currentDepth, alpha, beta, /*ply=*/0, /*isPV=*/true, /*nullMoveAllowed=*/true);
 
         // If we have a fail-low or fail-high, redo search with full window
         if (score <= alpha || score >= beta) {
-            score = negamax(board, currentDepth, -INF, +INF, /*ply=*/0, /*isPV=*/true);
+            score = negamax(board, currentDepth, -INF, +INF, /*ply=*/0, /*isPV=*/true, /*nullMoveAllowed=*/true);
         }
 
         bestScore = score;
@@ -69,7 +69,7 @@ bool Beluga::givesCheck(Board& board, const Move move) {
     return isInCheck;
 }
 
-int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply, bool isPV)
+int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply, bool isPV, bool nullMoveAllowed)
 {
     /**
      * @brief Executes the NegaMax algorithm with alpha-beta pruning.
@@ -117,9 +117,38 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
         return quiescenceSearch(board, alpha, beta, ply, evaluator, moveOrdering);
     }
 
+    // Static evaluation for pruning decisions
+    const int staticEval = evaluator.evaluate(board);
+    
+    // Reverse Futility Pruning (Static Null Move Pruning)
+    // Skip if in check, in PV node, or at high depth
+    if (!inCheck && !isPV && depth <= RFP_DEPTH) {
+        const int rfpMargin = RFP_MARGIN * depth;
+        if (staticEval - rfpMargin >= beta) {
+            return staticEval; // Position is so good that even with a margin, we're above beta
+        }
+    }
+
+    // Null Move Pruning
+    // Skip if in check, in PV node, or at low depth
+    if (nullMoveAllowed && !inCheck && !isPV && depth >= NULL_MOVE_MIN_DEPTH && staticEval >= beta) {
+        // Make a null move (skip a turn)
+        board.makeNullMove();
+        
+        // Search with reduced depth (R = NULL_MOVE_REDUCTION)
+        int nullScore = -negamax(board, depth - NULL_MOVE_REDUCTION - 1, -beta, -beta + 1, ply + 1, false, false);
+        
+        // Unmake the null move
+        board.unmakeNullMove();
+        
+        // If the null move search fails high, we can prune this node
+        if (nullScore >= beta) {
+            return beta; // Null move cutoff
+        }
+    }
+
     // Futility pruning at frontier nodes (depth == 1)
     // Skip if in check or in PV node
-    const int staticEval = evaluator.evaluate(board);
     bool skipQuiets = false;
     
     if (depth <= FUTILITY_DEPTH && !inCheck && !isPV) {
@@ -196,16 +225,16 @@ int Beluga::negamax(Board& board, int depth, int alpha, int beta, int ply, bool 
             reduction = std::min(depth - 1, reduction);
             
             // Reduced depth search
-            val = -negamax(board, depth - 1 - reduction, -alpha - 1, -alpha, ply + 1, false);
+            val = -negamax(board, depth - 1 - reduction, -alpha - 1, -alpha, ply + 1, false, true);
             
             // If the reduced search failed high, we need to do a full-depth search
             if (val > alpha) {
-                val = -negamax(board, depth - 1, -beta, -alpha, ply + 1, isPV);
+                val = -negamax(board, depth - 1, -beta, -alpha, ply + 1, isPV, true);
             }
         } 
         else {
             // Normal search for important moves or early moves
-            val = -negamax(board, depth - 1, -beta, -alpha, ply + 1, isPV && moveIndex == 0);
+            val = -negamax(board, depth - 1, -beta, -alpha, ply + 1, isPV && moveIndex == 0, true);
         }
         
         board.unmakeMove(move);

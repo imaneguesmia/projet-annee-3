@@ -36,9 +36,10 @@ private:
      * @param beta Beta bound for pruning.
      * @param ply Current search depth from the root.
      * @param isPV Whether the current node is in the principal variation.
+     * @param nullMoveAllowed Whether null move pruning is allowed in this position.
      * @return Evaluation score for the position.
      */
-    int negamax(Board& board, int depth, int alpha, int beta, int ply, bool isPV);
+    int negamax(Board& board, int depth, int alpha, int beta, int ply, bool isPV, bool nullMoveAllowed);
 
     /**
      * @brief Evaluates a terminal game state (checkmate, stalemate, etc.).
@@ -82,6 +83,14 @@ private:
     // Late Move Pruning (LMP) constants
     static constexpr int LMP_DEPTH = 3;            ///< Maximum depth for LMP
     static constexpr int LMP_BASE = 3;             ///< Base number of moves to search before LMP
+    
+    // Null Move Pruning constants
+    static constexpr int NULL_MOVE_MIN_DEPTH = 3;  ///< Minimum depth for null move pruning
+    static constexpr int NULL_MOVE_REDUCTION = 3;  ///< Depth reduction for null move (R value)
+    
+    // Reverse Futility Pruning constants
+    static constexpr int RFP_DEPTH = 7;            ///< Maximum depth for reverse futility pruning
+    static constexpr int RFP_MARGIN = 80;          ///< Margin per depth for reverse futility pruning
 };
 
 } // namespace chess

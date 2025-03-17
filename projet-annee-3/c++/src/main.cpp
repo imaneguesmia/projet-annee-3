@@ -11,7 +11,7 @@ int main() {
     chess::MinimaxAI2 betterai(5);
     chess::MinimaxAI2 betterrai(5);
     chess::HumanPlayer human;
-    chess::Beluga theBest(4);
+    chess::Beluga theBest(5);
     chess::Beluga theBest2(5);
 
     // Create BelugaNNUE instance with neural network
@@ -24,7 +24,7 @@ int main() {
     // You can uncomment one of these lines to play different matches:
     
     // Human vs BelugaNNUE (you play as White)
-    chess::GameManager game(&theBest,&belugaNNUE);
+    chess::GameManager game(&theBest,&theBest2);
     
     // Or BelugaNNUE vs Human (you play as Black)
     // chess::GameManager game(&belugaNNUE, &human);
