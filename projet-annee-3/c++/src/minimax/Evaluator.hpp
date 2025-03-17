@@ -55,7 +55,7 @@ private:
         */
     int mirrorSquare(int sq) const;
     uint64_t arrNeighborFiles[8];
-    int baseValues[6];
+    int baseValues[7] {100, 350, 350, 525, 1000, 9999, 0};
     const int isolatedScore[8] = { -12, -14, -16, -20, -20, -16, -14, -12 }; // https://beginchess.com/2010/08/15/think-like-a-chess-engine
     const int candidatePassedMidgame[8] = { 0, 6, 6, 14, 34, 83, 0, 0 }; // endgame : const int CandidatePassedEndgame[RANK_NB] = { 0, 13, 13, 29, 68, 166, 0, 0 }; source reddit
     int pawnValues[8] = {-12, -14, -16, -20, -20, -16, -14, -12};     // https://beginchess.com/2010/08/15/think-like-a-chess-engine

@@ -78,14 +78,3 @@ int pieceSquareTable[7][64] = {
         -50,-30,-30,-30,-30,-30,-30,-50
     }
 };
-
-// Base material values for each piece type
-int baseValues[] = {
-    100,   // Pawn
-    300,   // Knight
-    300,   // Bishop
-    500,   // Rook
-    900,   // Queen
-    10000, // King
-    0      // None (empty square)
-}; 
