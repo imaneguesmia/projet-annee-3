@@ -107,8 +107,9 @@ int Evaluator::evaluate(const Board &board, Player player)
 
     // KingSafety
 
-    // KingSafety kingSafety;
-    // score += kingSafety.evaluate(board, player);
+    KingSafety kingSafety;
+    int safetyScore = kingSafety.evaluate(board, player);
+    score += ((safetyScore * materialScore(board, player)) / 100);
 
     return score;
 }
@@ -407,5 +408,16 @@ int Evaluator::mobilityHeuristic(const Board &board, Player player)
     int queens_attacks_count = BB::popcount(queens_attacks_bb);
 
     score += mobility_bonus[int(PType::Queen)][queens_attacks_count];
+    return score;
+}
+
+int Evaluator::materialScore(const Board &board, Player player) const
+{
+    int score = 0;
+    for (auto pt : {PType::Pawn, PType::Knight, PType::Bishop, PType::Rook, PType::Queen})
+    {
+        int pieceCount = BB::popcount(board.bitboard(Piece(pt, player)));
+        score += pieceCount * baseValues[static_cast<int>(pt)];
+    }
     return score;
 }

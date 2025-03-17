@@ -1,11 +1,14 @@
 #include "KingSafety.hpp"
 #include "MoveOrdering.hpp"
 #include "../logic/attack_tables.hpp"
-#include "../../external/chess-library/chess.hpp"
+#include "../logic/board.hpp"
+#include "../logic/position.hpp"
+#include "../logic/move_generator.hpp"
+#include "../logic/move.hpp"
 
 int KingSafety::evaluate(const Board &board, Player player) const
 {
-    Square kingSquare = board.kingSquare(player);
+    Position kingSquare = board.kingSquare(player);
     int safetyScore = 0;
 
     safetyScore += pawnShieldScore(board, kingSquare, player);
@@ -14,10 +17,10 @@ int KingSafety::evaluate(const Board &board, Player player) const
     safetyScore -= attackingKingZoneScore(board, kingSquare, player);
     safetyScore -= virtualMobility(board, kingSquare, player);
 
-    return scaleKingSafety(safetyScore, board, player);
+    return safetyScore;
 }
 
-int KingSafety::pawnShieldScore(const Board &board, Square kingSquare, Player player) const
+int KingSafety::pawnShieldScore(const Board &board, Position kingSquare, Player player) const
 {
     int score = 0;
     int rank = kingSquare.getRow();
@@ -33,13 +36,17 @@ int KingSafety::pawnShieldScore(const Board &board, Square kingSquare, Player pl
     return score;
 }
 
-int KingSafety::pawnStormPenalty(const Board &board, Square kingSquare, Player player) const
+int KingSafety::pawnStormPenalty(const Board &board, Position kingSquare, Player player) const
 {
     int penalty = 0;
     int rank = kingSquare.getRow();
-    for (const auto &move : board.legalMoves(otherPlayer(player)))
+
+    MoveGenerator moveGen;
+    std::vector<Move> moves = moveGen.generateMoves(otherPlayer(player), board, Position(), 0, false);
+    for (const auto &move : moves)
+
     {
-        if (move.to().getRow() == rank + (player == Player::White ? -1 : 1))
+        if (Position(move.target).getRow() == rank + (player == Player::White ? -1 : 1))
         {
             penalty += 10;
         }
@@ -47,56 +54,57 @@ int KingSafety::pawnStormPenalty(const Board &board, Square kingSquare, Player p
     return penalty;
 }
 
-int KingSafety::kingTropismScore(const Board &board, Square kingSquare, Player player) const
+int KingSafety::kingTropismScore(const Board &board, Position kingSquare, Player player) const
 {
     int score = 0;
-    for (const auto &move : board.legalMoves(otherPlayer(player)))
+    MoveGenerator moveGen;
+    std::vector<Move> moves = moveGen.generateMoves(otherPlayer(player), board, Position(), 0, false);
+    for (const auto &move : moves)
     {
-        int distance = abs(kingSquare.getCol() - move.to().getCol()) + abs(kingSquare.getRow() - move.to().getRow());
-        int pieceValue = (move.piece().getType() == PType::Queen) ? 2 : 1;
+        int distance = abs(kingSquare.getColumn() - Position(move.target).getColumn()) + abs(kingSquare.getRow() - Position(move.target).getRow());
+        int pieceValue = (move.p_type == PType::Queen) ? 2 : 1;
         score += (distance < 3) ? 20 * pieceValue : 0;
     }
     return score;
 }
 
-int KingSafety::attackingKingZoneScore(const Board &board, Square kingSquare, Player player) const
+int KingSafety::attackingKingZoneScore(const Board &board, Position kingSquare, Player player) const
 {
     int attackScore = 0;
     int attackingPiecesCount = 0;
 
-    for (const auto &move : board.legalMoves(otherPlayer(player)))
+    MoveGenerator moveGen;
+    std::vector<Move> moves = moveGen.generateMoves(otherPlayer(player), board, Position(), 0, false);
+    for (const auto &move : moves)
     {
-        if (abs(kingSquare.getCol() - move.to().getCol()) <= 1 && abs(kingSquare.getRow() - move.to().getRow()) <= 1)
+        if (abs(kingSquare.getColumn() - Position(move.target).getColumn()) <= 1 && abs(kingSquare.getRow() - Position(move.target).getRow()) <= 1)
         {
             attackingPiecesCount++;
-            attackScore += attackValue(move.piece().getType());
+            attackScore += attackValue(move.p_type);
         }
     }
 
     return attackScore * attackWeight[attackingPiecesCount] / 100;
 }
 
-int KingSafety::virtualMobility(const Board &board, Square kingSquare, Player player) const
+int KingSafety::virtualMobility(const Board &board, Position kingSquare, Player player) const
 {
     int mobilityScore = 0;
-    BB::BitBoard kingMoves = AttackTables::getQueenAttackBitboard(kingSquare, board.occupancy());
+
+    const AttackTables &attackTables = AttackTables::getInstance();
+    BB::BitBoard kingMoves = attackTables.getQueenAttackBitboard(kingSquare, board.occupancy());
 
     while (kingMoves)
     {
-        Square sq = BB::leastSignificantBitIndex(kingMoves);
-        if (board.isAttacked(sq, otherPlayer(player)))
+        Square sq = static_cast<Square>(BB::leastSignificantBitIndex(kingMoves));
+        BoardAnalysis board_analysis;
+        if (board_analysis.isSquareAttacked(sq, otherPlayer(player), board))
             mobilityScore += 5;
 
-        BB::reset_bit(kingMoves, sq);
+        BB::reset_bit(kingMoves, static_cast<int>(sq));
     }
 
     return mobilityScore;
-}
-
-int KingSafety::scaleKingSafety(int safetyScore, const Board &board, Player player) const
-{
-    int materialWeight = board.materialScore(player);
-    return (safetyScore * materialWeight) / 100;
 }
 
 int KingSafety::attackValue(PType pieceType) const
