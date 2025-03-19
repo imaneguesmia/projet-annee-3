@@ -2,6 +2,7 @@
 
 #include "../game_management/move_provider.hpp"
 
+#include "evaluator_settings.hpp"
 #include "TranspositionTable.hpp"
 #include "Evaluator.hpp"
 #include "MoveOrdering.hpp"
@@ -21,7 +22,7 @@ public:
      * @brief Constructor for the Beluga search engine.
      * @param depth Maximum search depth.
      */
-    explicit Beluga(int depth, std::shared_ptr<const AttackTables> at);
+    explicit Beluga(int depth, EvaluatorSettings eval);
 
     /**
      * @brief Determines the best move for the current board position.

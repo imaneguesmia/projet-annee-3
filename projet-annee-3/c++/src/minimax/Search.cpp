@@ -7,8 +7,9 @@
 
 #include <algorithm> // std::max
 
-Beluga::Beluga(int depth, std::shared_ptr<const AttackTables> at)
+Beluga::Beluga(int depth, EvaluatorSettings eval)
     : searchDepth(depth)
+    , evaluator(eval)
 {}
 
 Move Beluga::getMove(ExtendedGameData& board)

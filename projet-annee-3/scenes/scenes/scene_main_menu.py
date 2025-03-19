@@ -11,7 +11,7 @@ MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80
 BUTTON_SPACING = 100  # Espace entre les boutons
 
-bg_image_path = "./resources/images/beach.jpg"
+bg_image_path = "./resources/images/testbg.png"
 button_sprite_path = "./resources/images/button_sprite.png"
 
 class scene_MainMenu(Scene):

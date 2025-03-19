@@ -1,9 +1,11 @@
 from .ui_element import UIElement
-from .text import Text
+from .text import Text, TextAlign
 
 import pygame
 
 from typing import override
+
+BUTTON_TEXT_PADDING_X = 10
 
 class Button(UIElement):
     def __init__(self, rect: pygame.Rect, text: str):
@@ -30,6 +32,21 @@ class Button(UIElement):
     @text_font.setter
     def text_font(self, font: pygame.font.Font) -> None:
         self._text.font = font
+    
+    @property
+    def text_align(self) -> TextAlign:
+        return self._text.align
+    @text_align.setter
+    def text_align(self, align: TextAlign) -> None:
+        self._text.align = align
+        
+        match align:
+            case TextAlign.LEFT:
+                self._text.anchor = (self.area.left + BUTTON_TEXT_PADDING_X, self.area.centery)
+            case TextAlign.CENTER:
+                self._text.anchor = self.area.center
+            case TextAlign.RIGHT:
+                self._text.anchor = (self.area.right - BUTTON_TEXT_PADDING_X, self.area.centery)
 
     @override
     def update(self) -> None:

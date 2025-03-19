@@ -5,6 +5,7 @@ from .button import Button
 from .panel import Panel
 from .image import Image
 from .ninepatch_panel import NinepatchPanel
+from .cycling_options import CyclingOptions
 
 __all__ = [
     "UIElement", 
@@ -13,4 +14,5 @@ __all__ = [
     "Panel",
     "Image",
     "NinepatchPanel",
+    "CyclingOptions"
 ]

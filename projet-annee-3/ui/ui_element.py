@@ -194,7 +194,14 @@ class UIElement(AttributeWatcher, ABC):
         dest.blit(self._surface, self.dest_rect)
 
     @abstractmethod
-    def update(self) -> None: ...
+    def update(self) -> None:
+        """Updates the UI element. Called once per cycle, before `UIElement.draw()`."""
 
     @abstractmethod
-    def draw(self, dest: pygame.Surface) -> None: ...
+    def draw(self, dest: pygame.Surface) -> None:
+        """Draws the UI element. Called once per cycle, after `UIElement.update()`.
+
+        Args:
+            dest (pygame.Surface): The surface of this UI element. It is the size of this
+                                   element's `Rect` and its top-left corner is (0, 0).
+        """

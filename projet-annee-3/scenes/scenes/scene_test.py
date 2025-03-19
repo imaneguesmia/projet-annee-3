@@ -1,7 +1,8 @@
 from ..scene import Scene
 from ..scene_change import SceneId
 
-from ui import Text, Button, NinepatchPanel
+from ui import Text, Button, NinepatchPanel, CyclingOptions
+from ui.font import FONT_PATH, FONT_SIZE_MEDIUM
 
 import image_loader as img
 
@@ -24,16 +25,16 @@ class scene_Test(Scene):
 
         # self.elements.append(text)
 
-        button = Button(pygame.Rect(400, 400, 200, 100), "test scene")
-        button.color = (0, 200, 0)
-        button.text_color = (255, 0, 255)
+        # button = Button(pygame.Rect(400, 400, 200, 100), "test scene")
+        # button.color = (0, 200, 0)
+        # button.text_color = (255, 0, 255)
 
-        def oc(point: tuple[int, int]):
-            self.request_scene_change(SceneId.MAINMENU, {})
+        # def oc(point: tuple[int, int]):
+        #     self.request_scene_change(SceneId.MAINMENU, {})
 
-            return True
+        #     return True
 
-        button.on_click = oc
+        # button.on_click = oc
 
         # child = Button(pygame.Rect(0, 0, 100, FONT_SIZE_SMALL), "child")
 
@@ -46,7 +47,13 @@ class scene_Test(Scene):
 
         # button.add_child(child)
 
-        self.elements.append(button)
+        # self.elements.append(button)
 
         panel = NinepatchPanel(pygame.Rect(100, 100, 256, 128), img.IMAGES.panel(img.PanelTheme.TEST), 25)
         self.elements.append(panel)
+
+        co = CyclingOptions(pygame.Rect(400, 400, 300, 100), 100, 15, ["option 1", "option 2", "option 3"])
+        co.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
+
+        self.elements.append(co)
+

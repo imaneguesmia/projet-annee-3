@@ -10,6 +10,7 @@
 #include "../logic/player.hpp"
 
 #include "../minimax/Search.hpp"
+#include "../minimax/evaluator_settings.hpp"
 
 #include <memory>
 #include <string>
@@ -17,7 +18,6 @@
 /* ---- DECLARE class GameManager ---- */
 
 class GameManager {
-    const std::shared_ptr<const AttackTables> at;
     Game game;
 
 public:
@@ -25,8 +25,8 @@ public:
     GameManager(const std::string& initial_position);
     ~GameManager() {};
 
-    std::unique_ptr<AIMoveProvider> createMinimaxPlayer(int depth) {
-        return std::make_unique<Beluga>(depth, at);
+    std::unique_ptr<AIMoveProvider> createMinimaxPlayer(int depth, EvaluatorSettings settings) {
+        return std::make_unique<Beluga>(depth, settings);
     }
 
     Player getCurrentPlayer() { return game.getCurrentPlayer(); };

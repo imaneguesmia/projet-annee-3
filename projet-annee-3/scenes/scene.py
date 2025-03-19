@@ -1,4 +1,5 @@
 from .scene_change import SceneId, SceneChange
+from .scene_changer_interface import SceneChangeInterface
 
 from ui import UIElement
 
@@ -7,9 +8,9 @@ from pygame.event import Event
 
 from abc import ABC, abstractmethod
 
-from typing import final
+from typing import override, final
 
-class Scene(ABC):
+class Scene(SceneChangeInterface, ABC):
     @abstractmethod
     def __init__(self, window_rect: pygame.Rect, bg_image_path: str=None):
         self.window_rect = window_rect
@@ -62,6 +63,7 @@ class Scene(ABC):
         dest.blit(self._surface, dest.get_rect())
 
     @final
+    @override
     def request_scene_change(self, scene_id: SceneId, kwargs: dict[str]) -> None:
         self._scene_change = SceneChange(scene_id, kwargs)
     @final

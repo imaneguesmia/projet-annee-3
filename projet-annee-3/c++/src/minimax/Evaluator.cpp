@@ -12,7 +12,8 @@
 #include <array>
 #include <cstdint>
 
-Evaluator::Evaluator()
+Evaluator::Evaluator(EvaluatorSettings eval)
+    : settings(eval)
 {
     for (int file = 0; file < 8; file++)
     {
@@ -55,6 +56,8 @@ int Evaluator::evaluate(const Board &board, Player player)
 {
     int score = 0;
 
+    // int materialScore = 0;
+
     for (auto pt : {
              PType::Pawn,
              PType::Knight,
@@ -74,6 +77,7 @@ int Evaluator::evaluate(const Board &board, Player player)
                 int sq = BB::leastSignificantBitIndex(bbWhite);
                 bbWhite &= bbWhite - 1;
                 score += baseValues[typeIndex];
+                // materialScore += baseValues[typeIndex];
                 score += pieceSquareTable[typeIndex][sq];
             }
         }
@@ -87,6 +91,7 @@ int Evaluator::evaluate(const Board &board, Player player)
                 int sq = BB::leastSignificantBitIndex(bbBlack);
                 bbBlack &= bbBlack - 1;
                 score -= baseValues[typeIndex];
+                // materialScore -= baseValues[typeIndex];
                 score -= pieceSquareTable[typeIndex][mirrorSquare(sq)];
             }
         }
@@ -96,8 +101,8 @@ int Evaluator::evaluate(const Board &board, Player player)
     score += pawnStructureHeuristic(board, Player::White);
     score -= pawnStructureHeuristic(board, Player::Black);
 
-    score += mobilityHeuristic(board, Player::White);
-    score -= mobilityHeuristic(board, Player::Black);
+    // score += mobilityHeuristic(board, Player::White);
+    // score -= mobilityHeuristic(board, Player::Black);
 
     // Adjust score if Black is to move
     if (player == Player::Black)
@@ -107,9 +112,9 @@ int Evaluator::evaluate(const Board &board, Player player)
 
     // KingSafety
 
-    KingSafety kingSafety;
-    int safetyScore = kingSafety.evaluate(board, player);
-    score += ((safetyScore * materialScore(board, player)) / 100);
+    // KingSafety kingSafety;
+    // int safetyScore = kingSafety.evaluate(board, player);
+    // score += ((safetyScore * materialScore(board, player)) / 100);
 
     return score;
 }

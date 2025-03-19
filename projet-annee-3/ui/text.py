@@ -33,7 +33,7 @@ class Text(UIElement):
 
         self._update_surfaces()
 
-        self.watch("text", "align", "font", "color", "bg_color")
+        self.watch("text", "anchor", "align", "font", "color", "bg_color")
     
     def _update_surfaces(self) -> None:
         self._alpha_surface = pygame.Surface(self.area.size, pygame.SRCALPHA)
@@ -62,7 +62,7 @@ class Text(UIElement):
     def update(self) -> None:
         if self.is_changed("text") or self.is_changed("font") or \
            self.is_changed("color") or self.is_changed("bg_color") or \
-           self.is_changed("align"):
+           self.is_changed("anchor") or self.is_changed("align"):
             self._update_surfaces()
     
     @override

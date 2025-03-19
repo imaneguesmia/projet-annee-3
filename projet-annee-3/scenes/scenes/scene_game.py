@@ -79,7 +79,14 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         # Initialize AI engines
 
         if PlayerType.MINIMAX in self._player_types:
-            self._minimax_engine: cm.AIMoveProvider = self._chess_game.create_minimax_player(5)
+            eval_settings = cm.EvaluatorSettings()
+
+            eval_settings.material = True
+            eval_settings.piece_square_table = True
+            eval_settings.mobility = True
+            eval_settings.pawn_structure = True
+
+            self._minimax_engine = self._chess_game.create_minimax_player(5, eval_settings)
         if PlayerType.NEURAL_NET in self._player_types:
             self._neural_net_engine: cm.AIMoveProvider = ...
         

@@ -8,7 +8,7 @@
 #include "game_management/game_manager.hpp"
 #include "game_management/move_provider.hpp"
 
-#include "view/board_view.hpp"
+#include "minimax/evaluator_settings.hpp"
 
 #include "view/board_view.hpp"
 
@@ -140,6 +140,14 @@ void export_game(nb::module_& m) {
         .def("extended_game_data", &MovePrompter::extendedGameData, nb::rv_policy::reference)
 
         .def("propose_move", &MovePrompter::proposeMove);
+    
+    nb::class_<EvaluatorSettings>(m, "EvaluatorSettings")
+        .def(nb::init<>())
+
+        .def_rw("material", &EvaluatorSettings::material)
+        .def_rw("piece_square_table", &EvaluatorSettings::pieceSquareTable)
+        .def_rw("mobility", &EvaluatorSettings::mobility)
+        .def_rw("pawn_structure", &EvaluatorSettings::pawnStructure);
     
     nb::class_<GameManager>(m, "GameManager")
         .def(nb::init<>())
