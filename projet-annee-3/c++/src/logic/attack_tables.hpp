@@ -64,58 +64,26 @@ class AttackTables {
 
     /* -- Sliding attacks -- */
 
-    /**
-     * @brief Helper class to handle advancing a position along a direction.
-     */
-    class Direction {
-        // x- and y-difference for advancing along this direction.
-        int dx, dy;
-
-    public:
-        // Enum over all 8 cardinal directions.
-        enum D {
-            NE, E, SE, S, SW, W, NW, N
-        };
-
-        /**
-         * @brief Construct a new Direction object.
-         * 
-         * @param direction The cardinal direction this object will advance positions in.
-         */
-        Direction(D direction) {
-            switch (direction) {
-                case NE: dx =  1, dy = -1; break;
-                case E:  dx =  1, dy =  0; break;
-                case SE: dx =  1, dy =  1; break;
-                case S:  dx =  0, dy =  1; break;
-                case SW: dx = -1, dy =  1; break;
-                case W:  dx = -1, dy =  0; break;
-                case NW: dx = -1, dy = -1; break;
-                case N:  dx =  0, dy = -1; break;
-            }
-        }
-
-        /**
-         * @brief Advances the given position along this direction.
-         * 
-         * @param position  The position to advance.
-         * @return The new position obtained after advancing.
-         */
-        Position advance(const Position& position) const {
-            int new_x = position.getColumn() + dx;
-            int new_y = position.getRow() + dy;
-
-            try {
-                return Position(new_y, new_x);
-            } catch (const std::invalid_argument&) {
-                return Position();
-            }
-        }
+    enum Direction {
+        N, NE, E, SE, S, SW, W, NW
     };
 
-    // 8 bitflags for each cardinal direction, indicating the directions that each piece can attack in.
-    static constexpr uint8_t BISHOP_DIRECTIONS {0b01010101};
-    static constexpr uint8_t ROOK_DIRECTIONS {0b01010101};
+    static constexpr Direction opposite_direction[8] {S, SW, W, NW, N, NE, E, SE};
+
+    static constexpr int direction_offsets[8] {-8, -7, 1, 9, 8, 7, -1, -9};
+    static constexpr BB::BitBoard direction_safezones[8] {
+        not_row_1,
+        not_row_1 & not_col_A,
+        not_col_A,
+        not_row_8 & not_col_A,
+        not_row_8,
+        not_row_8 & not_col_H,
+        not_col_H,
+        not_row_1 & not_col_H
+    };
+
+    static constexpr Direction bishop_directions[4] = {NE, NW, SW, SE};
+    static constexpr Direction rook_directions[4] = {N, E, S, W};
 
     /**
      * @brief Generates bitboard of all possible relevant blocker positions for a piece at the
@@ -126,30 +94,11 @@ class AttackTables {
      * do not block anything behind them.
      * 
      * @param position      The position to generate the relevance mask for.
-     * @param directions    Bitflags for the directions that the relevance mask considers – what the 
+     * @param directions    Directions that the relevance mask considers – what the 
      *                      piece can "see". 
      * @return A bitboard indicating all possible relevant blocker positions.
      */
-    BB::BitBoard generateRelevanceMask(const Position& position, uint8_t directions);
-
-    /**
-     * @brief Generates a bishop relevance mask for the given position.
-     * 
-     * @param position      The position to generate the relevance mask for.
-     * @return A bitboard indicating all possible relevant blocker positions.
-     */
-    constexpr BB::BitBoard bishopRelevanceMask(const Position& position) {
-        return generateRelevanceMask(position, BISHOP_DIRECTIONS);
-    };
-    /**
-     * @brief Generates a rook relevance mask for the given position.
-     * 
-     * @param position      The position to generate the relevance mask for.
-     * @return A bitboard indicating all possible relevant blocker positions.
-     */
-    constexpr BB::BitBoard rookRelevanceMask(const Position& position) {
-        return generateRelevanceMask(position, ROOK_DIRECTIONS);
-    };
+    BB::BitBoard generateRelevanceMask(const Position& position, const Direction directions[4]) const;
 
     /**
      * @brief Generates all possible configurations of relevant blockers for the given relevance mask.
@@ -157,7 +106,7 @@ class AttackTables {
      * @param relevance_mask    The relevance mask to consider.
      * @return A vector containing bitboards indicating each possible occupancy configuration.
      */
-    std::vector<BB::BitBoard> generateOccupancies(const BB::BitBoard& relevance_mask);
+    std::vector<BB::BitBoard> generateOccupancies(const BB::BitBoard& relevance_mask) const;
 
     /**
      * @brief Generates a bitboard of all squares seen by a piece in the given directions at the given 
@@ -169,14 +118,14 @@ class AttackTables {
      * purely for initialization purposes.
      * 
      * @param position      The position to generate the ray mask for.
-     * @param directions    Bitflags for the directions that the ray mask considers.
+     * @param directions    Directions that the ray mask considers.
      * @param blockers      Bitboard indicating the blockers to consider when casting.
      * @return A bitboard indicating all visible squares, including blocking blockers.
      */
     BB::BitBoard generateRayMask(
-        const Position& position, uint8_t directions,
+        const Position& position, const Direction directions[4],
         const BB::BitBoard& blockers
-    );
+    ) const;
 
     /**
      * @brief Magic table entry, containing all the necessary information for magic bitboard hashing.
@@ -198,12 +147,12 @@ class AttackTables {
      * ray mask hash table.
      * 
      * @param position      The position to generate the magic table entry for.
-     * @param directions    Bitflags for the directions that the piece can attack in.
+     * @param directions    Directions that the piece can attack in.
      * @return Pointer to a magic table entry.
      */
     std::unique_ptr<Magic> generateMagicTableForPosition(
-        const Position& position, uint8_t directions
-    );
+        const Position& position, const Direction directions[4]
+    ) const;
 
     // Lookup table for magic entries.
     enum_array<Square, std::unique_ptr<Magic>> bishop_magics;   // [Position]
@@ -322,55 +271,63 @@ public:
     BB::BitBoard getQueenAttackBitboard(
         const Position& position, const BB::BitBoard& occupancy
     ) const {
-        return (
+        auto r = (
             getBishopAttackBitboard(position, occupancy) |
             getRookAttackBitboard(position, occupancy)
         );
+
+        // BB::out(std::cout, r);
+
+        return r;
     }
 
     /* -- Set-wise attack table generation -- */
 
-    uint64_t generateSetwiseKnightAttacks(uint64_t knights) const {
-        uint64_t attack = 0;
-        attack |= (knights & not_col_A) >> 15;
-        attack |= (knights & not_col_H) >> 17;
-        attack |= (knights & not_col_AB) >> 6;
-        attack |= (knights & not_col_GH) >> 10;
-        attack |= (knights & not_col_A) << 17;
-        attack |= (knights & not_col_H) << 15;
-        attack |= (knights & not_col_AB) << 10;
-        attack |= (knights & not_col_GH) << 6;
-        return attack;
-    }
+    /**
+     * @brief Generates setwise attacked squares by knights.
+     * 
+     * @param knights         Bitboard indicating the location of all attacking knights.
+     * @return BB::BitBoard   Bitboard indicating all attacked squares.
+     */
+    BB::BitBoard generateSetwiseKnightAttacks(uint64_t knights) const;
 
-    uint64_t generateSetwiseSliderAttacks(uint64_t pieces, uint64_t occupied, const int directions[4]) const {
-        uint64_t attacks = 0;
-        for (int i = 0; i < 4; i++) {
-            int dir = directions[i];
-
-            uint64_t pos = pieces;
-            while (pos) {
-                pos = (dir > 0) ? (pos << dir) : (pos >> -dir);
-                if (pos & occupied) break;
-                attacks |= pos;
-            }
-        }
-        return attacks;
-    }
+    /**
+     * @brief Generates setwise attacked squares by sliders.
+     * 
+     * @param pieces          Bitboard indicating the location of all attacking pieces.
+     * @param occupied        Bitboard indicating all occupied squares.
+     * @param directions      Directions in which the pieces can attack.
+     * @param relevance_mask  Whether or not to generate a relevance mask, i.e. not considering the edges.
+     * @return BB::BitBoard   Bitboard indicating all attacked squares.
+     */
+    BB::BitBoard generateSetwiseSliderAttacks(
+        uint64_t pieces, BB::BitBoard occupied,
+        const Direction directions[4], bool relevance_mask = false
+    ) const;
     
     uint64_t generateSetwiseBishopAttacks(uint64_t bishops, uint64_t occupied) const {
-        static const int bishop_directions[] = {9, 7, -9, -7};
+        // static const int bishop_directions[] = {9, 7, -9, -7};
         return generateSetwiseSliderAttacks(bishops, occupied, bishop_directions);
     }
     
     uint64_t generateSetwiseRookAttacks(uint64_t rooks, uint64_t occupied) const {
-        static const int rook_directions[] = {8, -8, 1, -1};
+        // static const int rook_directions[] = {8, -8, 1, -1};
         return generateSetwiseSliderAttacks(rooks, occupied, rook_directions);
     }
     
     uint64_t generateSetwiseQueenAttacks(uint64_t queens, uint64_t occupied) const {
         return generateSetwiseBishopAttacks(queens, occupied) | generateSetwiseRookAttacks(queens, occupied);
     }
+
+// private:
+//     /* -- Serialization -- */
+
+//     friend class cereal::access;
+
+//     template<class Archive>
+//     void serialize(Archive& archive) {
+//         archive(pawn_attacks, knight_attacks, king_attacks, )
+//     }
 };
 
 /* ---- END DECLARE ---- */

@@ -29,12 +29,34 @@ int main(int argc, char ** argv) {
         // auto gm = GameManager("r1bqkbnr/pppppppp/2n5/8/4P3/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 2");
         // auto at = std::make_shared<const AttackTables>();
 
-        auto g1 = Game("4rr2/4P3/8/8/8/8/8/8 w - - 0 1");
-        // auto g2 = Game(at);
+        // auto g1 = Game("4rr2/4P3/8/8/8/8/8/8 w - - 0 1");
+        // // auto g2 = Game(at);
 
-        for (const auto& m : g1.getCurrentLegals()) {
-            std::cout << m << '\n';
-        }
+        // for (const auto& m : g1.getCurrentLegals()) {
+        //     std::cout << m << '\n';
+        // }
+
+        const AttackTables& at = AttackTables::getInstance();
+
+        // Board b("rnb1kbnr/ppppqppp/8/4p3/4P3/8/PPPPQPPP/RNB1KBNR");
+
+        Game g("rnb1k1n1/pppp1ppp/8/4p3/1b2P3/3P1PPq/PPP1KQ1r/RNB2BNR w q - 1 3");
+        auto b = g.getBoard();
+
+        // int d[] = {8, 1, -8, -1};
+
+        BB::BitBoard a = 0;
+        BB::set_bit(a, Position("h2"));
+
+        // MoveGenerator g;
+
+        // g.getCurrentLegals();
+
+        // std::cout << g.getBoard().kingSquare(Player::Black) << '\n';
+        // const int d[4] = {9, 7, -9, -7};
+        // BB::out(std::cout, at.getRookAttackBitboard(Position("h2"), b.occupancy()));
+        // BB::out(std::cout, at.generateRelevanceMask(Position("h2"), at.rook_directions));
+        BB::out(std::cout, at.generateSetwiseKnightAttacks(a));
 
         // std::cout << g1.fen() << ' ' << g1.getHash() << '\n';
         // std::cout << g2.fen() << ' ' << g2.getHash() << '\n';

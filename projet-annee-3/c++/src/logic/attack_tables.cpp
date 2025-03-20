@@ -4,6 +4,7 @@
 
 #ifndef FIND_NEW_MAGICS
 #include "magic_numbers.hpp"
+#else
 #include "../misc/random64.hpp"
 #endif
 
@@ -43,23 +44,10 @@ BB::BitBoard AttackTables::generatePawnAttacksFromPosition(Player player, const 
 
 BB::BitBoard AttackTables::generateKnightAttacksFromPosition(const Position& position) {
     BB::BitBoard piece = 0ULL;
-    BB::BitBoard result = 0ULL;
 
     BB::set_bit(piece, position);
 
-    result |= (piece & not_col_A & not_row_78) >> 17;
-    result |= (piece & not_col_A & not_row_12) << 15;
-
-    result |= (piece & not_col_H & not_row_78) >> 15;
-    result |= (piece & not_col_H & not_row_12) << 17;
-
-    result |= (piece & not_col_AB & not_row_8) >> 10;
-    result |= (piece & not_col_AB & not_row_1) << 6;
-
-    result |= (piece & not_col_GH & not_row_8) >> 6;
-    result |= (piece & not_col_GH & not_row_1) << 10;
-
-    return result;
+    return generateSetwiseKnightAttacks(piece);
 }
 
 BB::BitBoard AttackTables::generateKingAttacksFromPosition(const Position& position) {
@@ -97,29 +85,72 @@ void AttackTables::generateLeapingAttacks() {
 // These attack bitboards are much harder create a lookup table for, since pieces
 // can block their path. This implementation uses the magic bitboard hashing technique.
 
-BB::BitBoard AttackTables::generateRelevanceMask(const Position& position, uint8_t directions) {
-    BB::BitBoard result = 0ULL;
+// see: https://www.chessprogramming.org/Knight_Pattern#Multiple_Knight_Attacks
+BB::BitBoard AttackTables::generateSetwiseKnightAttacks(uint64_t knights) const {
+    BB::BitBoard attack = 0ULL;
 
-    for (int d_index = 0; d_index < 8; d_index++) {
-        if (directions & (uint8_t(1) << d_index)) {
-            Direction direction {Direction::D(d_index)};
-            Position current = position;
+    BB::BitBoard left_one = (knights >> 1) & not_col_H;
+    BB::BitBoard left_two = (knights >> 2) & not_col_GH;
+    BB::BitBoard right_one = (knights << 1) & not_col_A;
+    BB::BitBoard right_two = (knights << 2) & not_col_AB;
 
-            while (
-                (current = direction.advance(current)).isValid()
-                && direction.advance(current).isValid()
-            ) {
-                BB::set_bit(result, current);
-            }
+    BB::BitBoard two_vertical_hops = left_one | right_one;
+    BB::BitBoard one_vertical_hop = left_two | right_two;
+
+    return (two_vertical_hops << 16) | (two_vertical_hops >> 16) |
+           (one_vertical_hop << 8) | (one_vertical_hop >> 8);
+}
+
+BB::BitBoard AttackTables::generateSetwiseSliderAttacks(
+    uint64_t pieces, BB::BitBoard occupied,
+    const Direction directions[4], bool relevance_mask
+) const {
+    BB::BitBoard attacks = 0ULL;
+    
+    BB::BitBoard empty = ~occupied;
+    
+    for (int i = 0; i < 4; i++) {
+        Direction dir = directions[i];
+        BB::BitBoard dir_safezone = direction_safezones[dir];
+        
+        BB::BitBoard pos = pieces;
+        BB::BitBoard safezone = empty & dir_safezone;
+
+        int dir_offset = direction_offsets[dir];
+
+        BB::BitBoard cast = 0ULL;
+
+        while (pos) {
+            pos = (dir_offset > 0) ? (pos << dir_offset) : (pos >> -dir_offset);
+            cast |= pos;
+            pos &= safezone;
         }
+
+        if (relevance_mask) {
+            cast &= direction_safezones[opposite_direction[dir]];
+        }
+
+        attacks |= cast & dir_safezone;
     }
 
-    return result;
+    return attacks;
+}
+
+BB::BitBoard AttackTables::generateRelevanceMask(
+    const Position& position, 
+    const Direction directions[4]
+) const {
+    BB::BitBoard piece = 0ULL;
+
+    BB::set_bit(piece, position);
+
+    // Get attacked squares.
+    return generateSetwiseSliderAttacks(piece, 0ULL, directions, true);
 }
 
 std::vector<BB::BitBoard> AttackTables::generateOccupancies(
     const BB::BitBoard& relevance_mask
-) {
+) const {
     BB::BitBoard bit_subset = 0ULL;
     std::vector<BB::BitBoard> result;
 
@@ -133,31 +164,20 @@ std::vector<BB::BitBoard> AttackTables::generateOccupancies(
 }
 
 BB::BitBoard AttackTables::generateRayMask(
-    const Position& position, uint8_t directions,
+    const Position& position, const Direction directions[4],
     const BB::BitBoard& blockers
-) {
-    BB::BitBoard result = 0ULL;
+) const {
+    BB::BitBoard piece = 0ULL;
 
-    for (int d_index = 0; d_index < 8; d_index++) {
-        if (directions & (uint8_t(1) << d_index)) {
-            Direction direction {(Direction::D) d_index};
-            Position current = position;
+    BB::set_bit(piece, position);
 
-            // Set bit along line of sight until board edge or blocker
-            while ((current = direction.advance(current)).isValid()) {
-                BB::set_bit(result, current);
-
-                if (BB::get_bit(blockers, current) == 1) break;
-            }
-        }
-    }
-
-    return result;
+    // Get attacked squares.
+    return generateSetwiseSliderAttacks(piece, blockers, directions);
 }
 
 std::unique_ptr<AttackTables::Magic> AttackTables::generateMagicTableForPosition(
-    const Position& position, uint8_t directions
-) {
+    const Position& position, const Direction directions[4]
+) const {
     auto relevance_mask = generateRelevanceMask(position, directions);
     auto occupancies = generateOccupancies(relevance_mask);
 
@@ -178,8 +198,8 @@ std::unique_ptr<AttackTables::Magic> AttackTables::generateMagicTableForPosition
     const BB::BitBoard dummy = ~0ULL;
 
 #ifndef FIND_NEW_MAGICS
-    const uint64_t * magic_numbers = 
-        directions == 0b01010101 
+    const uint64_t * magic_numbers =
+        directions == bishop_directions  // VEEEERY dubious, only works because it's exactly the same pointer...
         ? bishop_magic_numbers 
         : rook_magic_numbers;
 #endif
@@ -236,8 +256,8 @@ void AttackTables::generateMagicTables() {
     std::srand(std::time(0));
 
     for (Square position = Square::FIRST; position != Square::OOB; increment_enum(position)) {
-        auto bishop_magic = generateMagicTableForPosition(position, 0b01010101);
-        auto rook_magic = generateMagicTableForPosition(position, 0b10101010);
+        auto bishop_magic = generateMagicTableForPosition(position, bishop_directions);
+        auto rook_magic = generateMagicTableForPosition(position, rook_directions);
 
         bishop_magics[position] = std::move(bishop_magic);
         rook_magics[position] = std::move(rook_magic);
