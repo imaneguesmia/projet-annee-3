@@ -98,8 +98,8 @@ int Evaluator::evaluate(const Board &board, Player player)
     }
 
     // Evaluate pawn structure
-    score += pawnStructureHeuristic(board, Player::White);
-    score -= pawnStructureHeuristic(board, Player::Black);
+    // score += pawnStructureHeuristic(board, Player::White);
+    // score -= pawnStructureHeuristic(board, Player::Black);
 
     // score += mobilityHeuristic(board, Player::White);
     // score -= mobilityHeuristic(board, Player::Black);

@@ -6,11 +6,26 @@
 #include "../logic/game.hpp"
 
 #include <algorithm> // std::max
+#include <chrono> 
 
-Beluga::Beluga(int depth, EvaluatorSettings eval)
+Beluga::Beluga(int depth, EvaluatorType evaluatorType, const std::string& networkPath)
     : searchDepth(depth)
-    , evaluator(eval)
-{}
+{
+    // Create the appropriate evaluator based on the type
+    if (evaluatorType == EvaluatorType::NNUE) {
+        auto nnueEval = std::make_unique<NNUEEvaluator>();
+        
+        // If a network path is provided, load it
+        if (!networkPath.empty()) {
+            nnueEval->loadNetwork(networkPath);
+        }
+        
+        evaluator = std::move(nnueEval);
+    } else {
+        // Default to standard evaluator
+        evaluator = std::make_unique<Evaluator>();
+    }
+}
 
 Move Beluga::getMove(ExtendedGameData& board)
 {
@@ -19,6 +34,7 @@ Move Beluga::getMove(ExtendedGameData& board)
      * Uses aspiration windows for more efficient search.
      */
 
+    auto start = std::chrono::high_resolution_clock::now();
     Move bestMove = Move::NO_MOVE;
     int bestScore = -INF;
 
@@ -47,7 +63,9 @@ Move Beluga::getMove(ExtendedGameData& board)
         }
         moveOrdering.decayHistory();
     }
-
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Search time: " << duration.count() << " milliseconds" << std::endl;
     return bestMove;
 }
 
@@ -97,14 +115,14 @@ int Beluga::negamax(ExtendedGameData& board, int depth, int alpha, int beta, int
 
     // Quiescence search if depth is zero or negative
     if (depth <= 0) {
-        return quiescenceSearch(board, alpha, beta, ply, evaluator, moveOrdering);
+        return quiescenceSearch(board, alpha, beta, ply, *evaluator, moveOrdering);
     }
 
     // Generate all legal moves
     std::vector<Move> moves = board.getCurrentLegals();
 
     if (moves.empty()) {
-        return evaluator.evaluate(board.getBoard(), board.getCurrentPlayer());
+        return evaluator->evaluate(board.getBoard(), board.getCurrentPlayer());
     }
 
     // Retrieve a potential best move from transposition table
@@ -179,7 +197,7 @@ int Beluga::evaluateTerminal(GameState end_state, int ply) const
 
 int Beluga::getPositionValue(ExtendedGameData& board, Player player) 
 {
-    int self_eval = evaluator.evaluate(board.getBoard(), player);
+    int self_eval = evaluator->evaluate(board.getBoard(), player);
 
     return self_eval;
 }

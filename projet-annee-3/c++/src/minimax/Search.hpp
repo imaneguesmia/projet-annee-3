@@ -4,13 +4,16 @@
 
 #include "evaluator_settings.hpp"
 #include "TranspositionTable.hpp"
+#include "IEvaluator.hpp"
 #include "Evaluator.hpp"
+#include "NNUEEvaluator.hpp"
 #include "MoveOrdering.hpp"
 
 #include "../logic/game_data.hpp"
 #include "../logic/attack_tables.hpp"
 
 #include <memory>
+#include <string>
 
 /**
  * @class Beluga
@@ -21,8 +24,12 @@ public:
     /**
      * @brief Constructor for the Beluga search engine.
      * @param depth Maximum search depth.
+     * @param evaluatorType Type of evaluator to use (Standard or NNUE).
+     * @param networkPath Path to the NNUE network file (only used if evaluatorType is NNUE).
      */
-    explicit Beluga(int depth, EvaluatorSettings eval);
+    explicit Beluga(int depth, 
+                    EvaluatorType evaluatorType = EvaluatorType::Standard,
+                    const std::string& networkPath = "");
 
     /**
      * @brief Determines the best move for the current board position.
@@ -62,8 +69,8 @@ private:
 private:
     int searchDepth;                 ///< Maximum search depth.
     TranspositionTable transpositionTable; ///< Transposition table for caching results.
-    MoveOrdering moveOrdering;
-    Evaluator evaluator;             ///< Static board evaluator.
+    MoveOrdering moveOrdering;       ///< Move ordering utility.
+    std::unique_ptr<IEvaluator> evaluator; ///< Static board evaluator (polymorphic).
 
     static constexpr int INF = 100000000;   ///< Representation of infinity for search values.
     static constexpr int MATE_SCORE = 1000000; ///< Score for a checkmate position.
