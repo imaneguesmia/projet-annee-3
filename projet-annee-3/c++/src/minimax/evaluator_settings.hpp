@@ -5,4 +5,5 @@ struct EvaluatorSettings {
     bool pieceSquareTable = false;
     bool mobility = true;
     bool pawnStructure = false;
+    bool kingSafety = false;
 };

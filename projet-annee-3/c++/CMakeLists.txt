@@ -73,7 +73,7 @@ add_library(
 )
 
 # Comment out this line if you want to use the pregenerated magics
-# target_compile_definitions(logic PRIVATE FIND_NEW_MAGICS)
+target_compile_definitions(logic PRIVATE FIND_NEW_MAGICS)
 
 # Library for all AI functionality
 add_library(

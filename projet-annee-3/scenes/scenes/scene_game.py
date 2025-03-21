@@ -78,17 +78,24 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
         # Initialize AI engines
 
-        if PlayerType.MINIMAX in self._player_types:
-            eval_settings = cm.EvaluatorSettings()
+        self._engines: list[cm.AIMoveProvider | None] = []
 
-            eval_settings.material = True
-            eval_settings.piece_square_table = True
-            eval_settings.mobility = True
-            eval_settings.pawn_structure = True
+        for i, type in enumerate(self._player_types):
+            match type:
+                case PlayerType.HUMAN:
+                    self._engines.append(None)
+                case PlayerType.MINIMAX:
+                    eval_settings = cm.EvaluatorSettings()
 
-            self._minimax_engine = self._chess_game.create_minimax_player(5, eval_settings)
-        if PlayerType.NEURAL_NET in self._player_types:
-            self._neural_net_engine: cm.AIMoveProvider = ...
+                    eval_settings.material = True
+                    eval_settings.piece_square_table = True
+                    eval_settings.mobility = i == 1
+                    eval_settings.pawn_structure = True
+                    eval_settings.king_safety = False
+
+                    self._engines.append(self._chess_game.create_minimax_player(5, eval_settings))
+                case PlayerType.NEURAL_NET:
+                    self._engines.append(None)
         
         self._frames_before_next_turn = 0  # Set to `0` to advance game turn next frame.
         self.update_stored_game_data()
@@ -126,28 +133,47 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         """Gets the type of the given player (human, minimax AI or neural network AI)"""
         return self._player_types[0] if player == cm.Player.White else self._player_types[1]
     
-    def player_move(self, player_type: PlayerType) -> None:
+    def get_player_engine(self, player: cm.Player) -> cm.AIMoveProvider | None:
+        """Gets the engine of the given player (for human players, returns None)"""
+        return self._engines[0] if player == cm.Player.White else self._engines[1]
+    
+    def player_move(self, player: cm.Player) -> None:
         """Does a move depending on the player type.
 
         Args:
             player_type (PlayerType): The type of player to move.
         """
-        match player_type:
-            case PlayerType.HUMAN:
-                # Allow the player to make a move
-                self._board.can_accept_events = True
-            case PlayerType.MINIMAX:
-                # Prevent human from moving
-                self._board.can_accept_events = False
+        engine = self.get_player_engine(player)
 
-                move_to_make = self._minimax_engine.get_move(
-                    self._extended_game_data
-                )
+        if engine is None:
+            # Allow the player to make a move
+            self._board.can_accept_events = True
+        else:
+            # Prevent human from moving
+            self._board.can_accept_events = False
 
-                self.make_move(move_to_make)
-            case PlayerType.NEURAL_NET:
-                # Prevent human from moving
-                self._board.can_accept_events = False
+            move_to_make = engine.get_move(
+                self._extended_game_data
+            )
+
+            self.make_move(move_to_make)
+
+        # match player_type:
+        #     case PlayerType.HUMAN:
+        #         # Allow the player to make a move
+        #         self._board.can_accept_events = True
+        #     case PlayerType.MINIMAX:
+        #         # Prevent human from moving
+        #         self._board.can_accept_events = False
+
+        #         move_to_make = self._minimax_engine.get_move(
+        #             self._extended_game_data
+        #         )
+
+        #         self.make_move(move_to_make)
+        #     case PlayerType.NEURAL_NET:
+        #         # Prevent human from moving
+        #         self._board.can_accept_events = False
     
     def end_game(self, game_state: cm.GameState) -> None:
         """Display for the end of the game."""
@@ -160,15 +186,19 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         """Updates the displayed position evaluations."""
 
         for player in [cm.Player.White, cm.Player.Black]:
-            player_type = self.get_player_type(player)
+            # player_type = self.get_player_type(player)
 
-            match player_type:
-                case PlayerType.HUMAN:
-                    evaluation = None
-                case PlayerType.MINIMAX:
-                    evaluation = self._minimax_engine.get_position_value(self._extended_game_data, player)
-                case PlayerType.NEURAL_NET:
-                    evaluation = self._neural_net_engine.get_position_value(self._extended_game_data, player)
+            # match player_type:
+            #     case PlayerType.HUMAN:
+            #         evaluation = None
+            #     case PlayerType.MINIMAX:
+            #         evaluation = self._minimax_engine.get_position_value(self._extended_game_data, player)
+            #     case PlayerType.NEURAL_NET:
+            #         evaluation = self._neural_net_engine.get_position_value(self._extended_game_data, player)
+
+            engine = self.get_player_engine(player)
+
+            evaluation = None if engine is None else engine.get_position_value(self._extended_game_data, player)
 
             self._side_bar.set_evaluation(evaluation, player)
     
@@ -189,9 +219,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         game_state = self._game_data.game_state
 
         if game_state == cm.GameState.INGAME:
-            current_player_type = self.get_player_type(current_player)
-
-            self.player_move(current_player_type)
+            self.player_move(current_player)
         else:
             self.end_game(game_state)
 

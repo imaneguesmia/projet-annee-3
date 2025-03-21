@@ -57,52 +57,56 @@ int Evaluator::evaluate(const Board &board, Player player)
     int score = 0;
 
     // int materialScore = 0;
-
-    for (auto pt : {
-             PType::Pawn,
-             PType::Knight,
-             PType::Bishop,
-             PType::Rook,
-             PType::Queen,
-             PType::King})
-    {
-        int typeIndex = static_cast<int>(pt);
-
-        // Evaluate White pieces
+    if(settings.material || settings.pieceSquareTable)
+        for (auto pt : {
+                PType::Pawn,
+                PType::Knight,
+                PType::Bishop,
+                PType::Rook,
+                PType::Queen,
+                PType::King})
         {
-            Piece piece{pt, Player::White};
-            BB::BitBoard bbWhite = board.bitboard(piece);
-            while (bbWhite)
+            int typeIndex = static_cast<int>(pt);
+
+            // Evaluate White pieces
             {
-                int sq = BB::leastSignificantBitIndex(bbWhite);
-                bbWhite &= bbWhite - 1;
-                score += baseValues[typeIndex];
-                // materialScore += baseValues[typeIndex];
-                score += pieceSquareTable[typeIndex][sq];
+                Piece piece{pt, Player::White};
+                BB::BitBoard bbWhite = board.bitboard(piece);
+                while (bbWhite)
+                {
+                    int sq = BB::leastSignificantBitIndex(bbWhite);
+                    bbWhite &= bbWhite - 1;
+                    score += settings.material * baseValues[typeIndex];
+                    // materialScore += baseValues[typeIndex];
+                    score += settings.pieceSquareTable * pieceSquareTable[typeIndex][sq];
+                }
+            }
+
+            // Evaluate Black pieces
+            {
+                Piece piece{pt, Player::Black};
+                BB::BitBoard bbBlack = board.bitboard(piece);
+                while (bbBlack)
+                {
+                    int sq = BB::leastSignificantBitIndex(bbBlack);
+                    bbBlack &= bbBlack - 1;
+                    score -= (settings.material)? baseValues[typeIndex] : 0;
+                    // materialScore -= baseValues[typeIndex];
+                    score -= (settings.pieceSquareTable)? pieceSquareTable[typeIndex][mirrorSquare(sq)] : 0;
+                }
             }
         }
-
-        // Evaluate Black pieces
-        {
-            Piece piece{pt, Player::Black};
-            BB::BitBoard bbBlack = board.bitboard(piece);
-            while (bbBlack)
-            {
-                int sq = BB::leastSignificantBitIndex(bbBlack);
-                bbBlack &= bbBlack - 1;
-                score -= baseValues[typeIndex];
-                // materialScore -= baseValues[typeIndex];
-                score -= pieceSquareTable[typeIndex][mirrorSquare(sq)];
-            }
-        }
-    }
 
     // Evaluate pawn structure
-    score += pawnStructureHeuristic(board, Player::White);
-    score -= pawnStructureHeuristic(board, Player::Black);
+    if(settings.pawnStructure){
+        score += pawnStructureHeuristic(board, Player::White);
+        score -= pawnStructureHeuristic(board, Player::Black);
+    }
 
-    // score += mobilityHeuristic(board, Player::White);
-    // score -= mobilityHeuristic(board, Player::Black);
+    if(settings.mobility){
+        score += mobilityHeuristic(board, Player::White);
+        score -= mobilityHeuristic(board, Player::Black);
+    }
 
     // Adjust score if Black is to move
     if (player == Player::Black)
@@ -111,11 +115,11 @@ int Evaluator::evaluate(const Board &board, Player player)
     }
 
     // KingSafety
-
-    // KingSafety kingSafety;
-    // int safetyScore = kingSafety.evaluate(board, player);
-    // score += ((safetyScore * materialScore(board, player)) / 100);
-
+    // if(settings.kingSafety){
+    //     KingSafety kingSafety;
+    //     int safetyScore = kingSafety.evaluate(board, player);
+    //     score += ((safetyScore * materialScore(board, player)) / 100);
+    // }
     return score;
 }
 

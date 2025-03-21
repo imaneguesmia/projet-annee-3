@@ -147,7 +147,8 @@ void export_game(nb::module_& m) {
         .def_rw("material", &EvaluatorSettings::material)
         .def_rw("piece_square_table", &EvaluatorSettings::pieceSquareTable)
         .def_rw("mobility", &EvaluatorSettings::mobility)
-        .def_rw("pawn_structure", &EvaluatorSettings::pawnStructure);
+        .def_rw("pawn_structure", &EvaluatorSettings::pawnStructure)
+        .def_rw("king_safety", &EvaluatorSettings::kingSafety);
     
     nb::class_<GameManager>(m, "GameManager")
         .def(nb::init<>())

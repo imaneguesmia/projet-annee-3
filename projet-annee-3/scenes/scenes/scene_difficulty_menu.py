@@ -1,8 +1,6 @@
 from ..scene import Scene
 from ..scene_change import SceneId
 
-from ..data_transfer import PlayerType
-
 from .main_menu_panels import PuzzleChoicePanel, NormalGamePanel
 
 from ui import Button, Text, TextAlign
@@ -10,8 +8,6 @@ from ui.font import FONT_PATH, TITLE_FONT_PATH, FONT_SIZE_MEDIUM, FONT_SIZE_XL
 from ui.colors import *
 
 import pygame
-
-from typing import override
 
 MENU_BUTTON_WIDTH = 200
 MENU_BUTTON_HEIGHT = 80

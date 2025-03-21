@@ -1,3 +1,5 @@
+from .title_panel import TitlePanel, HEADER_FONT_SIZE, PANEL_PADDING_X, PANEL_PADDING_Y
+
 from .puzzles import PuzzleInfo, PUZZLES
 
 from ..scene_change import SceneId
@@ -5,15 +7,11 @@ from ..scene_changer_interface import SceneChangeInterface
 
 from ..data_transfer import PlayerType
 
-from ui import NinepatchPanel, Text, TextAlign, Button, CyclingOptions
-from ui.font import FONT_PATH, FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM, FONT_SIZE_LARGE
+from ui import Text, TextAlign, Button, CyclingOptions
+from ui.font import FONT_PATH, FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM
 from ui.colors import *
 
-import image_loader as img
-
 import pygame
-
-from abc import ABC
 
 PANEL_WIDTH = 600
 PANEL_HEIGHT = 500
@@ -23,27 +21,11 @@ PANEL_SPACING = 40
 PANEL_PADDING_X = 20
 PANEL_PADDING_Y = 5
 
-HEADER_FONT_SIZE = FONT_SIZE_LARGE
-
-class MainMenuPanel(NinepatchPanel, ABC):
-    def __init__(self, rect: pygame.Rect, text: str):
-        super().__init__(rect, img.IMAGES.panel(img.PanelTheme.TEST), 31)
-
-        anchor = (self.area.centerx, HEADER_FONT_SIZE//2 + PANEL_PADDING_Y)
-
-        self._title = Text(text, anchor, align=TextAlign.CENTER, fontsize=HEADER_FONT_SIZE)
-        self.add_child(self._title)
-
-    def set_title(self, text: str) -> None:
-        """Sets the title of the main menu panel to the given string."""
-        self._title.text = text
-
-
 PUZZLE_BUTTON_SPACING = 10
 PUZZLE_BUTTON_HEIGHT = (PANEL_HEIGHT - (PANEL_PADDING_Y*2 + HEADER_FONT_SIZE)) // len(PUZZLES) - PUZZLE_BUTTON_SPACING
 PUZZLE_DESCRIPTION_X = 250
 
-class PuzzleChoicePanel(MainMenuPanel):
+class PuzzleChoicePanel(TitlePanel):
     def _create_puzzle_button(self, index: int, puzzle: PuzzleInfo) -> Button:
         """Creates a button to select a puzzle.
 
@@ -127,7 +109,7 @@ PLAY_BUTTON_WIDTH = 200
 PLAY_BUTTON_HEIGHT = 80
 PLAY_BUTTON_Y_MARGIN = 10
 
-class NormalGamePanel(MainMenuPanel):
+class NormalGamePanel(TitlePanel):
     def _create_player_options(self, y_offset: int, label_text: str) -> tuple[Text, CyclingOptions]:
         """Creates the UI elements to choose the type of each player."""
         label = Text(label_text, (self.area.centerx, y_offset), fontsize=OPTIONS_LABEL_FONTSIZE)
@@ -154,7 +136,8 @@ class NormalGamePanel(MainMenuPanel):
 
         self._scene_changer.request_scene_change(SceneId.GAME, {
             "white_player": options[self._cyclers[0].get_selected_option()],
-            "black_player": options[self._cyclers[1].get_selected_option()]
+            "black_player": options[self._cyclers[1].get_selected_option()],
+            # "initial_state": "rnb1k1n1/pppp1ppp/8/4p3/1b2P3/3P1PPq/PPP1KQ1r/RNB2BNR w q - 1 3"
         })
     
     def _create_play_button(self) -> Button:
