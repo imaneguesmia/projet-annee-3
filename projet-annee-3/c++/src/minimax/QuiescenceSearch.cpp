@@ -7,6 +7,7 @@
 // class UnmakeMove;
 
 #include "../logic/game.hpp"
+#include "../logic/piece.hpp"
 
 /**
  * @brief Performs a quiescence search to evaluate only capture moves, preventing horizon effects.
@@ -19,21 +20,25 @@ int quiescenceSearch(ExtendedGameData& game,
                         MoveOrdering& moveOrdering)
 {
     // Stand-pat evaluation (static evaluation without moving)
-    int standPat = evaluator.evaluate(game.getBoard(), game.getCurrentPlayer());
+    const Board& chess_board = game.getBoard();
+    const Player current_player = game.getCurrentPlayer();
+    int standPat = evaluator.evaluate(chess_board, current_player);
 
+    // Return immediately if the static evaluation is already better than beta
     if (standPat >= beta) {
         return beta; // Beta cutoff (fail-hard)
     }
+    
+    // Update alpha if the static eval is better
     if (standPat > alpha) {
-        alpha = standPat; // Update alpha if the static eval is better
+        alpha = standPat;
     }
 
     // Generate only capture moves
     std::vector<Move> captures = game.getCurrentLegals(true);
-    // movegen::legalmoves<movegen::MoveGenType::CAPTURE>(captures, game.getBoard());
 
     // Assign score to moves using heuristics (MVV-LVA, etc.)
-    moveOrdering.scoreMoves(captures, game.getBoard(), ply, Move::NO_MOVE, game.getCurrentPlayer());
+    moveOrdering.scoreMoves(captures, chess_board, ply, Move::NO_MOVE, current_player);
 
     for (int moveIndex = 0; moveIndex < captures.size(); moveIndex++) {
         moveOrdering.pickNextMove(captures, moveIndex);

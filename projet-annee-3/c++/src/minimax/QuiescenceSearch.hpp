@@ -17,6 +17,9 @@
  * @param evaluator Static evaluation function.
  * @param moveordering Move ordering heuristics.
  * @return Evaluation score of the position.
+ * 
+ * Additional features:
+ * - Stand-pat evaluation: Return static evaluation if it's already better than beta
  */
 int quiescenceSearch(ExtendedGameData& board,
                         int alpha,
