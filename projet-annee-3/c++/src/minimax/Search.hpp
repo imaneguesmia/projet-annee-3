@@ -24,12 +24,9 @@ public:
     /**
      * @brief Constructor for the Beluga search engine.
      * @param depth Maximum search depth.
-     * @param evaluatorType Type of evaluator to use (Standard or NNUE).
-     * @param networkPath Path to the NNUE network file (only used if evaluatorType is NNUE).
+     * @param settings Settings for the evaluator used by the search.
      */
-    explicit Beluga(int depth, 
-                    EvaluatorType evaluatorType = EvaluatorType::Standard,
-                    const std::string& networkPath = "");
+    explicit Beluga(int depth, EvaluatorSettings setting);
 
     /**
      * @brief Determines the best move for the current board position.

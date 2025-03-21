@@ -42,7 +42,7 @@ public:
      * @brief Constructor for the Evaluator.
      * @param eval Settings for the evaluation process.
      */
-    explicit Evaluator(EvaluatorSettings eval = EvaluatorSettings());
+    explicit Evaluator(EvaluatorSettings eval);
 
     /**
      * @brief Evaluates the given board position.

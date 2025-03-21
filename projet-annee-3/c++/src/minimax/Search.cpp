@@ -8,22 +8,22 @@
 #include <algorithm> // std::max
 #include <chrono> 
 
-Beluga::Beluga(int depth, EvaluatorType evaluatorType, const std::string& networkPath)
+Beluga::Beluga(int depth, EvaluatorSettings settings)
     : searchDepth(depth)
 {
     // Create the appropriate evaluator based on the type
-    if (evaluatorType == EvaluatorType::NNUE) {
+    if (settings.type == EvaluatorType::NNUE) {
         auto nnueEval = std::make_unique<NNUEEvaluator>();
         
         // If a network path is provided, load it
-        if (!networkPath.empty()) {
-            nnueEval->loadNetwork(networkPath);
+        if (!settings.networkPath.empty()) {
+            nnueEval->loadNetwork(settings.networkPath);
         }
         
         evaluator = std::move(nnueEval);
     } else {
         // Default to standard evaluator
-        evaluator = std::make_unique<Evaluator>();
+        evaluator = std::make_unique<Evaluator>(settings);
     }
 }
 

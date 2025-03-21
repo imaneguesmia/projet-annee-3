@@ -11,9 +11,13 @@ enum class EvaluatorType {
 // Settings for the evaluator
 struct EvaluatorSettings {
     EvaluatorType type = EvaluatorType::Standard; // Default to standard evaluation
-    std::string networkPath = "";                // Path to NNUE network (if using NNUE)
-    std::string nnueHost = "127.0.0.1";          // Host for NNUE server
-    int nnuePort = 5555;                         // Port for NNUE server
+
+    // Neural network
+    std::string networkPath = "";                 // Path to NNUE network (if using NNUE)
+    std::string nnueHost = "127.0.0.1";           // Host for NNUE server
+    int nnuePort = 5555;                          // Port for NNUE server
+
+    // Heuristics
     bool material = true;
     bool pieceSquareTable = false;
     bool mobility = true;

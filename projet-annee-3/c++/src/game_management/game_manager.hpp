@@ -26,7 +26,7 @@ public:
     ~GameManager() {};
 
     std::unique_ptr<AIMoveProvider> createMinimaxPlayer(int depth, EvaluatorSettings settings) {
-        return std::make_unique<Beluga>(depth, settings.type, settings.networkPath);
+        return std::make_unique<Beluga>(depth, settings);
     }
 
     Player getCurrentPlayer() { return game.getCurrentPlayer(); };

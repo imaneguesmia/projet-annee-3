@@ -25,6 +25,22 @@ AttackTables::AttackTables() {
 // it is enough to just set the bits that they can target (while taking into account
 // the board edge).
 
+// see: https://www.chessprogramming.org/Knight_Pattern#Multiple_Knight_Attacks
+BB::BitBoard AttackTables::generateSetwiseKnightAttacks(uint64_t knights) const {
+    BB::BitBoard attack = 0ULL;
+
+    BB::BitBoard left_one = (knights >> 1) & not_col_H;
+    BB::BitBoard left_two = (knights >> 2) & not_col_GH;
+    BB::BitBoard right_one = (knights << 1) & not_col_A;
+    BB::BitBoard right_two = (knights << 2) & not_col_AB;
+
+    BB::BitBoard two_vertical_hops = left_one | right_one;
+    BB::BitBoard one_vertical_hop = left_two | right_two;
+
+    return (two_vertical_hops << 16) | (two_vertical_hops >> 16) |
+           (one_vertical_hop << 8) | (one_vertical_hop >> 8);
+}
+
 BB::BitBoard AttackTables::generatePawnAttacksFromPosition(Player player, const Position& position) {
     BB::BitBoard piece = 0ULL;
     BB::BitBoard result = 0ULL;
@@ -84,22 +100,6 @@ void AttackTables::generateLeapingAttacks() {
 
 // These attack bitboards are much harder create a lookup table for, since pieces
 // can block their path. This implementation uses the magic bitboard hashing technique.
-
-// see: https://www.chessprogramming.org/Knight_Pattern#Multiple_Knight_Attacks
-BB::BitBoard AttackTables::generateSetwiseKnightAttacks(uint64_t knights) const {
-    BB::BitBoard attack = 0ULL;
-
-    BB::BitBoard left_one = (knights >> 1) & not_col_H;
-    BB::BitBoard left_two = (knights >> 2) & not_col_GH;
-    BB::BitBoard right_one = (knights << 1) & not_col_A;
-    BB::BitBoard right_two = (knights << 2) & not_col_AB;
-
-    BB::BitBoard two_vertical_hops = left_one | right_one;
-    BB::BitBoard one_vertical_hop = left_two | right_two;
-
-    return (two_vertical_hops << 16) | (two_vertical_hops >> 16) |
-           (one_vertical_hop << 8) | (one_vertical_hop >> 8);
-}
 
 BB::BitBoard AttackTables::generateSetwiseSliderAttacks(
     uint64_t pieces, BB::BitBoard occupied,

@@ -93,6 +93,8 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
                     eval_settings.pawn_structure = True
                     eval_settings.king_safety = False
 
+                    print("White" if i == 0 else "Black", eval_settings.mobility)
+
                     self._engines.append(self._chess_game.create_minimax_player(5, eval_settings))
                 case PlayerType.NEURAL_NET:
                     self._engines.append(None)
