@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "IEvaluator.hpp"
 #include "evaluator_settings.hpp"
 
 #include "../logic/bitboard.hpp"
@@ -31,16 +32,17 @@
  * @class Evaluator
  * @brief Responsible for static board evaluation.
  */
-class Evaluator
+class Evaluator : public IEvaluator
 {
     const AttackTables &at = AttackTables::getInstance();
     const EvaluatorSettings settings;
 
 public:
     /**
-     * @brief todo
+     * @brief Constructor for the Evaluator.
+     * @param eval Settings for the evaluation process.
      */
-    Evaluator(EvaluatorSettings eval);
+    explicit Evaluator(EvaluatorSettings eval = EvaluatorSettings());
 
     /**
      * @brief Evaluates the given board position.
@@ -49,7 +51,7 @@ public:
      * @return The evaluation score, positive if the player to move has the advantage,
      *       * negative if the opponent has the advantage.
      */
-    int evaluate(const Board &board, Player player);
+    int evaluate(const Board &board, Player player) override;
 
 private:
     /**

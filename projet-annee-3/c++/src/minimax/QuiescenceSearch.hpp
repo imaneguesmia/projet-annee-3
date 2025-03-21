@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Evaluator.hpp"
+#include "IEvaluator.hpp"
 #include "MoveOrdering.hpp"
 
 #include "../logic/game_data.hpp"
@@ -22,5 +22,5 @@ int quiescenceSearch(ExtendedGameData& board,
                         int alpha,
                         int beta,
                         int ply,
-                        Evaluator& evaluator,
+                        IEvaluator& evaluator,
                         MoveOrdering& moveordering);

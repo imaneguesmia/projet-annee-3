@@ -15,7 +15,7 @@ int quiescenceSearch(ExtendedGameData& game,
                         int alpha,
                         int beta,
                         int ply,
-                        Evaluator& evaluator,
+                        IEvaluator& evaluator,
                         MoveOrdering& moveOrdering)
 {
     // Stand-pat evaluation (static evaluation without moving)
