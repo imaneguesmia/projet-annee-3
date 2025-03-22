@@ -287,6 +287,10 @@ std::optional<Move> Game::undoLastMove() {
 void Game::undo(const UnmakeMove unmake_move) {
     unmakeMoveOnBoard(unmake_move);
 
+    if (unmake_move_list.back().board_hash == unmake_move.board_hash) {
+        unmake_move_list.pop_back();
+    }
+
     // Set update flags to update data.
     update_flags = ALL;
 }
