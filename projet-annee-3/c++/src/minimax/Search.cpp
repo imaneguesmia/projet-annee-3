@@ -12,17 +12,26 @@ Beluga::Beluga(EvaluatorSettings settings)
     : searchDepth(settings.depth)
 {
     // Create the appropriate evaluator based on the type
-    if (settings.type == EvaluatorType::NNUE) {
-        auto nnueEval = std::make_unique<NNUEEvaluator>();
-
-        std::cout << "Network path = " << settings.networkPath << '\n';
-        
-        // If a network path is provided, load it
-        if (!settings.networkPath.empty()) {
-            nnueEval->loadNetwork(settings.networkPath);
-        }
-        
+    if (settings.type == EvaluatorType::NEURAL_NET) {
+    auto nnueEval = std::make_unique<NNUEEvaluator>();
+    
+    std::cout << "Network path = " << settings.networkPath << '\n';
+    std::cout << "NNUE Host = " << settings.nnueHost << '\n';
+    std::cout << "NNUE Port = " << settings.nnuePort << '\n';
+    
+    std::string host = settings.nnueHost.empty() ? "127.0.0.1" : settings.nnueHost;
+    // Utiliser le port spécifié ou la valeur par défaut dans le constructeur
+    int port = settings.nnuePort > 0 ? settings.nnuePort : 5555;
+    
+    try {
+        nnueEval->loadNetwork(settings.networkPath, host, port);
         evaluator = std::move(nnueEval);
+    } catch (const std::exception& e) {
+        std::cerr << "Erreur lors de la connexion au serveur NNUE: " << e.what() << std::endl;
+        std::cerr << "Utilisation de l'évaluateur standard à la place." << std::endl;
+        // Fallback to standard evaluator if neural net fails
+        evaluator = std::make_unique<Evaluator>(settings);
+    }
     } else {
         // Default to standard evaluator
         evaluator = std::make_unique<Evaluator>(settings);

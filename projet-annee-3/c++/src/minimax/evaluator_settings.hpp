@@ -4,13 +4,13 @@
 
 // Enum for selecting the evaluator type
 enum class EvaluatorType {
-    Standard,  // Standard heuristic evaluation
-    NNUE       // Neural network evaluation
+    MINIMAX,  // Standard heuristic evaluation
+    NEURAL_NET       // Neural network evaluation
 };
 
 // Settings for the evaluator
 struct EvaluatorSettings {
-    EvaluatorType type = EvaluatorType::Standard; // Default to standard evaluation
+    EvaluatorType type = EvaluatorType::MINIMAX; // Default to standard evaluation
 
     int depth = 5;                                // Maximum search depth.
 

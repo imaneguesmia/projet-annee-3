@@ -141,8 +141,8 @@ void export_game(nb::module_& m) {
         .def("propose_move", &MovePrompter::proposeMove);
     
     nb::enum_<EvaluatorType>(m, "EvaluatorType")
-        .value("Standard", EvaluatorType::Standard)
-        .value("NNUE", EvaluatorType::NNUE);
+        .value("MINIMAX", EvaluatorType::MINIMAX)
+        .value("NEURAL_NET", EvaluatorType::NEURAL_NET);
 
     nb::class_<EvaluatorSettings>(m, "EvaluatorSettings")
         .def(nb::init<>())
