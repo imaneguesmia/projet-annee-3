@@ -1,6 +1,6 @@
 from ..scene import Scene
 
-from ..data_transfer.player_type import PlayerType
+from ..data_transfer import PlayerType, PlayerInfo
 
 from .chess_board import ChessBoard
 from .chess_board_callback_interface import ChessBoardCallbackInterface
@@ -35,15 +35,15 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
     def __init__(self, 
         window_rect: pygame.Rect, 
+        white_player: PlayerInfo,
+        black_player: PlayerInfo,
         initial_state: str | None = None,
-        white_player: PlayerType = PlayerType.HUMAN,
-        black_player: PlayerType = PlayerType.HUMAN
     ):
         super().__init__(window_rect)
 
         self._initial_state = initial_state
 
-        self._player_types = (white_player, black_player)
+        self._player_info = (white_player, black_player)
 
         self._chess_game = cm.GameManager() if initial_state is None else cm.GameManager(initial_state)
         self._game_data: cm.GameData = None
@@ -80,29 +80,11 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
         self._engines: list[cm.AIMoveProvider | None] = []
 
-        for i, type in enumerate(self._player_types):
-            match type:
-                case PlayerType.HUMAN:
-                    self._engines.append(None)
-                case PlayerType.MINIMAX:
-                    eval_settings = cm.EvaluatorSettings()
-
-                    eval_settings.material = True
-                    eval_settings.piece_square_table = True
-                    eval_settings.mobility = i == 1
-                    eval_settings.pawn_structure = True
-                    eval_settings.king_safety = False
-
-                    print("White" if i == 0 else "Black", eval_settings.mobility)
-
-                    self._engines.append(self._chess_game.create_minimax_player(5, eval_settings))
-                case PlayerType.NEURAL_NET:
-                    eval_settings = cm.EvaluatorSettings()
-                    eval_settings.type = cm.EvaluatorType.NNUE
-                    eval_settings.network_path = "nn/beluga_v1_10"  # Chemin vers votre réseau
-                    eval_settings.nnue_host = "127.0.0.1"  # Hôte du serveur
-                    eval_settings.nnue_port = 5555  # Port du serveur
-                    self._engines.append(self._chess_game.create_minimax_player(4,eval_settings))
+        for info in self._player_info:
+            if info.type == PlayerType.HUMAN:
+                self._engines.append(None)
+            else:
+                self._engines.append(self._chess_game.create_ai_player(info.settings))
         
         self._frames_before_next_turn = 0  # Set to `0` to advance game turn next frame.
         self.update_stored_game_data()
@@ -138,7 +120,11 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
     def get_player_type(self, player: cm.Player) -> PlayerType:
         """Gets the type of the given player (human, minimax AI or neural network AI)"""
-        return self._player_types[0] if player == cm.Player.White else self._player_types[1]
+        return (
+            self._player_info[0].type 
+            if player == cm.Player.White 
+            else self._player_info[1].type
+        )
     
     def get_player_engine(self, player: cm.Player) -> cm.AIMoveProvider | None:
         """Gets the engine of the given player (for human players, returns None)"""
@@ -165,23 +151,6 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
             self.make_move(move_to_make)
 
-        # match player_type:
-        #     case PlayerType.HUMAN:
-        #         # Allow the player to make a move
-        #         self._board.can_accept_events = True
-        #     case PlayerType.MINIMAX:
-        #         # Prevent human from moving
-        #         self._board.can_accept_events = False
-
-        #         move_to_make = self._minimax_engine.get_move(
-        #             self._extended_game_data
-        #         )
-
-        #         self.make_move(move_to_make)
-        #     case PlayerType.NEURAL_NET:
-        #         # Prevent human from moving
-        #         self._board.can_accept_events = False
-    
     def end_game(self, game_state: cm.GameState) -> None:
         """Display for the end of the game."""
         self._board.can_accept_events = False
@@ -193,16 +162,6 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         """Updates the displayed position evaluations."""
 
         for player in [cm.Player.White, cm.Player.Black]:
-            # player_type = self.get_player_type(player)
-
-            # match player_type:
-            #     case PlayerType.HUMAN:
-            #         evaluation = None
-            #     case PlayerType.MINIMAX:
-            #         evaluation = self._minimax_engine.get_position_value(self._extended_game_data, player)
-            #     case PlayerType.NEURAL_NET:
-            #         evaluation = self._neural_net_engine.get_position_value(self._extended_game_data, player)
-
             engine = self.get_player_engine(player)
 
             evaluation = None if engine is None else engine.get_position_value(self._extended_game_data, player)
@@ -318,7 +277,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
     def _create_side_panel(self, window_rect: pygame.Rect) -> SideBar:
         """"""
-        panel = SideBar(window_rect, self._player_types)
+        panel = SideBar(window_rect, [info.type for info in self._player_info])
 
         panel.add_child(self._create_quit_button(panel.area))
 
@@ -354,8 +313,8 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         def retry(_) -> bool:
             self.request_scene_change(SceneId.GAME, {
                 "initial_state": self._initial_state,
-                "white_player": self._player_types[0],
-                "black_player": self._player_types[1]
+                "white_player": self._player_info[0],
+                "black_player": self._player_info[1]
             })
 
         def view_board(_) -> bool:

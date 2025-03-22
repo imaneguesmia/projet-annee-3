@@ -89,16 +89,15 @@ void export_move(nb::module_& m) {
     nb::class_<Move>(m, "Move")
         .def(nb::init<>())
 
-        // Bitfields have come back to haunt me T-T
-        .def_prop_rw("source", [](Move& self) { return self.source; }, [](Move& self, uint8_t value) { self.source = value; })
-        .def_prop_rw("target", [](Move& self) { return self.target; }, [](Move& self, uint8_t value) { self.target = value; })
-        .def_prop_rw("player", [](Move& self) { return self.player; }, [](Move& self, Player value) { self.player = value; })
-        .def_prop_rw("p_type", [](Move& self) { return self.p_type; }, [](Move& self, PType value) { self.p_type = value; })
-        .def_prop_rw("promotion", [](Move& self) { return self.promotion; }, [](Move& self, PType value) { self.promotion = value; })
-        .def_prop_rw("capture", [](Move& self) { return self.capture; }, [](Move& self, bool value) { self.capture = value; })
-        .def_prop_rw("double_push", [](Move& self) { return self.double_push; }, [](Move& self, bool value) { self.double_push = value; })
-        .def_prop_rw("en_passant", [](Move& self) { return self.en_passant; }, [](Move& self, bool value) { self.en_passant = value; })
-        .def_prop_rw("castle", [](Move& self) { return self.castle; }, [](Move& self, bool value) { self.castle = value; })
+        .def_rw("source", &Move::source)
+        .def_rw("target", &Move::target)
+        .def_rw("player", &Move::player)
+        .def_rw("p_type", &Move::p_type)
+        .def_rw("promotion", &Move::promotion)
+        .def_rw("capture", &Move::capture)
+        .def_rw("double_push", &Move::double_push)
+        .def_rw("en_passant", &Move::en_passant)
+        .def_rw("castle", &Move::castle)
 
         .def("__repr__", [](Move& self) {
             std::ostringstream out;
@@ -148,6 +147,10 @@ void export_game(nb::module_& m) {
     nb::class_<EvaluatorSettings>(m, "EvaluatorSettings")
         .def(nb::init<>())
 
+        .def_rw("type", &EvaluatorSettings::type)
+
+        .def_rw("depth", &EvaluatorSettings::depth)
+
         .def_rw("material", &EvaluatorSettings::material)
         .def_rw("piece_square_table", &EvaluatorSettings::pieceSquareTable)
         .def_rw("mobility", &EvaluatorSettings::mobility)
@@ -168,7 +171,7 @@ void export_game(nb::module_& m) {
         .def("game_data", &GameManager::gameData, nb::rv_policy::reference)
         .def("extended_game_data", &GameManager::extendedGameData, nb::rv_policy::reference)
 
-        .def("create_minimax_player", &GameManager::createMinimaxPlayer)
+        .def("create_ai_player", &GameManager::createAIPlayer)
     
         .def("make_move", &GameManager::makeMove);
 }

@@ -25,8 +25,8 @@ public:
     GameManager(const std::string& initial_position);
     ~GameManager() {};
 
-    std::unique_ptr<AIMoveProvider> createMinimaxPlayer(int depth, EvaluatorSettings settings) {
-        return std::make_unique<Beluga>(depth, settings);
+    std::unique_ptr<AIMoveProvider> createAIPlayer(EvaluatorSettings settings) {
+        return std::make_unique<Beluga>(settings);
     }
 
     Player getCurrentPlayer() { return game.getCurrentPlayer(); };

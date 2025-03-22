@@ -36,27 +36,32 @@ int main(int argc, char ** argv) {
         //     std::cout << m << '\n';
         // }
 
-        const AttackTables& at = AttackTables::getInstance();
+        Game b1("rnb1kb1r/pRp1qppp/5p2/8/3P4/q1q3N1/4BPPP/3Q1K1R w Kkq - 7 12");
+        Game b2("rnb1kb1r/ppp2ppp/5p2/8/3P4/q1N3N1/4BPPP/1R1QK2R w Kkq - 7 14");
 
-        // Board b("rnb1kbnr/ppppqppp/8/4p3/4P3/8/PPPPQPPP/RNB1KBNR");
+        std::cout << b1.getHash() << ' ' << b2.getHash() << '\n';
 
-        Game g("rnb1k1n1/pppp1ppp/8/4p3/1b2P3/3P1PPq/PPP1KQ1r/RNB2BNR w q - 1 3");
-        auto b = g.getBoard();
+        // const AttackTables& at = AttackTables::getInstance();
 
-        // int d[] = {8, 1, -8, -1};
+        // // Board b("rnb1kbnr/ppppqppp/8/4p3/4P3/8/PPPPQPPP/RNB1KBNR");
 
-        BB::BitBoard a = 0;
-        BB::set_bit(a, Position("h2"));
+        // Game g("rnb1k1n1/pppp1ppp/8/4p3/1b2P3/3P1PPq/PPP1KQ1r/RNB2BNR w q - 1 3");
+        // auto b = g.getBoard();
 
-        // MoveGenerator g;
+        // // int d[] = {8, 1, -8, -1};
 
-        // g.getCurrentLegals();
+        // BB::BitBoard a = 0;
+        // BB::set_bit(a, Position("h2"));
 
-        // std::cout << g.getBoard().kingSquare(Player::Black) << '\n';
-        // const int d[4] = {9, 7, -9, -7};
-        // BB::out(std::cout, at.getRookAttackBitboard(Position("h2"), b.occupancy()));
-        // BB::out(std::cout, at.generateRelevanceMask(Position("h2"), at.rook_directions));
-        BB::out(std::cout, at.generateSetwiseKnightAttacks(a));
+        // // MoveGenerator g;
+
+        // // g.getCurrentLegals();
+
+        // // std::cout << g.getBoard().kingSquare(Player::Black) << '\n';
+        // // const int d[4] = {9, 7, -9, -7};
+        // // BB::out(std::cout, at.getRookAttackBitboard(Position("h2"), b.occupancy()));
+        // // BB::out(std::cout, at.generateRelevanceMask(Position("h2"), at.rook_directions));
+        // BB::out(std::cout, at.generateSetwiseKnightAttacks(a));
 
         // std::cout << g1.fen() << ' ' << g1.getHash() << '\n';
         // std::cout << g2.fen() << ' ' << g2.getHash() << '\n';

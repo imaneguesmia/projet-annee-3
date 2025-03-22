@@ -12,6 +12,8 @@ enum class EvaluatorType {
 struct EvaluatorSettings {
     EvaluatorType type = EvaluatorType::Standard; // Default to standard evaluation
 
+    int depth = 5;                                // Maximum search depth.
+
     // Neural network
     std::string networkPath = "";                 // Path to NNUE network (if using NNUE)
     std::string nnueHost = "127.0.0.1";           // Host for NNUE server

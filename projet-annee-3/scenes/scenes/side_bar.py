@@ -112,7 +112,7 @@ class SideBar(NinepatchPanel):
 
         return panel, eval_text, win_state_text
 
-    def __init__(self, window_rect: pygame.Rect, player_types: tuple[PlayerType, PlayerType]):
+    def __init__(self, window_rect: pygame.Rect, player_types: list[PlayerType]):
         panel_rect = pygame.Rect(
             window_rect.width - PANEL_WIDTH, 0,
             PANEL_WIDTH,

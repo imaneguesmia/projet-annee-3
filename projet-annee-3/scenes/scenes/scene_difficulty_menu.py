@@ -52,9 +52,6 @@ class scene_DifficultyMenu(Scene):
     def __init__(self, window_rect: pygame.Rect):
         super().__init__(window_rect, bg_image_path)
 
-        # Load the title image
-        self.title_image = pygame.image.load("./resources/images/select_puzzle.png").convert_alpha()
-
         self.bg_color = AQUA_BLUE
 
         self._puzzle_choice_panel = PuzzleChoicePanel(window_rect, self)
