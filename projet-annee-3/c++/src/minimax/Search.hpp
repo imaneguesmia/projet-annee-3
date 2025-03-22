@@ -23,10 +23,9 @@ class Beluga : public AIMoveProvider {
 public:
     /**
      * @brief Constructor for the Beluga search engine.
-     * @param depth Maximum search depth.
      * @param settings Settings for the evaluator used by the search.
      */
-    explicit Beluga(int depth, EvaluatorSettings setting);
+    explicit Beluga(EvaluatorSettings setting);
 
     /**
      * @brief Determines the best move for the current board position.

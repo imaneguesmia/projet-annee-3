@@ -88,7 +88,8 @@ class CyclingOptions(UIElement):
     def __init__(self,
         center_rect: pygame.Rect,
         arrow_size: int, arrow_spacing: int,
-        options: list[str]
+        options: list[str],
+        initial_index: int = 0
     ):
         """Creates a CyclingOptions UI element.
 
@@ -121,9 +122,9 @@ class CyclingOptions(UIElement):
             raise ValueError("CyclingOptions must have at least 1 option.")
         
         self._options = options
-        self._current_option = 0
+        self._current_option = initial_index
 
-        self._center_text = Text(options[0], self.area.center)
+        self._center_text = Text(options[initial_index], self.area.center)
         self.add_child(self._center_text)
     
     @property

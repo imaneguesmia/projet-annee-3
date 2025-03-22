@@ -140,8 +140,16 @@ void export_game(nb::module_& m) {
 
         .def("propose_move", &MovePrompter::proposeMove);
     
+    nb::enum_<EvaluatorType>(m, "EvaluatorType")
+        .value("MINIMAX", EvaluatorType::Standard)
+        .value("NEURAL_NET", EvaluatorType::NNUE);
+    
     nb::class_<EvaluatorSettings>(m, "EvaluatorSettings")
         .def(nb::init<>())
+
+        .def_rw("type", &EvaluatorSettings::type)
+
+        .def_rw("depth", &EvaluatorSettings::depth)
 
         .def_rw("material", &EvaluatorSettings::material)
         .def_rw("piece_square_table", &EvaluatorSettings::pieceSquareTable)
@@ -158,7 +166,7 @@ void export_game(nb::module_& m) {
         .def("game_data", &GameManager::gameData, nb::rv_policy::reference)
         .def("extended_game_data", &GameManager::extendedGameData, nb::rv_policy::reference)
 
-        .def("create_minimax_player", &GameManager::createMinimaxPlayer)
+        .def("create_ai_player", &GameManager::createAIPlayer)
     
         .def("make_move", &GameManager::makeMove);
 }
