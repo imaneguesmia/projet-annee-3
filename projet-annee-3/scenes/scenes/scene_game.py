@@ -97,7 +97,12 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
                     self._engines.append(self._chess_game.create_minimax_player(5, eval_settings))
                 case PlayerType.NEURAL_NET:
-                    self._engines.append(None)
+                    eval_settings = cm.EvaluatorSettings()
+                    eval_settings.type = cm.EvaluatorType.NNUE
+                    eval_settings.network_path = "nn/beluga_v1_10"  # Chemin vers votre réseau
+                    eval_settings.nnue_host = "127.0.0.1"  # Hôte du serveur
+                    eval_settings.nnue_port = 5555  # Port du serveur
+                    self._engines.append(self._chess_game.create_minimax_player(4,eval_settings))
         
         self._frames_before_next_turn = 0  # Set to `0` to advance game turn next frame.
         self.update_stored_game_data()

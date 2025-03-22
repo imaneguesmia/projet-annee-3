@@ -141,6 +141,10 @@ void export_game(nb::module_& m) {
 
         .def("propose_move", &MovePrompter::proposeMove);
     
+    nb::enum_<EvaluatorType>(m, "EvaluatorType")
+        .value("Standard", EvaluatorType::Standard)
+        .value("NNUE", EvaluatorType::NNUE);
+
     nb::class_<EvaluatorSettings>(m, "EvaluatorSettings")
         .def(nb::init<>())
 
@@ -148,7 +152,12 @@ void export_game(nb::module_& m) {
         .def_rw("piece_square_table", &EvaluatorSettings::pieceSquareTable)
         .def_rw("mobility", &EvaluatorSettings::mobility)
         .def_rw("pawn_structure", &EvaluatorSettings::pawnStructure)
-        .def_rw("king_safety", &EvaluatorSettings::kingSafety);
+        .def_rw("king_safety", &EvaluatorSettings::kingSafety)
+
+        .def_rw("type", &EvaluatorSettings::type)
+        .def_rw("network_path", &EvaluatorSettings::networkPath)
+        .def_rw("nnue_host", &EvaluatorSettings::nnueHost)
+        .def_rw("nnue_port", &EvaluatorSettings::nnuePort);
     
     nb::class_<GameManager>(m, "GameManager")
         .def(nb::init<>())
