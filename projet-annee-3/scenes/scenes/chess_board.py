@@ -96,7 +96,7 @@ class ChessBoard(UIElement):
     @override
     def on_click(self, point: tuple[int, int]) -> bool:
         if self.is_game_over:
-            self._callbacks.reshow_game_end_panel()
+            self._callbacks.on_click_after_game_end()
 
             return True
         else:

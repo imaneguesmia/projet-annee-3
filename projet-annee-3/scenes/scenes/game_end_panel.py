@@ -78,7 +78,7 @@ class GameEndPanel(NinepatchPanel):
     
     def _player_text(self, player: cm.Player) -> str:
         """Returns a string representation of the given player."""
-        return "White" if player == cm.Player.White else "Black"
+        return "White" if player == cm.Player.White else "Blue"
     
     def display_end_state(self, state: cm.GameState, current_player: cm.Player | None = None) -> None:
         """Displays the given game end state on the panel.

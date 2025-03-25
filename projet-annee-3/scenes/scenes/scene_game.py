@@ -1,9 +1,10 @@
-from ..scene import Scene
+from .abstract_chess_scene import AbstractChessScene
 
 from ..data_transfer import PlayerType, PlayerInfo
 
 from .chess_board import ChessBoard
 from .chess_board_callback_interface import ChessBoardCallbackInterface
+from .promotion_callback_interface import PromotionCallbackInterface
 
 from .promotion_panel import PromotionPanel
 from .game_end_panel import GameEndPanel
@@ -31,7 +32,18 @@ BUTTON_MARGIN = 20
 
 # ---- DEFINE class scene_ChessGame ---- #
 
-class scene_ChessGame(Scene, ChessBoardCallbackInterface):
+class scene_ChessGame(AbstractChessScene, PromotionCallbackInterface):
+    def _initialize_engines(self) -> list[cm.AIMoveProvider | None]:
+        """Initializes the AI engines."""
+        engines: list[cm.AIMoveProvider | None] = []
+
+        for info in self._player_info:
+            if info.type == PlayerType.HUMAN:
+                engines.append(None)
+            else:
+                engines.append(self._chess_game.create_ai_player(info.settings))
+        
+        return engines
 
     def __init__(self, 
         window_rect: pygame.Rect, 
@@ -39,29 +51,11 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         black_player: PlayerInfo,
         initial_state: str | None = None,
     ):
-        super().__init__(window_rect)
-
-        self._initial_state = initial_state
-
         self._player_info = (white_player, black_player)
 
-        self._chess_game = cm.GameManager() if initial_state is None else cm.GameManager(initial_state)
-        self._game_data: cm.GameData = None
-        self._extended_game_data: cm.ExtendedGameData = None
-
-        self._selected_square: cm.Position | None = None
-        self._selected_moves: list[cm.Move] = []
+        super().__init__(window_rect, initial_state)
 
         self._promotion: cm.Move | None = None
-
-        # Centrer l'échiquier de 800x800 dans la fenêtre 1920x1080
-        self.board_x = (window_rect.width - SIDEBAR_WIDTH) // 2 - BOARD_SIZE // 2
-        self.board_y = (window_rect.height - BOARD_SIZE) // 2
-
-        self._board = ChessBoard(
-            pygame.Rect(self.board_x, self.board_y, BOARD_SIZE, BOARD_SIZE),
-            self
-        )
 
         self._promotion_panel = PromotionPanel(self._board.absolute_rect, self)
         self._promotion_panel.is_visible = False
@@ -69,24 +63,17 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
         self._game_end_panel = self._create_game_end_panel()
 
-        self.elements.append(self._board)
         self.elements.append(self._promotion_panel)
         self.elements.append(self._game_end_panel)
 
         self._side_bar = self._create_side_panel(window_rect)
         self.elements.append(self._side_bar)
-
-        # Initialize AI engines
-
-        self._engines: list[cm.AIMoveProvider | None] = []
-
-        for info in self._player_info:
-            if info.type == PlayerType.HUMAN:
-                self._engines.append(None)
-            else:
-                self._engines.append(self._chess_game.create_ai_player(info.settings))
         
         self._frames_before_next_turn = 0  # Set to `0` to advance game turn next frame.
+
+        # Initialize AIs and start game
+
+        self._engines = self._initialize_engines()
         self.update_stored_game_data()
     
     @property
@@ -160,7 +147,6 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
     def display_evaluations(self) -> None:
         """Updates the displayed position evaluations."""
-
         for player in [cm.Player.White, cm.Player.Black]:
             engine = self.get_player_engine(player)
 
@@ -168,10 +154,10 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
             self._side_bar.set_evaluation(evaluation, player)
     
+    @override
     def update_stored_game_data(self) -> None:
         """Updates the cached game data."""
-        self._game_data = self._chess_game.game_data()
-        self._extended_game_data = self._chess_game.extended_game_data()
+        super().update_stored_game_data()
 
         self.display_evaluations()
 
@@ -211,34 +197,12 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
     def piece_at(self, square: cm.Position) -> cm.Piece:
         return self._game_data.get_piece_at(square)
 
-    def select_square(self, square: cm.Position) -> None:
-        """"""
-        piece_on_square = self._game_data.get_piece_at(square)
-        current_player = self._game_data.current_player
-
-        # Update legal moves
-        self._legal_moves = self._game_data.get_current_legals(False)
-
-        # Select the clicked piece if it belongs to the current player
-        if not piece_on_square.is_none() and piece_on_square.get_player() == current_player:
-            self._selected_square = square
-            self._selected_moves = self.get_legal_moves_from_square(square)
-
-            print(f"Selected piece : {piece_on_square.get_type()} ({piece_on_square.get_player()})") #  debug selection
-
-        # Do a move if a piece is already selected and a valid target was clicked
-        elif self._selected_square and any(cm.Position(move.target) == square for move in self._selected_moves):
-            move_to_do = next((move for move in self._selected_moves if cm.Position(move.target) == square), None)
-
-            if move_to_do:
-                if move_to_do.promotion != cm.PType.NoneType:
-                    self.prompt_promotion(move_to_do)
-                else:
-                    self.make_move(move_to_do)
-
+    @override
+    def on_move_chosen(self, move):
+        if move.promotion != cm.PType.NoneType:
+            self.prompt_promotion(move)
         else:
-            self._selected_square = None
-            self._selected_moves = []
+            self.make_move(move)
     
     def get_legal_moves_from_square(self, square: cm.Position) -> list[cm.Move]:
         filtered_moves = []
@@ -277,33 +241,9 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
 
     def _create_side_panel(self, window_rect: pygame.Rect) -> SideBar:
         """"""
-        panel = SideBar(window_rect, [info.type for info in self._player_info])
-
-        panel.add_child(self._create_quit_button(panel.area))
+        panel = SideBar(window_rect, [info.type for info in self._player_info], self)
 
         return panel
-
-    def _create_quit_button(self, panel_area: pygame.Rect) -> Button:
-        """Creates a quit button on the right side of the screen."""
-        button_rect = pygame.Rect(
-            panel_area.centerx - BUTTON_WIDTH//2,
-            panel_area.height - BUTTON_MARGIN - BUTTON_HEIGHT,
-            BUTTON_WIDTH, BUTTON_HEIGHT
-        )
-
-        quit_button = Button(button_rect, "Quit")
-        quit_button.color = SAND_COLOR
-        quit_button.hover_color = SAND_HOVER
-        quit_button.text_color = BLACK
-        quit_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
-
-        def quit(_) -> bool:
-            self.request_scene_change(SceneId.MAINMENU, {})
-            return True
-
-        quit_button.on_click = quit
-
-        return quit_button
     
     def _create_game_end_panel(self) -> GameEndPanel:
         """Created the game end panel."""
@@ -334,7 +274,7 @@ class scene_ChessGame(Scene, ChessBoardCallbackInterface):
         self._board.can_accept_events = True
     
     @override
-    def reshow_game_end_panel(self) -> None:
+    def on_click_after_game_end(self) -> None:
         """Reshows the game end panel after viewing board at the end of the game."""
         self._game_end_panel.is_visible = True
         self._game_end_panel.can_accept_events = True

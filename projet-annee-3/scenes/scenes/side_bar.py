@@ -1,6 +1,10 @@
+from .side_bar_base import SideBarBase
+
 import image_loader as img
 
 from ..data_transfer.player_type import PlayerType
+
+from ..scene_changer_interface import SceneChangeInterface, SceneId
 
 from ui import Button, NinepatchPanel, Text, TextAlign
 from ui.font import FONT_PATH, FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM
@@ -24,29 +28,7 @@ EVAL_PANEL_SPACING = 20
 
 EVAL_PANEL_TEXT_COLOR = "white"
 
-class SideBar(NinepatchPanel):
-    def _create_button(self, button_rect: pygame.Rect, text: str) -> Button:
-        """Creates a button to be displayed on this panel."""
-        button = Button(button_rect, text)
-        button.color = SAND_COLOR
-        button.hover_color = SAND_HOVER
-        button.text_color = BLACK
-        button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
-
-        return button
-    
-    def _create_quit_button(self) -> Button:
-        """Creates the 'Quit' button."""
-        rect = pygame.Rect(
-            (self.area.width*3)//4 - BUTTON_WIDTH//2,
-            self.area.height - PANEL_PADDING - BUTTON_HEIGHT,
-            BUTTON_WIDTH, BUTTON_HEIGHT
-        )
-
-        button = self._create_button(rect, "Quit")
-
-        return button
-    
+class SideBar(SideBarBase):
     def _player_type_to_string(self, type: PlayerType) -> str:
         """Returns the string representation of the given player type."""
         match type:
@@ -74,7 +56,7 @@ class SideBar(NinepatchPanel):
             header_text = "White"
             player_type = self._white_player
         else:
-            header_text = "Black"
+            header_text = "Blue"
             player_type = self._black_player
 
         header_text = Text(
@@ -112,14 +94,12 @@ class SideBar(NinepatchPanel):
 
         return panel, eval_text, win_state_text
 
-    def __init__(self, window_rect: pygame.Rect, player_types: list[PlayerType]):
-        panel_rect = pygame.Rect(
-            window_rect.width - PANEL_WIDTH, 0,
-            PANEL_WIDTH,
-            window_rect.height
-        )
-
-        super().__init__(panel_rect, img.IMAGES.panel(img.PanelTheme.LEFT), 31)
+    def __init__(self, 
+        window_rect: pygame.Rect,
+        player_types: list[PlayerType],
+        scene_changer: SceneChangeInterface
+    ):
+        super().__init__(window_rect, scene_changer)
 
         self._white_player = player_types[0]
         self._black_player = player_types[1]
@@ -160,7 +140,3 @@ class SideBar(NinepatchPanel):
                 win_state_text.text = "(Thinks it's losing...)"
                 win_state_text.color = "red"
             
-
-    def set_on_quit_clicked(self, on_click) -> None:
-        """Sets the function to be called when the quit button is clicked."""
-        self._quit_button.on_click = on_click
