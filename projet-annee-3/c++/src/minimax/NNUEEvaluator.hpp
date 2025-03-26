@@ -10,6 +10,7 @@
 #include <string>
 #include <sys/socket.h> // Pour le type de socket
 #include <netinet/in.h>
+#include <mutex>  // Pour le mutex de protection de socket
 
 /**
  * @class NNUEEvaluator
@@ -51,6 +52,13 @@ private:
     std::string m_host;
     int m_port;
     int m_sockfd; // Socket file descriptor
+    std::mutex m_socketMutex; // Mutex pour protéger l'accès à la socket
+    
+    /**
+     * @brief Attempts to establish a connection to the NNUE server.
+     * @return true if connection successful, false otherwise.
+     */
+    bool connectToServer();
     
     /**
      * @brief Reads a line terminated by '\n' from the socket.

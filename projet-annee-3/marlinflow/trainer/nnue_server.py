@@ -7,6 +7,8 @@ import sys
 import torch
 import math
 import chess  # pip install chess (python-chess)
+import threading
+import queue
 
 # ---------------------------------------------------------------------
 # 0. Import de classes de réseau
@@ -149,9 +151,60 @@ def evaluate_fen(model, fen, scale):
 
     return pred_cp
 
+# ---------------------------------------------------------------------
+# 4. Classe pour gérer les connexions clients
+# ---------------------------------------------------------------------
+class ClientHandler(threading.Thread):
+    def __init__(self, conn, addr, model, scale):
+        """
+        Initialise un thread pour gérer une connexion client.
+        """
+        threading.Thread.__init__(self)
+        self.conn = conn
+        self.addr = addr
+        self.model = model
+        self.scale = scale
+        # Utilisation d'un mutex pour protéger l'accès au modèle
+        self.model_lock = threading.Lock()
+    
+    def run(self):
+        """
+        Traite les requêtes du client.
+        """
+        print(f"[Serveur] Traitement de la connexion depuis {self.addr}")
+        data_buffer = b""
+        
+        try:
+            while True:
+                chunk = self.conn.recv(1024)
+                if not chunk:
+                    # Le client a fermé la connexion
+                    print(f"[Serveur] Connexion fermée par {self.addr}")
+                    break
+                
+                data_buffer += chunk
+                
+                # Tant qu'on peut extraire une ligne
+                while b"\n" in data_buffer:
+                    line, data_buffer = data_buffer.split(b"\n", 1)
+                    fen = line.decode("utf-8").strip()
+                    if not fen:
+                        continue  # ligne vide éventuelle
+                    
+                    # Évaluer la FEN avec le mutex pour éviter les conflits d'accès au modèle
+                    with self.model_lock:
+                        score_cp = evaluate_fen(self.model, fen, self.scale)
+                    
+                    msg = f"{score_cp:.2f}\n"
+                    self.conn.sendall(msg.encode("utf-8"))
+        except Exception as e:
+            print(f"[Serveur] Erreur avec client {self.addr}: {e}")
+        finally:
+            self.conn.close()
+            print(f"[Serveur] Connexion avec {self.addr} fermée")
 
 # ---------------------------------------------------------------------
-# 4. MAIN: Lancement d'un serveur socket, arguments => model, scale, etc.
+# 5. MAIN: Lancement d'un serveur socket, arguments => model, scale, etc.
 # ---------------------------------------------------------------------
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -165,6 +218,7 @@ def main():
                         help="Facteur d'échelle (même que dans evaluate_model).")
     parser.add_argument("--host", default="127.0.0.1", help="Adresse IP d'écoute")
     parser.add_argument("--port", type=int, default=5555, help="Port d'écoute")
+    parser.add_argument("--max-clients", type=int, default=10, help="Nombre maximum de clients simultanés")
     args = parser.parse_args()
 
     # Sélection du type de réseau comme dans evaluate_model
@@ -184,57 +238,40 @@ def main():
     model.eval()
     print(f"[Serveur] Modèle chargé (device={DEVICE}), scale={args.scale}, écoute sur {args.host}:{args.port}\n")
 
-
-    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    #     s.bind((args.host, args.port))
-    #     s.listen()
-
-    #     while True:
-    #         conn, addr = s.accept()
-    #         with conn:
-    #             data = conn.recv(1024)
-    #             if not data:
-    #                 continue
-    #             fen = data.decode("utf-8").strip()
-    #             score_cp = evaluate_fen(model, fen, args.scale)
-    #             # Renvoyer un entier ou un float
-    #             msg = f"{score_cp:.2f}\n"
-    #             conn.sendall(msg.encode("utf-8"))
-
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Permettre la réutilisation du port
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((args.host, args.port))
-        s.listen()
-        while True:
-            conn, addr = s.accept()
-            print(f"[Serveur] Connexion reçue depuis {addr}")
-            with conn:
-                data_buffer = b""
-                while True:
-                    chunk = conn.recv(1024)
-                    if not chunk:
-                        # Le client a fermé la connexion
-                        print(f"[Serveur] Connexion fermée par {addr}")
-                        break
-
-                    data_buffer += chunk
-
-                    # Tant qu'on peut extraire une ligne
-                    while b"\n" in data_buffer:
-                        line, data_buffer = data_buffer.split(b"\n", 1)
-                        fen = line.decode("utf-8").strip()
-                        if not fen:
-                            continue  # ligne vide éventuelle
-
-                        # Évaluer la FEN
-                        score_cp = evaluate_fen(model, fen, args.scale)
-                        msg = f"{score_cp:.2f}\n"
-                        conn.sendall(msg.encode("utf-8"))
-                        
-            # On revient au while True, le serveur attend la prochaine connexion
-
-
-
+        s.listen(args.max_clients)
+        print(f"[Serveur] En attente de connexions (max {args.max_clients} clients)...")
+        
+        # Liste des threads actifs
+        client_threads = []
+        
+        try:
+            while True:
+                # Accepter une nouvelle connexion
+                conn, addr = s.accept()
+                print(f"[Serveur] Nouvelle connexion depuis {addr}")
+                
+                # Nettoyer les threads terminés
+                client_threads = [t for t in client_threads if t.is_alive()]
+                
+                # Créer un nouveau thread pour gérer cette connexion
+                client_thread = ClientHandler(conn, addr, model, args.scale)
+                client_thread.daemon = True  # Pour que le thread se termine si le programme principal se termine
+                client_thread.start()
+                client_threads.append(client_thread)
+                
+                print(f"[Serveur] {len(client_threads)} client(s) actif(s)")
+        except KeyboardInterrupt:
+            print("\n[Serveur] Arrêt du serveur...")
+        finally:
+            # Attendre que tous les threads se terminent
+            for t in client_threads:
+                if t.is_alive():
+                    t.join(1.0)  # Attendre au maximum 1 seconde
+            print("[Serveur] Arrêt terminé")
 
 if __name__ == "__main__":
     main()
