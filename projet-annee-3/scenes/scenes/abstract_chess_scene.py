@@ -4,6 +4,7 @@ from .chess_board import ChessBoard
 from .chess_board_callback_interface import ChessBoardCallbackInterface
 
 from .side_bar_base import SideBarBase, PANEL_WIDTH as SIDEBAR_WIDTH
+from .board_highlighter import BoardHighlighter
 
 import cpp_chess as cm
 
@@ -50,6 +51,9 @@ class AbstractChessScene(Scene, ChessBoardCallbackInterface, ABC):
             self
         )
         self.elements.append(self._board)
+
+        self._board_highlighter = BoardHighlighter(self._board.dest_rect)
+        self.elements.append(self._board_highlighter)
 
         self._side_bar = self._create_side_panel(window_rect)
         self.elements.append(self._side_bar)

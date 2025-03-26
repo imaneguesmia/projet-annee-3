@@ -3,7 +3,6 @@ from .abstract_chess_scene import AbstractChessScene
 from .puzzles import PuzzleInfo, ValidMoveInfo, MoveTuple
 
 from .puzzle_side_bar import PuzzleSideBar, PANEL_WIDTH as SIDEBAR_WIDTH
-from .board_highlighter import BoardHighlighter
 
 import cpp_chess as cm
 
@@ -50,9 +49,6 @@ class scene_Puzzle(AbstractChessScene):
             return old(_)
         
         self._board.on_click = new_on_click
-
-        self._board_highlighter = BoardHighlighter(self._board.dest_rect)
-        self.elements.append(self._board_highlighter)
     
     @property
     def selected_square(self) -> cm.Position | None: 

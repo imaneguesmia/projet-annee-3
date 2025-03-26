@@ -2,9 +2,8 @@ from .abstract_chess_scene import AbstractChessScene
 
 from ..data_transfer import PlayerType, PlayerInfo
 
-from .chess_board import ChessBoard
-from .chess_board_callback_interface import ChessBoardCallbackInterface
 from .promotion_callback_interface import PromotionCallbackInterface
+from .board_highlighter import Highlight, HighlightType
 
 from .promotion_panel import PromotionPanel
 from .game_end_panel import GameEndPanel
@@ -21,6 +20,7 @@ from ..scene_change import SceneId
 import pygame
 
 from typing import override
+from time import perf_counter, sleep
 
 # ---- UI constants ---- #
 
@@ -31,6 +31,8 @@ BUTTON_HEIGHT = 80
 BUTTON_MARGIN = 20
 
 # ---- DEFINE class scene_ChessGame ---- #
+
+MIN_MOVE_TIME_S = 1.0
 
 class scene_ChessGame(AbstractChessScene, PromotionCallbackInterface):
     def _initialize_engines(self) -> list[cm.AIMoveProvider | None]:
@@ -148,9 +150,16 @@ class scene_ChessGame(AbstractChessScene, PromotionCallbackInterface):
             # Prevent human from moving
             self._board.can_accept_events = False
 
+            start = perf_counter()
+
             move_to_make = engine.get_move(
                 self._extended_game_data
             )
+
+            end = perf_counter()
+
+            if end - start < MIN_MOVE_TIME_S:
+                sleep(MIN_MOVE_TIME_S - (end - start))
 
             self.make_move(move_to_make)
 
@@ -201,6 +210,15 @@ class scene_ChessGame(AbstractChessScene, PromotionCallbackInterface):
             # Update data after move
             self._selected_square = None
             self._selected_moves = []
+
+            # Draw made move
+            self._board_highlighter.highlight([
+                Highlight(HighlightType.CLEAR),
+                Highlight(
+                    HighlightType.ARROW,
+                    cm.Position(move.source), cm.Position(move.target)
+                )
+            ])
 
             # Next turn
             self.advance_turn()
