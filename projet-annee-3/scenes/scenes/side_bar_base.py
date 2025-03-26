@@ -38,11 +38,7 @@ class SideBarBase(NinepatchPanel, ABC):
             BUTTON_WIDTH, BUTTON_HEIGHT
         )
 
-        quit_button = Button(button_rect, "Quit")
-        quit_button.color = SAND_COLOR
-        quit_button.hover_color = SAND_HOVER
-        quit_button.text_color = BLACK
-        quit_button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
+        quit_button = self._create_button(button_rect, "Quit")
 
         def quit(_) -> bool:
             self._scene_changer.request_scene_change(SceneId.DIFFICULTY, {})

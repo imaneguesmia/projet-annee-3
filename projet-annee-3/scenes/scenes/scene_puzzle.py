@@ -64,26 +64,14 @@ class scene_Puzzle(AbstractChessScene):
 
     # -- Puzzle methods -- #
 
-    def _make_move_from_tuple(self, 
-        move_tuple: MoveTuple, 
-        promotion_type: cm.PType = cm.PType.NoneType
-    ) -> None:
-        """Makes a move with the source and target square defined by the given tuple."""
-        self._chess_game.make_move(
-            cm.Position(move_tuple[0]), cm.Position(move_tuple[1]), 
-            promotion_type
-        )
-
     @override
     def on_move_chosen(self, move):
         move_tuple = (move.source, move.target)
 
-        print(move_tuple)
-
         valid_move_info = self._info.valid_moves.get(move_tuple, None)
 
         if valid_move_info is not None:
-            self._make_move_from_tuple(move_tuple)
+            self._chess_game.make_move(move)
 
             self._selected_square = None
             self._selected_moves = []
@@ -119,9 +107,9 @@ class scene_Puzzle(AbstractChessScene):
             self._side_bar.result_description = old_desc + par_spacing + new_desc
         
         if result_position != 0 and result_position-1 < len(result_path):
-            move_tuple = result_path[result_position-1]
+            fr, to, promotion_type = result_path[result_position-1]
 
-            self._make_move_from_tuple(move_tuple)
+            self._chess_game.make_move(fr, to, promotion_type)
 
         if result_position < len(highlights):
             self._board_highlighter.highlight(highlights[result_position])

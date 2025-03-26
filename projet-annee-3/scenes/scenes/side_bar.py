@@ -110,8 +110,6 @@ class SideBar(SideBarBase):
             EVAL_PANEL_HEIGHT + EVAL_PANEL_SPACING
         )
         self.add_child(self._eval_panel_2)
-
-        self.add_child(self._create_quit_button())
     
     def set_evaluation(self, value: int | None, player: cm.Player) -> None:
         """Sets the displayed evaluation value for the current position."""

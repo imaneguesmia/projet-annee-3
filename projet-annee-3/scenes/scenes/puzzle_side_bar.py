@@ -1,12 +1,13 @@
-from .side_bar_base import SideBarBase, PANEL_WIDTH, PANEL_PADDING
+from .side_bar_base import SideBarBase, PANEL_WIDTH, PANEL_PADDING, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_MARGIN
 
 from .puzzles import PuzzleInfo
 
 import image_loader as img
 
 from ..scene_changer_interface import SceneChangeInterface
+from ..scene_change import SceneId
 
-from ui import NinepatchPanel, Text, MultilineText, TextAlign
+from ui import NinepatchPanel, Text, MultilineText, TextAlign, Button
 from ui.font import FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM
 from ui.colors import *
 
@@ -26,7 +27,7 @@ CHILD_WIDTH = PANEL_WIDTH - PANEL_PADDING*2
 DESCRIPTION_HEIGHT = 170
 DESCRIPTION_FONT_SIZE = FONT_SIZE_SMALL
 
-RESULT_PANEL_HEIGHT = 500
+RESULT_PANEL_HEIGHT = 440
 RESULT_PANEL_PADDING = 12
 
 RESULT_PANEL_HEADER_FONT_SIZE = FONT_SIZE_MEDIUM
@@ -105,6 +106,26 @@ class PuzzleSideBar(SideBarBase):
         
         return panel, wrong_text, header, result_description
 
+    def _create_restart_button(self) -> Button:
+        """Creates the "Restart' button."""
+        rect = pygame.Rect(
+            self.area.centerx - BUTTON_WIDTH//2,
+            self.area.height - (BUTTON_MARGIN + BUTTON_HEIGHT) * 2,
+            BUTTON_WIDTH, BUTTON_HEIGHT
+        )
+
+        button = self._create_button(rect, "Restart")
+
+        def restart(_) -> bool:
+            self._scene_changer.request_scene_change(SceneId.PUZZLE, {
+                "puzzle_info": self._info
+            })
+            return True
+        
+        button.on_click = restart
+
+        return button
+
     def __init__(self, 
         window_rect: pygame.Rect,
         puzzle_info: PuzzleInfo,
@@ -112,6 +133,8 @@ class PuzzleSideBar(SideBarBase):
         scene_changer: SceneChangeInterface
     ):
         super().__init__(window_rect, scene_changer)
+
+        self._info = puzzle_info
 
         self._player_to_move = player_to_move
         self._puzzle_description = puzzle_info.description
@@ -130,7 +153,7 @@ class PuzzleSideBar(SideBarBase):
         
         self.add_child(self._result_panel)
 
-        self.add_child(self._create_quit_button())
+        self.add_child(self._create_restart_button())
     
     def indicate_wrong(self) -> None:
         """Indicates that the player chose the wrong move."""

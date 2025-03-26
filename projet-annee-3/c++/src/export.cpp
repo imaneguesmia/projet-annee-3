@@ -39,6 +39,7 @@ void export_position(nb::module_& m) {
         .value("a5", Square::a5) .value("b5", Square::b5) .value("c5", Square::c5) .value("d5", Square::d5) .value("e5", Square::e5) .value("f5", Square::f5) .value("g5", Square::g5) .value("h5", Square::h5)
         .value("a4", Square::a4) .value("b4", Square::b4) .value("c4", Square::c4) .value("d4", Square::d4) .value("e4", Square::e4) .value("f4", Square::f4) .value("g4", Square::g4) .value("h4", Square::h4)
         .value("a3", Square::a3) .value("b3", Square::b3) .value("c3", Square::c3) .value("d3", Square::d3) .value("e3", Square::e3) .value("f3", Square::f3) .value("g3", Square::g3) .value("h3", Square::h3)
+        .value("a2", Square::a2) .value("b2", Square::b2) .value("c2", Square::c2) .value("d2", Square::d2) .value("e2", Square::e2) .value("f2", Square::f2) .value("g2", Square::g2) .value("h2", Square::h2)
         .value("a1", Square::a1) .value("b1", Square::b1) .value("c1", Square::c1) .value("d1", Square::d1) .value("e1", Square::e1) .value("f1", Square::f1) .value("g1", Square::g1) .value("h1", Square::h1)
         .value("Invalid", Square::Invalid);
     
