@@ -102,9 +102,7 @@ class scene_Puzzle(AbstractChessScene):
             old_desc = self._side_bar.result_description
             new_desc = descriptions[result_position]
 
-            par_spacing = "\n\n" if old_desc else ""
-
-            self._side_bar.result_description = old_desc + par_spacing + new_desc
+            self._side_bar.result_description = old_desc + new_desc
         
         if result_position != 0 and result_position-1 < len(result_path):
             fr, to, promotion_type = result_path[result_position-1]

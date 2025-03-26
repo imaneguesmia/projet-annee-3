@@ -1,10 +1,6 @@
 from .board_base import BoardBase
 
-from .chess_board_callback_interface import ChessBoardCallbackInterface
-
 from .puzzles import Highlight, HighlightType
-
-import image_loader as img
 
 import cpp_chess as cm
 

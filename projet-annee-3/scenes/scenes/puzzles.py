@@ -48,15 +48,16 @@ class PuzzleInfo:
 PUZZLES = [
     PuzzleInfo(
         "Material heuristic.",
-        "desc",
+        "Find the move for the\nwhite player that results\nin the least material lost.",
         "3k3n/8/8/4q3/8/3N2Q1/1b6/4K3 w - - 0 1",
         {
             # d3 -> e5
             (43, 28): ValidMoveInfo(
                 description=[
-                    "Advantageous trade",
-                    "Taken",
-                    "Up in material"
+                    "Taking with the knight first\nresults in a trade...",
+                    "",
+                    "",
+                    "\n\nWhere white ends with a\nmaterial advantage!"
                 ],
                 result=[
                     (cm.Position("b2"), cm.Position("e5"), cm.PType.NoneType),
@@ -84,13 +85,13 @@ PUZZLES = [
     ),
     PuzzleInfo(
         "Piece square table.",
-        "desc",
+        "Find a move that places\na blue piece in a more\n\"advantageous\" position.",
         "r1r3k1/5ppp/4pn2/3p4/3P4/p3P2N/5PPP/1R2R1K1 b - - 1 40",
         {
             # a3 -> a2
             (40, 48): ValidMoveInfo(
                 description=[
-                    "Pawn close to promotion"
+                    "Moving the pawn places it in a\nbetter position, bringing it closer\nto promotion.",
                 ],
                 result=[],
                 highlights=[
@@ -105,7 +106,7 @@ PUZZLES = [
             # c8 -> c2
             (2, 50): ValidMoveInfo(
                 description=[
-                    "Rook attacking back rank"
+                    "Moving the rook to c2 places it\nin a very advantageous position where it\ncan put pressure on the entirety of\nwhite's back rank."
                 ],
                 result=[],
                 highlights=[
@@ -122,7 +123,7 @@ PUZZLES = [
             # f6 -> e4
             (21, 36): ValidMoveInfo(
                 description=[
-                    "Knight in central position"
+                    "Placing the knight in a central\nposition allows it to put a lot of\npressure on white's defense."
                 ],
                 result=[],
                 highlights=[
@@ -142,15 +143,13 @@ PUZZLES = [
     ),
     PuzzleInfo(
         "Mobility.",
-        "desc",
+        "Find a move that allows\nwhite to safely control\nmore squares on the\nboard.",
         "r2qr1k1/pp3ppp/3p1b2/8/8/5N2/P1P2PPP/2RQ1RK1 w - - 2 24",
         {
             # d1 -> d5
             (59, 27): ValidMoveInfo(
                 description=[
-                    "Queen mobile hehe",
-                    "Queen mobile hehe",
-                    "Queen mobile hehe"
+                    "Moving the queen to a more central\nlocation allows it to control a\nlot more squares."
                 ],
                 result=[],
                 highlights=[
@@ -172,9 +171,7 @@ PUZZLES = [
             # c1 -> b1
             (58, 57): ValidMoveInfo(
                 description=[
-                    "Rook mobile hehe",
-                    "Rook mobile hehe",
-                    "Rook mobile hehe"
+                    "Moving the rook over allows it to\ncontrol the entire column,"
                 ],
                 result=[],
                 highlights=[
@@ -198,7 +195,7 @@ PUZZLES = [
             (27, 36): ValidMoveInfo(
                 description=[
                     "This creates what's called an\n\"isolated pawn\". After this move,\nwhite's best move is to take back\nthe pawn with its own pawn.\nHowever...",
-                    "White's pawn is now isolated, with\nno other pawns to protect it!"
+                    "\n\nWhite's pawn is now isolated, with\nno other pawns to protect it."
                 ],
                 result=[
                     (cm.Position("d3"), cm.Position("e4"), cm.PType.NoneType)
@@ -223,13 +220,14 @@ PUZZLES = [
     ),
     PuzzleInfo(
         "King safety.",
-        "desc",
+        "Find a move that puts\nthe blue king in danger!",
         "r4rk1/1ppq1ppp/1pnp3n/8/4P3/3Q3P/PPPB1PPN/R4RK1 w - - 4 18",
         {
             # d2 -> h6
             (51, 23): ValidMoveInfo(
                 description=[
-                    "Bishop breaks king protection thing"
+                    "Moving the bishop threatens to\ndestroy the wall of pawns\nprotecting the king.",
+                    "\n\nIf the bishop is taken, it opens\nup the king to attack."
                 ],
                 result=[
                     (cm.Position("g7"), cm.Position("h6"), cm.PType.NoneType)
