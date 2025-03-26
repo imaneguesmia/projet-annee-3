@@ -4,6 +4,7 @@ from .scene_change import SceneId
 from .scenes.scene_test import scene_Test
 from .scenes.scene_main_menu import scene_MainMenu
 from .scenes.scene_game import scene_ChessGame
+from .scenes.scene_puzzle import scene_Puzzle
 from .scenes.scene_difficulty_menu import scene_DifficultyMenu
 from .scenes.scene_ai_settings import scene_AISettings
 from .scenes.scene_custom_menu import scene_CustomMenu
@@ -20,6 +21,7 @@ class SceneManager:
             case SceneId.TEST: return scene_Test
             case SceneId.MAINMENU: return scene_MainMenu
             case SceneId.GAME: return scene_ChessGame
+            case SceneId.PUZZLE: return scene_Puzzle
             case SceneId.DIFFICULTY: return scene_DifficultyMenu
             case SceneId.SETTINGS: return scene_AISettings
             case SceneId.CUSTOM: return scene_CustomMenu

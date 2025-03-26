@@ -56,16 +56,14 @@ class PuzzleChoicePanel(TitlePanel):
         button.text_font = pygame.font.Font(FONT_PATH, FONT_SIZE_MEDIUM)
 
         button_desc = Text(
-            puzzle.description, (PUZZLE_DESCRIPTION_X, button.area.centery), 
+            puzzle.subtitle, (PUZZLE_DESCRIPTION_X, button.area.centery), 
             align=TextAlign.LEFT, fontsize=FONT_SIZE_TINY
         )
         button.add_child(button_desc)
 
         def on_puzzle_click(_) -> bool:
-            self.scene_changer.request_scene_change(SceneId.GAME, {
-                "white_player": PlayerType.HUMAN,
-                "black_player": PlayerType.MINIMAX,
-                "initial_state": puzzle.initial_state
+            self.scene_changer.request_scene_change(SceneId.PUZZLE, {
+                "puzzle_info": puzzle
             })
 
             return True
@@ -134,11 +132,6 @@ class NormalGamePanel(TitlePanel):
         """Starts a game with the selected player types."""
         options = [PlayerType.HUMAN, PlayerType.MINIMAX, PlayerType.NEURAL_NET]
 
-        # self._scene_changer.request_scene_change(SceneId.GAME, {
-        #     "white_player": options[self._cyclers[0].get_selected_option()],
-        #     "black_player": options[self._cyclers[1].get_selected_option()],
-        #     # "initial_state": "rnb1k1n1/pppp1ppp/8/4p3/1b2P3/3P1PPq/PPP1KQ1r/RNB2BNR w q - 1 3"
-        # })
         self._scene_changer.request_scene_change(SceneId.SETTINGS, {
             "player_types": [options[cycler.get_selected_option()] for cycler in self._cyclers]
         })
@@ -178,7 +171,7 @@ class NormalGamePanel(TitlePanel):
         for i in range(2):
             index_offset = i * (OPTIONS_CENTER_HEIGHT + OPTIONS_Y_SPACING) + OPTIONS_Y_OFFSET
 
-            text, cycler = self._create_player_options(index_offset, f"Player {i+1}")
+            text, cycler = self._create_player_options(index_offset, ["White", "Blue"][i] + " Player")
 
             self.add_child(text)
             self.add_child(cycler)

@@ -35,6 +35,9 @@ public:
     ExtendedGameData& extendedGameData() { return game; };
 
     bool makeMove(Move move);
+    bool makeMove(const Position& from, const Position& to, const PType promoted_to);
+
+    void undoLastMove();
 };
 
 /* ---- END DECLARE ---- */

@@ -4,11 +4,9 @@ from ..data_transfer.player_type import PlayerType
 
 from ..scene_changer_interface import SceneChangeInterface, SceneId
 
-from ui import Button, NinepatchPanel, Text, TextAlign
-from ui.font import FONT_PATH, FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM
+from ui import Button, NinepatchPanel
+from ui.font import FONT_PATH, FONT_SIZE_MEDIUM
 from ui.colors import *
-
-import cpp_chess as cm
 
 import pygame
 
@@ -20,13 +18,6 @@ BUTTON_MARGIN = 20
 
 PANEL_WIDTH = 400
 PANEL_PADDING = 20
-
-EVAL_PANEL_HEIGHT = 200
-EVAL_PANEL_V_PADDING = 5
-EVAL_PANEL_H_PADDING = 12
-EVAL_PANEL_SPACING = 20
-
-EVAL_PANEL_TEXT_COLOR = "white"
 
 class SideBarBase(NinepatchPanel, ABC):
     def _create_button(self, button_rect: pygame.Rect, text: str) -> Button:

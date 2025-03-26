@@ -69,6 +69,22 @@ class scene_ChessGame(AbstractChessScene, PromotionCallbackInterface):
         self._side_bar = self._create_side_panel(window_rect)
         self.elements.append(self._side_bar)
         
+        super().__init__(window_rect, initial_state)
+
+        self._promotion: cm.Move | None = None
+
+        self._promotion_panel = PromotionPanel(self._board.absolute_rect, self)
+        self._promotion_panel.is_visible = False
+        self._promotion_panel.can_accept_events = False
+
+        self._game_end_panel = self._create_game_end_panel()
+
+        self.elements.append(self._promotion_panel)
+        self.elements.append(self._game_end_panel)
+
+        self._side_bar = self._create_side_panel(window_rect)
+        self.elements.append(self._side_bar)
+        
         self._frames_before_next_turn = 0  # Set to `0` to advance game turn next frame.
 
         # Initialize AIs and start game
@@ -192,10 +208,6 @@ class scene_ChessGame(AbstractChessScene, PromotionCallbackInterface):
         else:
             print("INVALID MOVE")
             exit()
-    
-    @override
-    def piece_at(self, square: cm.Position) -> cm.Piece:
-        return self._game_data.get_piece_at(square)
 
     @override
     def on_move_chosen(self, move):
@@ -203,17 +215,6 @@ class scene_ChessGame(AbstractChessScene, PromotionCallbackInterface):
             self.prompt_promotion(move)
         else:
             self.make_move(move)
-    
-    def get_legal_moves_from_square(self, square: cm.Position) -> list[cm.Move]:
-        filtered_moves = []
-
-        for move in self._legal_moves:
-            move_position = cm.Position(move.source)
-
-            if move_position == square:
-                filtered_moves.append(move)
-
-        return filtered_moves
 
     @override
     def prompt_promotion(self, move: cm.Move) -> None:

@@ -1,25 +1,18 @@
-from .side_bar_base import SideBarBase
+from .side_bar_base import SideBarBase, PANEL_WIDTH, PANEL_PADDING
 
 import image_loader as img
 
 from ..data_transfer.player_type import PlayerType
 
-from ..scene_changer_interface import SceneChangeInterface, SceneId
+from ..scene_changer_interface import SceneChangeInterface
 
-from ui import Button, NinepatchPanel, Text, TextAlign
-from ui.font import FONT_PATH, FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM
+from ui import NinepatchPanel, Text, TextAlign
+from ui.font import FONT_SIZE_TINY, FONT_SIZE_SMALL, FONT_SIZE_MEDIUM
 from ui.colors import *
 
 import cpp_chess as cm
 
 import pygame
-
-BUTTON_WIDTH = 200
-BUTTON_HEIGHT = 80
-BUTTON_MARGIN = 20
-
-PANEL_WIDTH = 400
-PANEL_PADDING = 20
 
 EVAL_PANEL_HEIGHT = 200
 EVAL_PANEL_V_PADDING = 5
@@ -104,6 +97,8 @@ class SideBar(SideBarBase):
         self._white_player = player_types[0]
         self._black_player = player_types[1]
 
+        self._scene_changer = scene_changer
+
         self._eval_panel_1, self._eval_text_1, self._win_state_text_1 = self._create_evaluation_panel(
             cm.Player.White, 
             0
@@ -115,6 +110,8 @@ class SideBar(SideBarBase):
             EVAL_PANEL_HEIGHT + EVAL_PANEL_SPACING
         )
         self.add_child(self._eval_panel_2)
+
+        self.add_child(self._create_quit_button())
     
     def set_evaluation(self, value: int | None, player: cm.Player) -> None:
         """Sets the displayed evaluation value for the current position."""

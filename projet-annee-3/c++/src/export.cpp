@@ -173,7 +173,10 @@ void export_game(nb::module_& m) {
 
         .def("create_ai_player", &GameManager::createAIPlayer)
     
-        .def("make_move", &GameManager::makeMove);
+        .def("make_move", nb::overload_cast<Move>(&GameManager::makeMove))
+        .def("make_move", nb::overload_cast<const Position&, const Position&, const PType>(&GameManager::makeMove))
+
+        .def("undo_last_move", &GameManager::undoLastMove);
 }
 
 void export_ai(nb::module_& m) {

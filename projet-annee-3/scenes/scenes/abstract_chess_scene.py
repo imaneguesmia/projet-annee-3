@@ -1,23 +1,11 @@
 from ..scene import Scene
 
-from ..data_transfer import PlayerType, PlayerInfo
-
-from .puzzles import PuzzleInfo
-
 from .chess_board import ChessBoard
 from .chess_board_callback_interface import ChessBoardCallbackInterface
 
-from .promotion_panel import PromotionPanel
-from .game_end_panel import GameEndPanel
-from .side_bar import SideBar, PANEL_WIDTH as SIDEBAR_WIDTH
+from .side_bar_base import SideBarBase, PANEL_WIDTH as SIDEBAR_WIDTH
 
 import cpp_chess as cm
-
-from ui import Button
-from ui.font import FONT_PATH, FONT_SIZE_MEDIUM
-from ui.colors import *
-
-from ..scene_change import SceneId
 
 import pygame
 
@@ -129,7 +117,7 @@ class AbstractChessScene(Scene, ChessBoardCallbackInterface, ABC):
     # -- UI elements -- #
 
     @abstractmethod
-    def _create_side_panel(self, window_rect: pygame.Rect) -> SideBar:
+    def _create_side_panel(self, window_rect: pygame.Rect) -> SideBarBase:
         """"""
 
 # ---- END DEFINE ---- #

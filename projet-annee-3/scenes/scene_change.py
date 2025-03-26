@@ -8,6 +8,7 @@ class SceneId(Enum):
     TEST            = auto()
     MAINMENU        = auto()
     GAME            = auto()
+    PUZZLE          = auto()
     DIFFICULTY      = auto()
     SETTINGS        = auto()
     CUSTOM          = auto()

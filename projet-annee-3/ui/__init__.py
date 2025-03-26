@@ -1,6 +1,8 @@
 from .ui_element import UIElement
 
-from .text import Text, TextAlign
+from .text import Text
+from .multiline_text import MultilineText
+from .text_align import TextAlign
 from .button import Button
 from .panel import Panel
 from .image import Image
@@ -10,7 +12,8 @@ from .checkbox import Checkbox
 
 __all__ = [
     "UIElement", 
-    "Text", "TextAlign",
+    "Text", "MultilineText",
+    "TextAlign",
     "Button",
     "Panel",
     "Image",
