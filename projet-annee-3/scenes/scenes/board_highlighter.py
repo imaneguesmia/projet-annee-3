@@ -1,6 +1,8 @@
-from ui import UIElement
+from .board_base import BoardBase
 
 from .chess_board_callback_interface import ChessBoardCallbackInterface
+
+from .puzzles import Highlight, HighlightType
 
 import image_loader as img
 
@@ -10,24 +12,24 @@ import pygame
 
 from typing import override
 
-class ChessBoard(UIElement):
+TR_RED = (255, 0, 0, 128)
+
+ARROW_HEAD_WIDTH = 30
+ARROW_HEAD_HEIGHT = 50
+ARROW_THICKNESS = 15
+
+CIRCLE_THICKNESS = 7
+
+class BoardHighlighter(BoardBase):
     """UI element to display the chessboard. Essentially the View and Controller in an MVC model."""
 
-    def __init__(self, rect: pygame.Rect, callbacks: ChessBoardCallbackInterface):
-        assert rect.width == rect.height, "ChessBoard must be square"
-
+    def __init__(self, rect: pygame.Rect):
         super().__init__(rect)
 
-        self.square_size = rect.width // 8
+        self._highlights = pygame.Surface(self.area.size, pygame.SRCALPHA)
 
-        self._callbacks = callbacks
-
-        # Stocker la position du plateau pour corriger les clics souris
-        self.board_x = rect.x
-        self.board_y = rect.y
-
-        self.is_game_over = False  # If `True` handle click events differently
-
+        # pygame.draw.circle(self._highlights, TR_RED, self._highlights.get_rect().center, 100)
+        # self.add_arrow()
     
     @override
     def update(self) -> None:
@@ -36,74 +38,65 @@ class ChessBoard(UIElement):
     @override
     def draw(self, dest: pygame.Surface) -> None:
         """Dessine le plateau avec les pièces et les coups légaux."""
-        self.draw_board(dest)
+        dest.blit(self._highlights, (0, 0))
     
-    def draw_board(self, dest: pygame.Surface) -> None:
-        """Draw the board with pieces and legal moves."""
-        for row in range(8):
-            for col in range(8):
-                square = cm.Position(row, col)
-                coords = self.square_to_coordinates(square)
+    def _center_tl(self, tl: tuple[int, int]) -> tuple[int, int]:
+        """Centers the top-left of a square."""
+        return (tl[0] + self.square_size//2, tl[1] + self.square_size//2)
 
-                # Draw tiles
-                tile_index = (row + col) % 2
-
-                tile = img.IMAGES.tile_sprite(tile_index)
-                dest.blit(tile, coords)
-
-                # Draw moves
-                if self._callbacks.selected_square is not None:
-                    # Draw selected square
-                    if self._callbacks.selected_square == square:
-                        dest.blit(img.IMAGES.selected_sprite(tile_index), coords)
-                    # Draw legal moves
-                    else:
-                        possible_move = next(
-                            (move for move in self._callbacks.selected_moves if cm.Position(move.target) == square),
-                            None
-                        )
-
-                        if possible_move is not None:
-                            dest.blit(img.IMAGES.attacked_sprite(tile_index, possible_move.capture), coords)
-
-                # Draw pieces
-                piece_on_square = self._callbacks.piece_at(square)
-
-                if piece_on_square.fen() != ".":
-                    piece_image = img.IMAGES.piece_sprite(piece_on_square)
-                    dest.blit(piece_image, coords)
+    def _clear_highlights(self) -> None:
+        """Clears all highlights."""
+        self._highlights.fill((0, 0, 0, 0))
     
-    def coordinates_to_square(self, x: int, y: int) -> cm.Position:
-        """Convertit les coordonnées de la souris en case d'échecs."""
+    def _add_arrow(self, fr: cm.Position, to: cm.Position) -> None:
+        """Draws an arrow from a position to a position."""
+        fr = self.square_to_coordinates(fr)
+        to = self.square_to_coordinates(to)
+
+        fr_vector = pygame.Vector2(self._center_tl(fr))
+        to_vector = pygame.Vector2(self._center_tl(to))
+
+        d = to_vector - fr_vector
+        angle = d.angle_to((0.0, 1.0))
+        arrow_length = d.length()
+
+        # Arrow points if it was completely vertical.
+        points = [
+            pygame.Vector2(+ARROW_THICKNESS/2, 0),
+            pygame.Vector2(+ARROW_THICKNESS/2, arrow_length-ARROW_HEAD_HEIGHT),
+            pygame.Vector2(+ARROW_HEAD_WIDTH, arrow_length-ARROW_HEAD_HEIGHT),
+            pygame.Vector2(0, arrow_length),
+            pygame.Vector2(-ARROW_HEAD_WIDTH, arrow_length-ARROW_HEAD_HEIGHT),
+            pygame.Vector2(-ARROW_THICKNESS/2, arrow_length-ARROW_HEAD_HEIGHT),
+            pygame.Vector2(-ARROW_THICKNESS/2, 0),
+        ]
+
+        # Rotate and place the arrow.
+        for p in points:
+            p.rotate_ip(-angle)
+            p += fr_vector
         
-        # Ajuster pour la position du board centré
-        x -= self.board_x
-        y -= self.board_y
-
-        # Vérifier si le clic est en dehors du plateau
-        if x < 0 or x >= self.square_size * 8 or y < 0 or y >= self.square_size * 8:
-            return None  # Clic en dehors de l’échiquier
-
-        row = y // self.square_size
-        col = x // self.square_size
-        return cm.Position(row, col)
-
-    def square_to_coordinates(self, square: cm.Position) -> tuple[int, int]:
-        x = self.square_size * square.column
-        y = self.square_size * square.row
-        return x, y
+        pygame.draw.polygon(self._highlights, TR_RED, points)
     
-    @override
-    def on_click(self, point: tuple[int, int]) -> bool:
-        if self.is_game_over:
-            self._callbacks.on_click_after_game_end()
+    def _add_square(self, position: cm.Position) -> None:
+        """Draws a highlight around a square."""
+        tl = self.square_to_coordinates(position)
+        center = self._center_tl(tl)
 
-            return True
-        else:
-            square = self.coordinates_to_square(*point)
-
-            if square is not None:  # Vérifie que le clic est bien sur le board
-                self._callbacks.select_square(square)
-                return True
-
-            return False
+        pygame.draw.circle(
+            self._highlights,
+            TR_RED,
+            center, self.square_size//2,
+            CIRCLE_THICKNESS
+        )
+    
+    def highlight(self, highlights: list[Highlight]) -> None:
+        """Processes and displays the list of highlights."""
+        for highlight in highlights:
+            match highlight.type:
+                case HighlightType.ARROW:
+                    self._add_arrow(highlight.position, highlight.target)
+                case HighlightType.SQUARE:
+                    self._add_square(highlight.position)
+                case HighlightType.CLEAR:
+                    self._clear_highlights()

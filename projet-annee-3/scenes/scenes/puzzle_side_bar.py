@@ -93,7 +93,7 @@ class PuzzleSideBar(SideBarBase):
             RESULT_PANEL_HEIGHT - header.dest_rect.bottom - RESULT_PANEL_PADDING
         )
         result_description = MultilineText(
-            result_desc_rect, "Test is Testing\ntset\nrneoiern\noeiwnfwe",
+            result_desc_rect, "",
             align=TextAlign.CENTER,
             fontsize=RESULT_PANEL_BODY_FONT_SIZE,
             color=(255, 255, 255)

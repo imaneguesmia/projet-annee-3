@@ -1,4 +1,4 @@
-from ui import UIElement
+from .board_base import BoardBase
 
 from .chess_board_callback_interface import ChessBoardCallbackInterface
 
@@ -10,24 +10,15 @@ import pygame
 
 from typing import override
 
-class ChessBoard(UIElement):
+class ChessBoard(BoardBase):
     """UI element to display the chessboard. Essentially the View and Controller in an MVC model."""
 
     def __init__(self, rect: pygame.Rect, callbacks: ChessBoardCallbackInterface):
-        assert rect.width == rect.height, "ChessBoard must be square"
-
         super().__init__(rect)
-
-        self.square_size = rect.width // 8
 
         self._callbacks = callbacks
 
-        # Stocker la position du plateau pour corriger les clics souris
-        self.board_x = rect.x
-        self.board_y = rect.y
-
         self.is_game_over = False  # If `True` handle click events differently
-
     
     @override
     def update(self) -> None:
@@ -72,26 +63,6 @@ class ChessBoard(UIElement):
                 if piece_on_square.fen() != ".":
                     piece_image = img.IMAGES.piece_sprite(piece_on_square)
                     dest.blit(piece_image, coords)
-    
-    def coordinates_to_square(self, x: int, y: int) -> cm.Position:
-        """Convertit les coordonnées de la souris en case d'échecs."""
-        
-        # Ajuster pour la position du board centré
-        x -= self.board_x
-        y -= self.board_y
-
-        # Vérifier si le clic est en dehors du plateau
-        if x < 0 or x >= self.square_size * 8 or y < 0 or y >= self.square_size * 8:
-            return None  # Clic en dehors de l’échiquier
-
-        row = y // self.square_size
-        col = x // self.square_size
-        return cm.Position(row, col)
-
-    def square_to_coordinates(self, square: cm.Position) -> tuple[int, int]:
-        x = self.square_size * square.column
-        y = self.square_size * square.row
-        return x, y
     
     @override
     def on_click(self, point: tuple[int, int]) -> bool:

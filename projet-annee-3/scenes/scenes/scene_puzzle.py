@@ -3,6 +3,7 @@ from .abstract_chess_scene import AbstractChessScene
 from .puzzles import PuzzleInfo, ValidMoveInfo, MoveTuple
 
 from .puzzle_side_bar import PuzzleSideBar, PANEL_WIDTH as SIDEBAR_WIDTH
+from .board_highlighter import BoardHighlighter
 
 import cpp_chess as cm
 
@@ -49,6 +50,9 @@ class scene_Puzzle(AbstractChessScene):
             return old(_)
         
         self._board.on_click = new_on_click
+
+        self._board_highlighter = BoardHighlighter(self._board.dest_rect)
+        self.elements.append(self._board_highlighter)
     
     @property
     def selected_square(self) -> cm.Position | None: 
@@ -96,8 +100,34 @@ class scene_Puzzle(AbstractChessScene):
         self._current_result_position = 0
 
         self._side_bar.indicate_correct()
-        self._side_bar.result_description = self._current_result_info.description[0]
+        self.next_result_position()
     
+    def next_result_position(self) -> None:
+        """Go to next result position."""
+        result_position = self._current_result_position
+
+        descriptions = self._current_result_info.description
+        result_path = self._current_result_info.result
+        highlights = self._current_result_info.highlights
+        
+        if result_position < len(descriptions):
+            old_desc = self._side_bar.result_description
+            new_desc = descriptions[result_position]
+
+            par_spacing = "\n\n" if old_desc else ""
+
+            self._side_bar.result_description = old_desc + par_spacing + new_desc
+        
+        if result_position != 0 and result_position-1 < len(result_path):
+            move_tuple = result_path[result_position-1]
+
+            self._make_move_from_tuple(move_tuple)
+
+        if result_position < len(highlights):
+            self._board_highlighter.highlight(highlights[result_position])
+    
+        self._current_result_position += 1
+
     # -- UI elements -- #
 
     def _create_side_panel(self, window_rect: pygame.Rect) -> PuzzleSideBar:
@@ -108,24 +138,8 @@ class scene_Puzzle(AbstractChessScene):
     
     @override
     def on_click_after_game_end(self) -> None:
-        """Go to next result position."""
-        result_position = self._current_result_position
-
-        descriptions = self._current_result_info.description
-        result_path = self._current_result_info.result
+        self.next_result_position()
         
-        if (result_position+1 < len(descriptions)):
-            old_desc = self._side_bar.result_description
-            new_desc = descriptions[result_position+1]
-
-            self._side_bar.result_description = old_desc + "\n\n" + new_desc
-        
-        if self._current_result_position < len(result_path):
-            move_tuple = result_path[self._current_result_position]
-
-            self._make_move_from_tuple(move_tuple)
-
-            self._current_result_position += 1
 
 # ---- END DEFINE ---- #
 

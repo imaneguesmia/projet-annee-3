@@ -1,13 +1,26 @@
 import cpp_chess as cm
 
 from dataclasses import dataclass
+from enum import Enum, auto
 
 MoveTuple = tuple[int, int] | tuple[cm.Square, cm.Square]
+
+class HighlightType(Enum):
+    ARROW   = auto()  # Draws an arrow from one square to another
+    SQUARE  = auto()  # Highlights a square
+    CLEAR   = auto()  # Clears all previous highlights
+
+@dataclass
+class Highlight:
+    type: HighlightType
+    position: cm.Position | None = None
+    target: cm.Position | None = None
 
 @dataclass
 class ValidMoveInfo:
     description: list[str]
     result: list[MoveTuple]
+    highlights: list[list[Highlight]]
 
 @dataclass
 class PuzzleInfo:
@@ -70,7 +83,6 @@ PUZZLES = [
         "Find a way for the blue\nplayer to create a\nweakness in white's\npawn structure.",
         "3r4/p1p3pp/1p2kp2/3p4/2P1P3/1P1P4/P3K1PP/5R2 b - - 0 1",
         {
-            # ("d5", "e4"): {
             (27, 36): ValidMoveInfo(
                 description=[
                     "This creates what's called an\n\"isolated pawn\". After this move,\nwhite's best move is to take back\nthe pawn with its own pawn.\nHowever...",
@@ -78,12 +90,20 @@ PUZZLES = [
                 ],
                 result=[
                     (cm.Square.d3, cm.Square.e4)
+                ],
+                highlights=[
+                    [],
+                    [
+                        Highlight(HighlightType.ARROW, cm.Position("d3"), cm.Position("e4"))
+                    ],
+                    [
+                        Highlight(HighlightType.CLEAR),
+                        Highlight(HighlightType.SQUARE, cm.Position("e4")),
+                        Highlight(HighlightType.ARROW, cm.Position("d3"), cm.Position("d5")),
+                        Highlight(HighlightType.ARROW, cm.Position("f3"), cm.Position("f5"))
+                    ]
                 ]
             )
-            # {
-            #     "description": "Isolated pawn for opponent",
-            #     "result": [(cm.Square.d3, cm.Square.e4)]
-            # }
         }
     ),
     PuzzleInfo(
