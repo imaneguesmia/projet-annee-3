@@ -116,11 +116,11 @@ int Evaluator::evaluate(const Board &board, Player player)
     }
 
     // KingSafety
-    // if(settings.kingSafety){
-    //     KingSafety kingSafety;
-    //     int safetyScore = kingSafety.evaluate(board, player);
-    //     score += ((safetyScore * materialScore(board, player)) / 100);
-    // }
+    if(settings.kingSafety){
+        KingSafety kingSafety;
+        int safetyScore = kingSafety.evaluate(board, player);
+        score += ((safetyScore * materialScore(board, player)) / 100);
+    }
     return score;
 }
 
