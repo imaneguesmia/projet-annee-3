@@ -54,10 +54,10 @@ PUZZLES = [
             # d3 -> e5
             (43, 28): ValidMoveInfo(
                 description=[
-                    "Prendre le chevalier en \n premier résulte en un échange...",#"Taking with the knight first\nresults in a trade...",
+                    "Déplacer le chevalier en \n premier résulte en un échange...",#"Taking with the knight first\nresults in a trade...",
                     "",
                     "",
-                    "\n\nLe blanc termine avec un\n avantage matériel !"#"\n\nWhere white ends with a\nmaterial advantage!"
+                    "\n\...où le blanc termine avec un\n avantage matériel !"#"\n\nWhere white ends with a\nmaterial advantage!"
                 ],
                 result=[
                     (cm.Position("b2"), cm.Position("e5"), cm.PType.NoneType),
@@ -85,7 +85,7 @@ PUZZLES = [
     ),
     PuzzleInfo(
         "Piece square table.",
-        "Trouvez un mouvement\nqui met une pièce bleue\n dans une position\n plus avantageuse",#"Find a move that places\na blue piece in a more\n\"advantageous\" position.",
+        "Trouvez un mouvement\nqui met une pièce bleue\n dans une position\n plus \"avantageuse\".",#"Find a move that places\na blue piece in a more\n\"advantageous\" position.",
         "r1r3k1/5ppp/4pn2/3p4/3P4/p3P2N/5PPP/1R2R1K1 b - - 1 40",
         {
             # a3 -> a2
@@ -106,7 +106,7 @@ PUZZLES = [
             # c8 -> c2
             (2, 50): ValidMoveInfo(
                 description=[
-                    "Mettre la tour en c2\n permet de menacer toute\n la dernière rangée des blancs.",#"Moving the rook to c2 places it\nin a very advantageous position where it\ncan put pressure on the entirety of\nwhite's back rank."
+                    "Faire avancer le tour\n permet de menacer toute\n la dernière rangée des blancs.",#"Moving the rook to c2 places it\nin a very advantageous position where it\ncan put pressure on the entirety of\nwhite's back rank."
                 ],
                 result=[],
                 highlights=[
