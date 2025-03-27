@@ -157,6 +157,7 @@ class AIOptionsPanel(TitlePanel):
                 settings.mobility           = self._options[2].checked
                 settings.pawn_structure     = self._options[3].checked
                 # settings.king_safety        = self._options[4].checked
+                settings.king_safety        = False
             case PlayerType.NEURAL_NET:
                 settings = cm.EvaluatorSettings()
 
