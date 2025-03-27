@@ -47,17 +47,17 @@ class PuzzleInfo:
 
 PUZZLES = [
     PuzzleInfo(
-        "Material heuristic.",
-        "Find the move for the\nwhite player that results\nin the least material lost.",
+        "Heuristique du matériel.", #Material heuristic
+        "Trouvez l'action pour \nles pièces blanches \n minimisant la perte \n de matériel",#"Find the move for the\nwhite player that results\nin the least material lost.",
         "3k3n/8/8/4q3/8/3N2Q1/1b6/4K3 w - - 0 1",
         {
             # d3 -> e5
             (43, 28): ValidMoveInfo(
                 description=[
-                    "Taking with the knight first\nresults in a trade...",
+                    "Prendre le chevalier en \n premier résulte en un échange...",#"Taking with the knight first\nresults in a trade...",
                     "",
                     "",
-                    "\n\nWhere white ends with a\nmaterial advantage!"
+                    "\n\nLe blanc termine avec un\n avantage matériel !"#"\n\nWhere white ends with a\nmaterial advantage!"
                 ],
                 result=[
                     (cm.Position("b2"), cm.Position("e5"), cm.PType.NoneType),
@@ -85,13 +85,13 @@ PUZZLES = [
     ),
     PuzzleInfo(
         "Piece square table.",
-        "Find a move that places\na blue piece in a more\n\"advantageous\" position.",
+        "Trouvez un mouvement\nqui met une pièce bleue\n dans une position\n plus avantageuse",#"Find a move that places\na blue piece in a more\n\"advantageous\" position.",
         "r1r3k1/5ppp/4pn2/3p4/3P4/p3P2N/5PPP/1R2R1K1 b - - 1 40",
         {
             # a3 -> a2
             (40, 48): ValidMoveInfo(
                 description=[
-                    "Moving the pawn places it in a\nbetter position, bringing it closer\nto promotion.",
+                    "Avancer le pion le met\n dans une position\n proche de la promotion !",#"Moving the pawn places it in a\nbetter position, bringing it closer\nto promotion.",
                 ],
                 result=[],
                 highlights=[
@@ -106,7 +106,7 @@ PUZZLES = [
             # c8 -> c2
             (2, 50): ValidMoveInfo(
                 description=[
-                    "Moving the rook to c2 places it\nin a very advantageous position where it\ncan put pressure on the entirety of\nwhite's back rank."
+                    "Mettre la tour en c2\n permet de menacer toute\n la dernière rangée des blancs.",#"Moving the rook to c2 places it\nin a very advantageous position where it\ncan put pressure on the entirety of\nwhite's back rank."
                 ],
                 result=[],
                 highlights=[
@@ -123,7 +123,7 @@ PUZZLES = [
             # f6 -> e4
             (21, 36): ValidMoveInfo(
                 description=[
-                    "Placing the knight in a central\nposition allows it to put a lot of\npressure on white's defense."
+                    "Placer le chevalier dans\nune position centrale lui\npermet de menacer davantage\nla défense des pièces blanches"#"Placing the knight in a central\nposition allows it to put a lot of\npressure on white's defense."
                 ],
                 result=[],
                 highlights=[
@@ -142,14 +142,14 @@ PUZZLES = [
         }
     ),
     PuzzleInfo(
-        "Mobility.",
-        "Find a move that allows\nwhite to safely control\nmore squares on the\nboard.",
+        "Mobilité.",
+        "Trouvez un mouvement qui\npermet aux blancs de\ncontrôler plus de cases \ndu plateau.",#"Find a move that allows\nwhite to safely control\nmore squares on the\nboard.",
         "r2qr1k1/pp3ppp/3p1b2/8/8/5N2/P1P2PPP/2RQ1RK1 w - - 2 24",
         {
             # d1 -> d5
             (59, 27): ValidMoveInfo(
                 description=[
-                    "Moving the queen to a more central\nlocation allows it to control a\nlot more squares."
+                    "Déplacer la reine vers une position\ncentrale lui permet de contrôler\ndavantage de cases."#"Moving the queen to a more central\nlocation allows it to control a\nlot more squares."
                 ],
                 result=[],
                 highlights=[
@@ -171,7 +171,7 @@ PUZZLES = [
             # c1 -> b1
             (58, 57): ValidMoveInfo(
                 description=[
-                    "Moving the rook over allows it to\ncontrol the entire column,"
+                    "Déplacer la tour lui\npermet de contrôler toute\n la colonne."#"Moving the rook over allows it to\ncontrol the entire column,"
                 ],
                 result=[],
                 highlights=[
@@ -187,15 +187,17 @@ PUZZLES = [
         }
     ),
     PuzzleInfo(
-        "Pawn structure.",
-        "Find a way for the blue\nplayer to create a\nweakness in white's\npawn structure.",
+        "Structure des pions.",
+        "Trouvez un moyen pour le\njoueur bleu d'affaiblir\nla structure de pions blancs",#"Find a way for the blue\nplayer to create a\nweakness in white's\npawn structure.",
         "3r4/p1p3pp/1p2kp2/3p4/2P1P3/1P1P4/P3K1PP/5R2 b - - 0 1",
         {
             # d5 -> e4
             (27, 36): ValidMoveInfo(
                 description=[
-                    "This creates what's called an\n\"isolated pawn\". After this move,\nwhite's best move is to take back\nthe pawn with its own pawn.\nHowever...",
-                    "\n\nWhite's pawn is now isolated, with\nno other pawns to protect it."
+                    "Cela crée ce qu'on appelle\nun « pion isolé ». Après ce coup, le\nmeilleur choix des blancs est\nde reprendre le pion avec leur\n propre pion. Cependant...\n"
+                    "Le pion des Blancs est maintenant\nisolé, sans aucun autre pion\npour le protéger."
+                    # "This creates what's called an\n\"isolated pawn\". After this move,\nwhite's best move is to take back\nthe pawn with its own pawn.\nHowever...",
+                    # "\n\nWhite's pawn is now isolated, with\nno other pawns to protect it."
                 ],
                 result=[
                     (cm.Position("d3"), cm.Position("e4"), cm.PType.NoneType)
