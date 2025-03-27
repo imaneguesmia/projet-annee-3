@@ -188,7 +188,7 @@ PUZZLES = [
     ),
     PuzzleInfo(
         "Structure des pions.",
-        "Trouvez un moyen pour le\njoueur bleu d'affaiblir\nla structure de pions blancs",#"Find a way for the blue\nplayer to create a\nweakness in white's\npawn structure.",
+        "Trouvez un moyen pour le\njoueur bleu d'affaiblir la\nstructure de pions blancs",#"Find a way for the blue\nplayer to create a\nweakness in white's\npawn structure.",
         "3r4/p1p3pp/1p2kp2/3p4/2P1P3/1P1P4/P3K1PP/5R2 b - - 0 1",
         {
             # d5 -> e4
