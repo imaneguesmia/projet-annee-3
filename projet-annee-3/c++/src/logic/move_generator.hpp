@@ -35,7 +35,6 @@ class MoveGenerator {
         }
     };
 
-    // Shared pointer to the pre-initialized attack tables.
     const AttackTables& at = AttackTables::getInstance();
     const BoardAnalysis board_analysis;
 

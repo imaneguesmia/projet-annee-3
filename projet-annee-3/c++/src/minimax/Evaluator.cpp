@@ -109,18 +109,19 @@ int Evaluator::evaluate(const Board &board, Player player)
         score -= mobilityHeuristic(board, Player::Black);
     }
 
-    // Adjust score if Black is to move
-    if (player == Player::Black)
-    { // todo change board ig
-        score = -score;
-    }
-
     // KingSafety
     if(settings.kingSafety){
         KingSafety kingSafety;
         int safetyScore = kingSafety.evaluate(board, player);
         score += ((safetyScore * materialScore(board, player)) / 100);
     }
+
+    // Adjust score if Black is to move
+    if (player == Player::Black)
+    { // todo change board ig
+        score = -score;
+    }
+
     return score;
 }
 

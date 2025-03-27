@@ -11,6 +11,7 @@
 #include "position.hpp"
 #include "piece.hpp"
 #include "attack_tables.hpp"
+#include "unmake_move.hpp"
 
 #include "../view/board_view.hpp"
 
@@ -21,30 +22,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <stack>
-
-
-/* ---- DECLARE struct UnmakeMove ---- */
-
-/**
- * @brief Struct containing undo data. Used for the make-unmake approach, and is more efficient
- * for undoing than saving a copy of the entire state.
- */
-struct UnmakeMove {
-    Move move;                      // The made move.
-    PType captured          : 4;    // `PType` of captured piece (`PType::NoneType` if no capture).
-
-    uint8_t castling_rights : 4;    // Bitflags indicating previous castling rights: `0b[qkQK]`.
-    uint8_t en_passant;             // Previous valid en passant target.
-
-    size_t halfmoves;               // Halfmove clock before the move.
-
-    uint64_t board_hash;            // Zobrist hash of the previous position.
-};
-
-std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move);
-
-/* ---- END DECLARE ---- */
-
 
 
 /* ---- DECLARE class Game ---- */
@@ -83,6 +60,8 @@ class Game : public ExtendedGameData {
     std::vector<Move> current_pseudo_legals;
     // Vector of all possible legal moves from the current board position.
     std::vector<Move> current_legals;
+    // Vector of all possible capture moves from the current board position.
+    std::vector<Move> current_capture_legals;
     // `true` if the current player is in check.
     bool is_current_player_in_check;
     // Enum representing the win state of the game.
@@ -93,12 +72,13 @@ class Game : public ExtendedGameData {
 
     // The above information will be updated if the relevant flag below is not set.
     enum LazyDataFlags {
-        PSEUDO_LEGALS   = 0b00001,
-        LEGALS          = 0b00010,
-        IS_IN_CHECK     = 0b00100,
-        GAME_STATE      = 0b01000,
-        HASH            = 0b10000,
-        ALL             = 0b11111
+        PSEUDO_LEGALS   = 0b000001,
+        LEGALS          = 0b000010,
+        CAPTURE_LEGALS  = 0b000100,
+        IS_IN_CHECK     = 0b001000,
+        GAME_STATE      = 0b010000,
+        HASH            = 0b100000,
+        ALL             = 0b111111
     };
     uint8_t update_flags {ALL};
 

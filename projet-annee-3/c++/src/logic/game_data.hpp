@@ -8,7 +8,7 @@
 #include <vector>
 #include <optional>
 
-class UnmakeMove;
+struct UnmakeMove;
 
 /**
  * @brief Interface for game data.

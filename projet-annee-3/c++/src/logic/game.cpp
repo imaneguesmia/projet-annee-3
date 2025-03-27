@@ -6,23 +6,6 @@
 
 #include <fmt/core.h>
 
-/* ---- DEFINE struct UnmakeMove ---- */
-
-std::ostream& operator<<(std::ostream& out, const UnmakeMove& unmake_move) {
-    Piece captured {unmake_move.captured, otherPlayer(unmake_move.move.player)};
-
-    out << ">>        Move        <<\n" << unmake_move.move << ">>  Unmake move data  <<\n";
-
-    out << "Captured ?        " << captured.fen() << '\n';
-    out << "Prev castle ?     " << int(unmake_move.castling_rights) << '\n';
-    out << "Prev en passant ? " << Position(unmake_move.en_passant) << '\n';
-    out << "Prev halfmoves ?  " << unmake_move.halfmoves << '\n';
-
-    return out;
-}
-
-/* ---- END DEFINE ---- */
-
 /* ---- DEFINE class Game ---- */
 
 /* -- Construction -- */
@@ -114,16 +97,29 @@ const std::vector<Move>& Game::getCurrentPseudoLegals(bool only_captures) {
 }
 
 const std::vector<Move>& Game::getCurrentLegals(bool only_captures) {
-    if (update_flags & LEGALS) {
-        current_legals = move_generator.filterPseudoLegals(
-            current_player, board,
-            getCurrentPseudoLegals(only_captures)
-        );
-
-        update_flags ^= LEGALS;
+    if (only_captures) {
+        if (update_flags & CAPTURE_LEGALS) {
+            current_capture_legals = move_generator.filterPseudoLegals(
+                current_player, board,
+                getCurrentPseudoLegals(true)
+            );
+    
+            update_flags ^= CAPTURE_LEGALS;
+        }
+    
+        return current_capture_legals;
+    } else {
+        if (update_flags & LEGALS) {
+            current_legals = move_generator.filterPseudoLegals(
+                current_player, board,
+                getCurrentPseudoLegals(false)
+            );
+    
+            update_flags ^= LEGALS;
+        }
+    
+        return current_legals;
     }
-
-    return current_legals;
 }
 
 bool Game::isCurrentlyInCheck() {
