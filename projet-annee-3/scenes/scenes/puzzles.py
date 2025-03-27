@@ -57,7 +57,7 @@ PUZZLES = [
                     "Déplacer le chevalier en \n premier résulte en un échange...",#"Taking with the knight first\nresults in a trade...",
                     "",
                     "",
-                    "\n\...où le blanc termine avec un\n avantage matériel !"#"\n\nWhere white ends with a\nmaterial advantage!"
+                    "\n\n...où le blanc termine avec un\n avantage matériel !"#"\n\nWhere white ends with a\nmaterial advantage!"
                 ],
                 result=[
                     (cm.Position("b2"), cm.Position("e5"), cm.PType.NoneType),
