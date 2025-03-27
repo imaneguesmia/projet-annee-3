@@ -218,33 +218,33 @@ PUZZLES = [
             )
         }
     ),
-    PuzzleInfo(
-        "King safety.",
-        "Find a move that puts\nthe blue king in danger!",
-        "r4rk1/1ppq1ppp/1pnp3n/8/4P3/3Q3P/PPPB1PPN/R4RK1 w - - 4 18",
-        {
-            # d2 -> h6
-            (51, 23): ValidMoveInfo(
-                description=[
-                    "Moving the bishop threatens to\ndestroy the wall of pawns\nprotecting the king.",
-                    "\n\nIf the bishop is taken, it opens\nup the king to attack."
-                ],
-                result=[
-                    (cm.Position("g7"), cm.Position("h6"), cm.PType.NoneType)
-                ],
-                highlights=[
-                    [
-                        Highlight(HighlightType.ARROW, cm.Position("d2"), cm.Position("h6"))
-                    ],
-                    [
-                        Highlight(HighlightType.CLEAR),
-                        Highlight(HighlightType.ARROW, cm.Position("g7"), cm.Position("h6"))
-                    ],
-                    [
-                        Highlight(HighlightType.ARROW, cm.Position("g3"), cm.Position("g8")),
-                    ]
-                ]
-            )
-        }
-    ),
+    # PuzzleInfo(
+    #     "King safety.",
+    #     "Find a move that puts\nthe blue king in danger!",
+    #     "r4rk1/1ppq1ppp/1pnp3n/8/4P3/3Q3P/PPPB1PPN/R4RK1 w - - 4 18",
+    #     {
+    #         # d2 -> h6
+    #         (51, 23): ValidMoveInfo(
+    #             description=[
+    #                 "Moving the bishop threatens to\ndestroy the wall of pawns\nprotecting the king.",
+    #                 "\n\nIf the bishop is taken, it opens\nup the king to attack."
+    #             ],
+    #             result=[
+    #                 (cm.Position("g7"), cm.Position("h6"), cm.PType.NoneType)
+    #             ],
+    #             highlights=[
+    #                 [
+    #                     Highlight(HighlightType.ARROW, cm.Position("d2"), cm.Position("h6"))
+    #                 ],
+    #                 [
+    #                     Highlight(HighlightType.CLEAR),
+    #                     Highlight(HighlightType.ARROW, cm.Position("g7"), cm.Position("h6"))
+    #                 ],
+    #                 [
+    #                     Highlight(HighlightType.ARROW, cm.Position("g3"), cm.Position("g8")),
+    #                 ]
+    #             ]
+    #         )
+    #     }
+    # ),
 ]

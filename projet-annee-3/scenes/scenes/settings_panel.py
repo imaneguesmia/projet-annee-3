@@ -79,7 +79,7 @@ class AIOptionsPanel(TitlePanel):
             fontsize=FONT_SIZE_MEDIUM
         ))
 
-        minimax_options = ["Material", "Piece Square Table", "Mobility", "Pawn Structure", "King Safety"]
+        minimax_options = ["Material", "Piece Square Table", "Mobility", "Pawn Structure"]
         checkboxes: list[Checkbox] = []
 
         for option in minimax_options:
@@ -156,7 +156,7 @@ class AIOptionsPanel(TitlePanel):
                 settings.piece_square_table = self._options[1].checked
                 settings.mobility           = self._options[2].checked
                 settings.pawn_structure     = self._options[3].checked
-                settings.king_safety        = self._options[4].checked
+                # settings.king_safety        = self._options[4].checked
             case PlayerType.NEURAL_NET:
                 settings = cm.EvaluatorSettings()
 
