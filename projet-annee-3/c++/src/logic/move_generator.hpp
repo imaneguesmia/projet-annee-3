@@ -24,14 +24,14 @@ class MoveGenerator {
     static constexpr BB::BitBoard row_8 {255ULL};
 
     // Lookup table of relevant board squares to check when castling.
-    static constexpr Square relevant_castling_squares[2][2][2] {
+    static constexpr Square relevant_castling_squares[2][2][3] {
         {
-            {Square::f1, Square::g1},   // King-side white
-            {Square::d1, Square::c1}    // Queen-side white
+            {Square::f1, Square::g1, Square::Invalid},   // King-side white
+            {Square::d1, Square::c1, Square::b1}    // Queen-side white
         },
         {
-            {Square::f8, Square::g8},   // King-side black
-            {Square::d8, Square::c8}    // Queen-side black
+            {Square::f8, Square::g8, Square::Invalid},   // King-side black
+            {Square::d8, Square::c8, Square::b1}    // Queen-side black
         }
     };
 

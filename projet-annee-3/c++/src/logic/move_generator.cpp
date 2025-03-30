@@ -86,14 +86,15 @@ std::vector<Move> MoveGenerator::generatePseudoLegals(
                     uint8_t relevant_castling_bits = castling_rights >> (2 * static_cast<int>(player));
 
                     for (int i = 0; i < 2; i++) {
-                        auto [between, target] = relevant_castling_squares[static_cast<int>(player)][i];
+                        auto [between, target, rook_between] = relevant_castling_squares[static_cast<int>(player)][i];
 
                         if (
                             (relevant_castling_bits & (1 << i)) &&
                             !board_analysis.isSquareAttacked(from, other, board) && 
                             !board_analysis.isSquareAttacked(between, other, board) &&
                             !BB::get_bit(board.occupancy(), static_cast<int>(between)) &&
-                            !BB::get_bit(board.occupancy(), static_cast<int>(target))
+                            !BB::get_bit(board.occupancy(), static_cast<int>(target)) &&
+                            (rook_between == Square::Invalid || !BB::get_bit(board.occupancy(), static_cast<int>(rook_between)))
                         ) {
                             BB::set_bit(castle, static_cast<int>(target));
                         }
